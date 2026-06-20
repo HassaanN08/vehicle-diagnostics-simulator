@@ -1,0 +1,27 @@
+#include <iostream>
+#include <string>
+#include "DTC.h"
+#include "Severity.h"
+
+DTC::DTC(std::string code, std::string description, Severity severity)
+    : code(code)
+    , description(description)
+    , severity(severity) {}
+
+std::string DTC::getCode() const {
+    return code;
+}
+
+std::string DTC::getDescription() const {
+    return description;
+}
+
+Severity DTC::getSeverity() const {
+    return severity;
+}
+
+void DTC::display() const {
+    std::cout << "\nCode: " << code;
+    std::cout << "\nDescription: " << description;
+    std::cout << "\nSeverity: " << ((severity == Severity::Low) ? "Low" : (severity == Severity::Medium) ? "Medium" : "High") << '\n';
+}
