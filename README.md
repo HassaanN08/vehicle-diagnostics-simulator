@@ -45,16 +45,20 @@ Vehicle Diagnostics Simulator
 
 ```text
 vehicle-diagnostics-simulator/
-├── DTC.h
-├── DTC.cpp
-├── ECU.h
-├── ECU.cpp
-├── Vehicle.h
-├── Vehicle.cpp
-├── Severity.h
-├── main.cpp
-├── README.md
-└── .gitignore
+├── include/
+│   ├── DTC.h
+│   ├── ECU.h
+│   ├── Severity.h
+│   └── Vehicle.h
+├── src/
+│   ├── DTC.cpp
+│   ├── ECU.cpp
+│   ├── main.cpp
+│   └── Vehicle.cpp
+├── notes/
+│   └── project-scope.md
+├── .gitignore
+└── README.md
 ```
 
 ## Core Components
@@ -200,14 +204,14 @@ Compile the project using a C++ compiler such as `g++`.
 ### Linux / macOS
 
 ```bash
-g++ -std=c++17 main.cpp Vehicle.cpp ECU.cpp DTC.cpp -o vehicle-diagnostics-simulator
+g++ -std=c++17 src/main.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp -Iinclude -o vehicle-diagnostics-simulator
 ./vehicle-diagnostics-simulator
 ```
 
 ### Windows
 
 ```bash
-g++ -std=c++17 main.cpp Vehicle.cpp ECU.cpp DTC.cpp -o vehicle-diagnostics-simulator.exe
+g++ -std=c++17 src/main.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp -Iinclude -o vehicle-diagnostics-simulator.exe
 vehicle-diagnostics-simulator.exe
 ```
 
