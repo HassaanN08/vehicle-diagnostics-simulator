@@ -15,7 +15,7 @@ class Vehicle {
 
         void addECU(const ECU& ecu);
 
-        void addDTCToECU(const std::string ecuName, const DTC& dtc);
+        void addDTCToECU(const std::string& ecuName, const DTC& dtc);
 
         void displayAllECUs() const;
 
@@ -23,5 +23,7 @@ class Vehicle {
 
         bool hasActiveFaults() const;
 
-        void clearFaultsFromECU(std::string ecuName);
+        bool doesECUExist(std::string& ecuName) const;
+
+        void clearFaultsFromECU(std::string& ecuName);
 };

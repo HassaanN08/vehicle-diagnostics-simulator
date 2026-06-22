@@ -15,7 +15,7 @@ void Vehicle::addECU(const ECU& ecu) {
     units.push_back(ecu);
 }
 
-void Vehicle::addDTCToECU(const std::string ecuName, const DTC& dtc) {
+void Vehicle::addDTCToECU(const std::string& ecuName, const DTC& dtc) {
     for (ECU& unit : units) {
         if (unit.getName() == ecuName) {
             std::cout << "\nAdding fault to " << ecuName << "...\n";
@@ -55,12 +55,21 @@ bool Vehicle::hasActiveFaults() const {
     return false;
 }
 
-void Vehicle::clearFaultsFromECU(std::string ecuName) {
+bool Vehicle::doesECUExist(std::string& ecuName) const {
+    for (const ECU& unit : units) {
+        if (unit.getName() == ecuName) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Vehicle::clearFaultsFromECU(std::string& ecuName) {
     for (ECU& unit : units) {
         if (unit.getName() == ecuName) {
-            std::cout << "\nClearing Fault...\n";
+            std::cout << "\nClearing Faults...\n";
             unit.clearFaults();
-            std::cout << "\nFault Cleared!\n";
+            std::cout << "\nFaults Cleared!\n";
             return;
         }
     }
