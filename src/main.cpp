@@ -13,6 +13,19 @@ void clearLine() {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
+bool doesECUExist(string& ecuName, Vehicle& vehicle) {
+    while (!vehicle.doesECUExist(ecuName)) {
+        cout << ecuName << " ECU does not exist in this Vehicle. Please enter a valid ECU name, or enter -1 to go back to the menu: ";
+        cin >> ecuName;
+
+        if (ecuName == "-1") {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void displayMenu() {
     cout << '\n' << "\n1. Display all ECUs\n";
     cout << "\n2. Scan vehicle\n";
@@ -32,13 +45,10 @@ void addFaultsToECU(Vehicle& vehicle) {
     cout << "Which ECU to add the fault to?\n";
     getline(cin >> ws, ecuName);
 
-    while (!vehicle.doesECUExist(ecuName)) {
-        cout << ecuName << " ECU does not exist in this Vehicle. Please enter a valid ECU name, or enter -1 to go back to the menu: ";
-        cin >> ecuName;
+    bool ECUCheck = doesECUExist(ecuName, vehicle);
 
-        if (ecuName == "-1") {
-            return;
-        }
+    if (!ECUCheck) {
+        return;
     }
 
     cout <<"Enter fault code: ";
@@ -57,7 +67,7 @@ void addFaultsToECU(Vehicle& vehicle) {
         cout << "\nPlease enter a number, not a character, or enter -1 to go back to the menu: ";
         cin >> severityIndex;
     }
-    
+
     while (severityIndex < 1 || severityIndex > 3) {
         if (cin.fail()) {
             clearLine();
@@ -92,14 +102,10 @@ void clearFaults(Vehicle& vehicle) {
     cout << "Enter ECU name: ";
     cin >> ecuName;
 
-    while (!vehicle.doesECUExist(ecuName)) {
-        clearLine();
-        cout << ecuName << " ECU does not exist in this Vehicle. Please enter a valid ECU name, or enter -1 to go back to the menu: ";
-        cin >> ecuName;
+    bool ECUCheck = doesECUExist(ecuName, vehicle);
 
-        if (ecuName == "-1") {
-            return;
-        }
+    if (!ECUCheck) {
+        return;
     }
 
     vehicle.clearFaultsFromECU(ecuName);
@@ -163,17 +169,17 @@ int main() {
                     clearFaults(vehicle);
                     break;
             }
-        }
 
-        displayMenu();
+            displayMenu();
 
-        cout << "Choose an option: ";
-        cin >> option;
-
-        while (cin.fail()) {
-            clearLine();
-            cout << "Please type in a number, not a character: ";
+            cout << "Choose an option: ";
             cin >> option;
+
+            while (cin.fail()) {
+                clearLine();
+                cout << "Please type in a number, not a character: ";
+                cin >> option;
+            }
         }
     }
     return 0;

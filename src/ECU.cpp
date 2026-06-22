@@ -5,7 +5,7 @@
 #include "ECU.h"
 #include "DTC.h"
 
-ECU::ECU(std::string name) : name(name) {}
+ECU::ECU(const std::string name) : name(name) {}
 
 void ECU::addDTC(const DTC& dtc) {
     faults.push_back(dtc);

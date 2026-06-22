@@ -11,7 +11,7 @@ class ECU {
     std::vector<DTC> faults;
 
     public:
-        ECU(std::string name);
+        ECU(const std::string name);
 
         std::string getName() const;
 

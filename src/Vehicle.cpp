@@ -5,7 +5,16 @@
 #include "ECU.h"
 #include "DTC.h"
 
-Vehicle::Vehicle(std::string name) : name(name) {}
+Vehicle::Vehicle(const std::string& name) : name(name) {}
+
+ECU* Vehicle::searchECUByName(const std::string ecuName) {
+    for (ECU& unit : units) {
+        if (unit.getName() == ecuName) {
+            return &unit;
+        }
+    }
+    return nullptr;
+}
 
 std::string Vehicle::getName() const {
     return name;
@@ -16,16 +25,11 @@ void Vehicle::addECU(const ECU& ecu) {
 }
 
 void Vehicle::addDTCToECU(const std::string& ecuName, const DTC& dtc) {
-    for (ECU& unit : units) {
-        if (unit.getName() == ecuName) {
-            std::cout << "\nAdding fault to " << ecuName << "...\n";
-            unit.addDTC(dtc);
-            std::cout << "Fault added to " << ecuName << "!\n";
-            return;
-        }
-    }
+    ECU* unit = searchECUByName(ecuName);
 
-    std::cout << '\n' << ecuName << " ECU doesn't exist in this vehicle.\n";
+    if (unit != nullptr) {
+        unit->addDTC(dtc);
+    }
 }
 
 void Vehicle::displayAllECUs() const {
@@ -37,8 +41,6 @@ void Vehicle::displayAllECUs() const {
 }
 
 void Vehicle::scanVehicle() const {
-    std::cout << '\n' << "\nScanning all ECUs...\n";
-
     for (const ECU& unit : units) {
         std::cout << '\n' << unit.getName() << '\n';
         unit.displayDTCs();
@@ -55,24 +57,20 @@ bool Vehicle::hasActiveFaults() const {
     return false;
 }
 
-bool Vehicle::doesECUExist(std::string& ecuName) const {
-    for (const ECU& unit : units) {
-        if (unit.getName() == ecuName) {
-            return true;
-        }
+bool Vehicle::doesECUExist(const std::string& ecuName) {
+    ECU* unit = searchECUByName(ecuName);
+
+    if (unit != nullptr) {
+        return true;
     }
     return false;
 }
 
-void Vehicle::clearFaultsFromECU(std::string& ecuName) {
-    for (ECU& unit : units) {
-        if (unit.getName() == ecuName) {
-            std::cout << "\nClearing Faults...\n";
-            unit.clearFaults();
-            std::cout << "\nFaults Cleared!\n";
-            return;
-        }
-    }
+void Vehicle::clearFaultsFromECU(const std::string& ecuName) {
+    ECU* unit = searchECUByName(ecuName);
 
-    std::cout << '\n' << ecuName << " ECU doesn't exist in this vehicle.\n";
+    if (unit != nullptr) {
+        unit->clearFaults();
+        std::cout << "\nFaults cleared";
+    }
 }

@@ -3,10 +3,20 @@
 #include "DTC.h"
 #include "Severity.h"
 
-DTC::DTC(std::string code, std::string description, Severity severity)
+DTC::DTC(const std::string& code, const std::string& description, Severity severity)
     : code(code)
     , description(description)
     , severity(severity) {}
+
+std::string DTC::severityToString() const {
+    if (severity == Severity::Low) {
+        return "Low";
+    } else if (severity == Severity::Medium) {
+        return "Medium";
+    } else {
+        return "High";
+    }
+}
 
 std::string DTC::getCode() const {
     return code;
@@ -23,5 +33,5 @@ Severity DTC::getSeverity() const {
 void DTC::display() const {
     std::cout << "\nCode: " << code;
     std::cout << "\nDescription: " << description;
-    std::cout << "\nSeverity: " << ((severity == Severity::Low) ? "Low" : (severity == Severity::Medium) ? "Medium" : "High") << '\n';
+    std::cout << "\nSeverity: " << severityToString() << '\n';
 }

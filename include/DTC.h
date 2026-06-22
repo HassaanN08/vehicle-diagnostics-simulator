@@ -7,9 +7,10 @@ class DTC {
     std::string code;
     std::string description;
     Severity severity;
+    std::string severityToString() const;
 
     public:
-        DTC(std::string code, std::string description, Severity severity);
+        DTC(const std::string& code, const std::string& description, Severity severity);
 
         std::string getCode() const;
 
