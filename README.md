@@ -9,7 +9,7 @@ This project is part of a long-term systems engineering portfolio focused on Mod
 **Version:** v0.1
 **Status:** First working release
 
-This version includes a multi-file C++ project structure, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, and an interactive console menu.
+This version includes a multi-file C++ project structure, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, and CMake build support.
 
 ## Features
 
@@ -24,7 +24,8 @@ This version includes a multi-file C++ project structure, diagnostic trouble cod
 * Handle invalid ECU names
 * Convert user severity input into a strongly typed `Severity` enum
 * Use value ownership for ECUs and DTCs
-* Keep search logic encapsulated inside the `Vehicle` class
+* Keep ECU search logic encapsulated inside the `Vehicle` class
+* Build the project using CMake
 
 ## Menu Options
 
@@ -57,6 +58,7 @@ vehicle-diagnostics-simulator/
 │   └── Vehicle.cpp
 ├── notes/
 │   └── project-scope.md
+├── CMakeLists.txt
 ├── .gitignore
 └── README.md
 ```
@@ -177,6 +179,7 @@ C++ concepts:
 * Value ownership
 * Console input handling
 * Menu-driven program flow
+* CMake build configuration
 
 Systems concepts:
 
@@ -187,6 +190,7 @@ Systems concepts:
 * Module-level responsibility
 * Simple system state inspection
 * Safe object ownership
+* Build tooling
 
 Automotive concepts:
 
@@ -199,7 +203,27 @@ Automotive concepts:
 
 ## How to Run
 
-Compile the project using a C++ compiler such as `g++`.
+This project uses CMake.
+
+### Linux / macOS
+
+```bash
+cmake -S . -B build
+cmake --build build
+./build/vehicle-diagnostics-simulator
+```
+
+### Windows
+
+```bash
+cmake -S . -B build
+cmake --build build
+build\Debug\vehicle-diagnostics-simulator.exe
+```
+
+## Manual Build Alternative
+
+You can also compile manually with `g++`.
 
 ### Linux / macOS
 
@@ -225,10 +249,11 @@ Current limitations:
 * No file saving or loading
 * No CAN bus simulation yet
 * No UDS request/response behavior yet
-* No CMake build system yet
 * No unit tests yet
 * No persistent diagnostic history
 * No real vehicle communication
+* Limited input validation
+* No diagnostic session handling yet
 
 ## Planned Improvements
 
@@ -236,8 +261,7 @@ Future versions may include:
 
 * Add ECU through the menu
 * Cleaner reusable input helpers
-* Return `bool` from vehicle-level actions for better error handling
-* CMake support
+* Return `bool` from more vehicle-level actions for better error handling
 * Unit tests
 * Fault history/logging
 * File persistence
@@ -258,4 +282,4 @@ This simulator is the first step toward larger projects involving CAN bus simula
 
 This project is currently at **v0.1**.
 
-The current release contains the first working diagnostic simulator with a multi-file C++ structure, interactive menu, ECU modeling, DTC storage, fault scanning, and fault clearing.
+The current release contains the first working diagnostic simulator with a multi-file C++ structure, CMake build support, interactive menu, ECU modeling, DTC storage, fault scanning, and fault clearing.
