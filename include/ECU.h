@@ -13,9 +13,9 @@ class ECU {
     public:
         ECU(std::string name);
 
-        void addDTC(std::string code, std::string description, Severity severity);
+        std::string getName() const;
 
-        void displayName() const;
+        void addDTC(const DTC& dtc);
 
         void displayDTCs() const;
 

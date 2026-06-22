@@ -7,17 +7,17 @@
 
 ECU::ECU(std::string name) : name(name) {}
 
-void ECU::addDTC(std::string code, std::string description, Severity severity) {
-    faults.push_back(DTC(code, description, severity));
+void ECU::addDTC(const DTC& dtc) {
+    faults.push_back(dtc);
 }
 
-void ECU::displayName() const {
-    std::cout << '\n' << name << '\n';
+std::string ECU::getName() const {
+    return name;
 }
 
 void ECU::displayDTCs() const {
-    if (faults.size() == 0) {
-        std::cout << "No Active Faults.\n";
+    if (faults.empty()) {
+        std::cout << '\n' << "No Active Faults.\n";
         return;
     }
 

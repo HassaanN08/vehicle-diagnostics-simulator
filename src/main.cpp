@@ -1,41 +1,46 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ECU.h"
 #include "Severity.h"
+#include "DTC.h"
+#include "ECU.h"
+#include "Vehicle.h"
 using namespace std;
 
 int main() {
+    Vehicle vehicle("Toyota Subaru");
+
     ECU Engine ("Engine");
     ECU Brake ("Brake");
     ECU Battery ("Battery");
 
-    Engine.addDTC("P0301", "Cylinder 1 Misfire Detected", Severity::High);
-    Engine.addDTC("P0171", "System Too Lean", Severity::Medium);
+    vehicle.addECU(Engine);
+    vehicle.addECU(Brake);
+    vehicle.addECU(Battery);
 
-    Brake.addDTC("C0035", "Left Front Wheel Speed Sensor Fault", Severity::High);
+    DTC fault1 ("P0301", "Cylinder 1 Misfire Detected", Severity::High);
+    DTC fault2 ("P0171", "System Too Lean", Severity::Medium);
+    DTC fault3 ("C0035", "Left Front Wheel Speed Sensor Fault", Severity::High);
+    DTC fault4 ("B1001", "Battery Voltage Low", Severity::Low);
 
-    Battery.addDTC("B1001", "Battery Voltage Low", Severity::Low);
+    vehicle.addDTCToECU("Engine", fault1);
+    vehicle.addDTCToECU("Engine", fault2);
+    vehicle.addDTCToECU("Brake", fault3);
+    vehicle.addDTCToECU("Battery", fault4);
 
-    cout << "\nElectronic Control Units:\n";
+    cout << '\n' << vehicle.getName() << '\n';
 
-    Engine.displayName();
-    Engine.displayDTCs();
+    cout << "\nDisplay All ECUs:\n";
 
-    Brake.displayName();
-    Brake.displayDTCs();
+    vehicle.displayAllECUs();
 
-    Battery.displayName();
-    Battery.displayDTCs();
+    vehicle.scanVehicle();
 
-    Engine.clearFaults();
+    vehicle.clearFaultsFromECU("Engine");
 
-    Engine.displayName();
-    Engine.displayDTCs();
+    vehicle.scanVehicle();
 
-    cout << "\nDoes the Engine have faults?\n" << (Engine.hasFaults() ? "Yes" : "No") << '\n';
-    cout << "\nDoes the Brake have faults?\n" << (Brake.hasFaults() ? "Yes" : "No") << '\n';
-    cout << "\nDoes the Battery have faults?\n" << (Battery.hasFaults() ? "Yes" : "No") << '\n';
+    vehicle.clearFaultsFromECU("Transmission");
    
     cout << '\n';
     return 0;
