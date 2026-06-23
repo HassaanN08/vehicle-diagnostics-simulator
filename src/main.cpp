@@ -13,10 +13,24 @@ void clearLine() {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
-bool doesECUExist(string& ecuName, Vehicle& vehicle) {
+void validateInputIsInt(int& input) {
+    while (cin.fail()) {
+        clearLine();
+        cout << "Please type in a number, not a character: ";
+        cin >> input;
+    }
+
+    return;
+}
+
+void getFullTextInput(string& input) {
+    getline(cin >> ws, input);
+}
+
+bool getValidECUName(string& ecuName, Vehicle& vehicle) {
     while (!vehicle.doesECUExist(ecuName)) {
         cout << ecuName << " ECU does not exist in this Vehicle. Please enter a valid ECU name, or enter -1 to go back to the menu: ";
-        cin >> ecuName;
+        getFullTextInput(ecuName);
 
         if (ecuName == "-1") {
             return false;
@@ -43,9 +57,9 @@ void addFaultsToECU(Vehicle& vehicle) {
     int severityIndex;
 
     cout << "Which ECU to add the fault to?\n";
-    getline(cin >> ws, ecuName);
+    getFullTextInput(ecuName);
 
-    bool ECUCheck = doesECUExist(ecuName, vehicle);
+    bool ECUCheck = getValidECUName(ecuName, vehicle);
 
     if (!ECUCheck) {
         return;
@@ -55,18 +69,12 @@ void addFaultsToECU(Vehicle& vehicle) {
     cin >> faultCode;
 
     cout << "Enter fault description: ";
-    getline(cin >> ws, faultDescription);
+    getFullTextInput(faultDescription);
 
     cout << "Choose severity:\n";
     cout << "1. Low\n" << "2. Medium\n" << "3. High\n\n";
-
     cin >> severityIndex;
-
-    while (cin.fail()) {
-        clearLine();
-        cout << "\nPlease enter a number, not a character, or enter -1 to go back to the menu: ";
-        cin >> severityIndex;
-    }
+    validateInputIsInt(severityIndex);
 
     while (severityIndex < 1 || severityIndex > 3) {
         if (cin.fail()) {
@@ -100,9 +108,9 @@ void clearFaults(Vehicle& vehicle) {
     string ecuName;
 
     cout << "Enter ECU name: ";
-    cin >> ecuName;
+    getFullTextInput(ecuName);
 
-    bool ECUCheck = doesECUExist(ecuName, vehicle);
+    bool ECUCheck = getValidECUName(ecuName, vehicle);
 
     if (!ECUCheck) {
         return;
@@ -131,21 +139,13 @@ int main() {
     cout << "Choose an option: ";
     cin >> option;
 
-    while (cin.fail()) {
-        clearLine();
-        cout << "Please type in a number, not a character: ";
-        cin >> option;
-    }
+    validateInputIsInt(option);
 
     while (option != 6) {
         if (option < 1 || option > 6) {
             cout << "Please type in a number between 1 and 6: ";
             cin >> option;
-            while (cin.fail()) {
-                clearLine();
-                cout << "Please type in a number, not a character: ";
-                cin >> option;
-            }
+            validateInputIsInt(option);
         }
         else if (option > 0 && option < 6) {
             switch (option) {
@@ -175,11 +175,7 @@ int main() {
             cout << "Choose an option: ";
             cin >> option;
 
-            while (cin.fail()) {
-                clearLine();
-                cout << "Please type in a number, not a character: ";
-                cin >> option;
-            }
+            validateInputIsInt(option);
         }
     }
     return 0;
