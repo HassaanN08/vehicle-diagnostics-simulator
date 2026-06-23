@@ -14,7 +14,7 @@ class Vehicle {
 
         std::string getName() const;
 
-        void addECU(const ECU& ecu);
+        bool addECU(const ECU& ecu);
 
         void addDTCToECU(const std::string& ecuName, const DTC& dtc);
 

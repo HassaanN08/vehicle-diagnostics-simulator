@@ -41,12 +41,14 @@ bool getValidECUName(string& ecuName, Vehicle& vehicle) {
 }
 
 void displayMenu() {
-    cout << '\n' << "\n1. Display all ECUs\n";
+    cout << '\n' << "=================\n    MAIN MENU    \n=================\n";
+    cout << "\n1. Display all ECUs\n";
     cout << "\n2. Scan vehicle\n";
     cout << "\n3. Display vehicle health\n";
     cout << "\n4. Add fault to ECU\n";
     cout << "\n5. Clear faults from ECU\n";
-    cout << "\n6. Exit\n" << '\n';
+    cout << "\n6. Add ECU\n";
+    cout << "\n7. Exit\n" << '\n';
 }
 
 void addFaultsToECU(Vehicle& vehicle) {
@@ -119,6 +121,27 @@ void clearFaults(Vehicle& vehicle) {
     vehicle.clearFaultsFromECU(ecuName);
 }
 
+void addECUViaMenu(Vehicle& vehicle) {
+    string ecuName;
+
+    cout << "\nEnter ECU name to be added to " << vehicle.getName() << ": ";
+
+    getFullTextInput(ecuName);
+
+    bool added = vehicle.addECU(ECU(ecuName));
+
+    while (!added) {
+        cout << ecuName << " ECU already exists in this Vehicle. Please enter a new ECU name, or enter -1 to go back to the menu: ";
+        getFullTextInput(ecuName);
+
+        if (ecuName == "-1") {
+            return;
+        }
+
+        added = vehicle.addECU(ECU(ecuName));
+    }
+}
+
 int main() {
 
     cout << "\nVehicle Diagnostics Simulator\n";
@@ -141,13 +164,13 @@ int main() {
 
     validateInputIsInt(option);
 
-    while (option != 6) {
-        if (option < 1 || option > 6) {
+    while (option != 7) {
+        if (option < 1 || option > 7) {
             cout << "Please type in a number between 1 and 6: ";
             cin >> option;
             validateInputIsInt(option);
         }
-        else if (option > 0 && option < 6) {
+        else if (option > 0 && option < 7) {
             switch (option) {
                 case 1:
                     vehicle.displayAllECUs();
@@ -167,6 +190,9 @@ int main() {
                     break;
                 case 5:
                     clearFaults(vehicle);
+                    break;
+                case 6:
+                    addECUViaMenu(vehicle);
                     break;
             }
 

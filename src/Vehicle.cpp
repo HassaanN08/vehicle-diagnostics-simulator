@@ -20,8 +20,15 @@ std::string Vehicle::getName() const {
     return name;
 }
 
-void Vehicle::addECU(const ECU& ecu) {
-    units.push_back(ecu);
+bool Vehicle::addECU(const ECU& ecu) {
+    ECU* unit = searchECUByName(ecu.getName());
+
+    if (unit == nullptr) {
+        units.push_back(ecu);
+        return true;
+    }
+
+    return false;
 }
 
 void Vehicle::addDTCToECU(const std::string& ecuName, const DTC& dtc) {
@@ -29,6 +36,7 @@ void Vehicle::addDTCToECU(const std::string& ecuName, const DTC& dtc) {
 
     if (unit != nullptr) {
         unit->addDTC(dtc);
+        std::cout << "\nECU added successfully!\n";
     }
 }
 
