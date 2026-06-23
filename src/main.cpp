@@ -42,13 +42,14 @@ bool getValidECUName(string& ecuName, Vehicle& vehicle) {
 
 void displayMenu() {
     cout << '\n' << "=================\n    MAIN MENU    \n=================\n";
-    cout << "\n1. Display all ECUs\n";
-    cout << "\n2. Scan vehicle\n";
-    cout << "\n3. Display vehicle health\n";
-    cout << "\n4. Add fault to ECU\n";
-    cout << "\n5. Clear faults from ECU\n";
-    cout << "\n6. Add ECU\n";
-    cout << "\n7. Exit\n" << '\n';
+    cout << "\n1. Display all ECUs";
+    cout << "\n2. Scan vehicle";
+    cout << "\n3. Display vehicle health";
+    cout << "\n4. Add fault to ECU";
+    cout << "\n5. Clear faults from ECU";
+    cout << "\n6. Add ECU";
+    cout << "\n7. Display diagnostic log";
+    cout << "\n8. Exit\n" << '\n';
 }
 
 void addFaultsToECU(Vehicle& vehicle) {
@@ -128,7 +129,7 @@ void addECUViaMenu(Vehicle& vehicle) {
 
     getFullTextInput(ecuName);
 
-    bool added = vehicle.addECU(ECU(ecuName));
+    bool added = vehicle.addECU(ECU(ecuName), true);
 
     while (!added) {
         cout << ecuName << " ECU already exists in this Vehicle. Please enter a new ECU name, or enter -1 to go back to the menu: ";
@@ -138,7 +139,11 @@ void addECUViaMenu(Vehicle& vehicle) {
             return;
         }
 
-        added = vehicle.addECU(ECU(ecuName));
+        added = vehicle.addECU(ECU(ecuName), true);
+    }
+
+    if (added) {
+        cout << "\nECU added successfully!\n";
     }
 }
 
@@ -151,9 +156,9 @@ int main() {
     ECU Brake ("Brake");
     ECU Battery ("Battery");
 
-    vehicle.addECU(Engine);
-    vehicle.addECU(Brake);
-    vehicle.addECU(Battery);
+    vehicle.addECU(Engine, false);
+    vehicle.addECU(Brake, false);
+    vehicle.addECU(Battery, false);
 
     displayMenu();
 
@@ -164,13 +169,13 @@ int main() {
 
     validateInputIsInt(option);
 
-    while (option != 7) {
-        if (option < 1 || option > 7) {
-            cout << "Please type in a number between 1 and 6: ";
+    while (option != 8) {
+        if (option < 1 || option > 8) {
+            cout << "Please type in a number between 1 and 8: ";
             cin >> option;
             validateInputIsInt(option);
         }
-        else if (option > 0 && option < 7) {
+        else if (option > 0 && option < 8) {
             switch (option) {
                 case 1:
                     vehicle.displayAllECUs();
@@ -194,6 +199,8 @@ int main() {
                 case 6:
                     addECUViaMenu(vehicle);
                     break;
+                case 7:
+                    vehicle.displayLogs();
             }
 
             displayMenu();

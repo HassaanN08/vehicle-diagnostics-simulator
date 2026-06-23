@@ -7,6 +7,7 @@
 class Vehicle {
     std::string name;
     std::vector<ECU> units;
+    std::vector<std::string> logs;
     ECU* searchECUByName(const std::string ecuName);
 
     public:
@@ -14,13 +15,15 @@ class Vehicle {
 
         std::string getName() const;
 
-        bool addECU(const ECU& ecu);
+        void displayLogs() const;
+
+        bool addECU(const ECU& ecu, const bool log);
 
         void addDTCToECU(const std::string& ecuName, const DTC& dtc);
 
         void displayAllECUs() const;
 
-        void scanVehicle() const;
+        void scanVehicle();
 
         bool hasActiveFaults() const;
 

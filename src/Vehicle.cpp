@@ -20,11 +20,29 @@ std::string Vehicle::getName() const {
     return name;
 }
 
-bool Vehicle::addECU(const ECU& ecu) {
+void Vehicle::displayLogs() const {
+    if (logs.empty()) {
+        std::cout << "\nNo diagnostic events recorded.\n";
+        return;
+    }
+
+    int i = 0;
+
+    for(const std::string& log : logs) {
+        i++;
+        std::cout << i << ". " << log << '\n';
+    }
+}
+
+bool Vehicle::addECU(const ECU& ecu, const bool shouldLog) {
     ECU* unit = searchECUByName(ecu.getName());
 
     if (unit == nullptr) {
         units.push_back(ecu);
+        if (shouldLog) {
+            std::string logEntry = "Added ECU: " + ecu.getName();
+            logs.push_back(logEntry);
+        }
         return true;
     }
 
@@ -36,7 +54,9 @@ void Vehicle::addDTCToECU(const std::string& ecuName, const DTC& dtc) {
 
     if (unit != nullptr) {
         unit->addDTC(dtc);
-        std::cout << "\nECU added successfully!\n";
+        std::cout << "\nFault added successfully!\n";
+        std::string log = "Added fault " + dtc.getCode() + " to " + ecuName;
+        logs.push_back(log);
     }
 }
 
@@ -48,11 +68,15 @@ void Vehicle::displayAllECUs() const {
     }
 }
 
-void Vehicle::scanVehicle() const {
+void Vehicle::scanVehicle() {
     for (const ECU& unit : units) {
         std::cout << '\n' << unit.getName() << '\n';
         unit.displayDTCs();
     }
+
+    std::string log = "Vehicle scan performed";
+
+    logs.push_back(log);
 }
 
 bool Vehicle::hasActiveFaults() const {
@@ -80,5 +104,7 @@ void Vehicle::clearFaultsFromECU(const std::string& ecuName) {
     if (unit != nullptr) {
         unit->clearFaults();
         std::cout << "\nFaults cleared";
+        std::string log = "Cleared faults from " + ecuName;
+        logs.push_back(log);
     }
 }
