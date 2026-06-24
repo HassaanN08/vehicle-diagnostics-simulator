@@ -1,15 +1,15 @@
 # Vehicle Diagnostics Simulator
 
-A C++ console-based vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, vehicle health checks, and basic diagnostic workflows.
+A C++ console-based vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, vehicle health checks, diagnostic event logging, and basic diagnostic workflows.
 
 This project is part of a long-term systems engineering portfolio focused on Modern C++, embedded-style thinking, diagnostics, vehicle platforms, and transferable software architecture skills.
 
 ## Current Version
 
-**Version:** v0.1
-**Status:** First working release
+**Version:** v0.2
+**Status:** Working release
 
-This version includes a multi-file C++ project structure, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, and CMake build support.
+This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, and diagnostic event logging.
 
 ## Features
 
@@ -21,6 +21,13 @@ This version includes a multi-file C++ project structure, diagnostic trouble cod
 * Display active DTCs for each ECU
 * Clear faults from a specific ECU
 * Display overall vehicle health
+* Add new ECUs through the menu
+* Reject duplicate ECU names
+* Display a diagnostic event log
+* Log successful ECU additions
+* Log successful fault additions
+* Log successful fault clearing
+* Log vehicle scan events
 * Handle invalid ECU names
 * Convert user severity input into a strongly typed `Severity` enum
 * Use value ownership for ECUs and DTCs
@@ -39,7 +46,9 @@ Vehicle Diagnostics Simulator
 3. Display vehicle health
 4. Add fault to ECU
 5. Clear faults from ECU
-6. Exit
+6. Add ECU
+7. Display diagnostic log
+8. Exit
 ```
 
 ## Project Structure
@@ -115,6 +124,8 @@ Examples of ECUs:
 * Engine
 * Brake
 * Battery
+* Transmission
+* Airbag Control Module
 
 ### Vehicle
 
@@ -124,11 +135,14 @@ Responsibilities:
 
 * Store multiple ECUs
 * Add ECUs
+* Prevent duplicate ECU names
 * Add faults to a specific ECU
 * Scan all ECUs
 * Display all ECUs
 * Check overall vehicle health
 * Clear faults from a specific ECU
+* Store diagnostic event logs
+* Display diagnostic event logs
 * Encapsulate ECU search logic
 
 ## Current Diagnostic Model
@@ -145,21 +159,43 @@ A vehicle owns multiple ECUs.
 Each ECU owns multiple diagnostic trouble codes.
 The menu interacts with the vehicle, and the vehicle coordinates diagnostic actions.
 
+## Diagnostic Log
+
+The simulator now keeps a simple session-level diagnostic log.
+
+The log records successful actions such as:
+
+* Adding a new ECU
+* Adding a fault to an ECU
+* Clearing faults from an ECU
+* Scanning the vehicle
+
+Example:
+
+```text
+Diagnostic Log:
+
+1. Added ECU: Transmission
+2. Added fault P0301 to Engine
+3. Vehicle scan performed
+4. Cleared faults from Engine
+```
+
+The log does not currently persist after the program closes.
+
 ## Example Workflow
 
 A user can:
 
 1. Start the simulator
 2. Display all ECUs
-3. Scan the vehicle
-4. Add a DTC to the Engine ECU
-5. Add a DTC to the Brake ECU
-6. Scan the vehicle again
-7. See active faults
-8. Display vehicle health
-9. Clear faults from one ECU
-10. Scan again
-11. Exit the program
+3. Add a new ECU such as `Transmission`
+4. Add a fault to `Transmission`
+5. Scan the vehicle
+6. Display vehicle health
+7. Clear faults from `Transmission`
+8. Display the diagnostic log
+9. Exit the program
 
 ## Concepts Practiced
 
@@ -172,11 +208,13 @@ C++ concepts:
 * Multi-file project structure
 * Header and implementation separation
 * `std::vector`
+* `std::string`
 * `enum class`
 * Const member functions
 * Passing by reference and const reference
 * Private helper methods
 * Value ownership
+* Return values for operation success/failure
 * Console input handling
 * Menu-driven program flow
 * CMake build configuration
@@ -190,6 +228,7 @@ Systems concepts:
 * Module-level responsibility
 * Simple system state inspection
 * Safe object ownership
+* Event logging
 * Build tooling
 
 Automotive concepts:
@@ -200,6 +239,7 @@ Automotive concepts:
 * Vehicle scanning
 * Fault clearing
 * Basic diagnostic workflow
+* Diagnostic event history
 
 ## How to Run
 
@@ -241,12 +281,14 @@ vehicle-diagnostics-simulator.exe
 
 ## Current Limitations
 
-This is an early version and intentionally keeps the model simple.
+This is still an early simulator and intentionally keeps the model simple.
 
 Current limitations:
 
-* ECUs are hardcoded at startup
+* Default startup ECUs are still hardcoded
 * No file saving or loading
+* Diagnostic log is session-only
+* No timestamps in diagnostic log
 * No CAN bus simulation yet
 * No UDS request/response behavior yet
 * No unit tests yet
@@ -254,17 +296,19 @@ Current limitations:
 * No real vehicle communication
 * Limited input validation
 * No diagnostic session handling yet
+* No ECU state model yet
 
 ## Planned Improvements
 
 Future versions may include:
 
-* Add ECU through the menu
 * Cleaner reusable input helpers
-* Return `bool` from more vehicle-level actions for better error handling
-* Unit tests
-* Fault history/logging
+* Return stronger result types instead of integer status codes
+* ECU state modeling
+* Fault history per ECU
+* Diagnostic log timestamps
 * File persistence
+* Unit tests
 * CAN bus message simulation
 * UDS-inspired diagnostic requests
 * ECU state machine behavior
@@ -276,10 +320,10 @@ This project is designed to move beyond generic beginner C++ projects and start 
 
 The goal is to build toward a Modern C++ Systems Engineering profile with relevance to automotive, embedded systems, diagnostics, vehicle platforms, cyber-physical systems, and other engineering-heavy industries.
 
-This simulator is the first step toward larger projects involving CAN bus simulation, ECU state machines, diagnostics tooling, and automotive middleware-style architecture.
+This simulator is an early step toward larger projects involving CAN bus simulation, ECU state machines, diagnostics tooling, and automotive middleware-style architecture.
 
 ## Repository Status
 
-This project is currently at **v0.1**.
+This project is currently at **v0.2**.
 
-The current release contains the first working diagnostic simulator with a multi-file C++ structure, CMake build support, interactive menu, ECU modeling, DTC storage, fault scanning, and fault clearing.
+The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, vehicle health checks, and diagnostic event logging.
