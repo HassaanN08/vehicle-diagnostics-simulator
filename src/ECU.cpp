@@ -2,13 +2,27 @@
 #include <string>
 #include <vector>
 #include "Severity.h"
+#include "ECUStatus.h"
 #include "ECU.h"
 #include "DTC.h"
 
-ECU::ECU(const std::string name) : name(name) {}
+ECU::ECU(const std::string name) : name(name), status(ECUStatus::Online) {}
 
 void ECU::addDTC(const DTC& dtc) {
     faults.push_back(dtc);
+}
+
+bool ECU::setECUStatus(const ECUStatus& state) {
+    if (status != state) {
+        status = state;
+        return true;
+    }
+
+    return false;
+}
+
+ECUStatus ECU::getECUStatus() const {
+    return status;
 }
 
 std::string ECU::getName() const {

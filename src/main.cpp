@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include "Severity.h"
+#include "ECUStatus.h"
 #include "DTC.h"
 #include "ECU.h"
 #include "Vehicle.h"
@@ -49,7 +50,8 @@ void displayMenu() {
     cout << "\n5. Clear faults from ECU";
     cout << "\n6. Add ECU";
     cout << "\n7. Display diagnostic log";
-    cout << "\n8. Exit\n" << '\n';
+    cout << "\n8. Set ECU communication status";
+    cout << "\n9. Exit\n" << '\n';
 }
 
 void addFaultsToECU(Vehicle& vehicle) {
@@ -64,7 +66,7 @@ void addFaultsToECU(Vehicle& vehicle) {
 
     bool ECUCheck = getValidECUName(ecuName, vehicle);
 
-    if (!ECUCheck) {
+    while (!ECUCheck) {
         return;
     }
 
@@ -161,6 +163,59 @@ void clearFaultsMenu(Vehicle& vehicle) {
     return;
 }
 
+void setStatusMenu(Vehicle& vehicle) {
+    string ecuName;
+    int statusIndex;
+    ECUStatus status;
+    cout << "\nEnter ECU name: ";
+    getFullTextInput(ecuName);
+
+    bool ECUCheck = getValidECUName(ecuName, vehicle);
+
+    while (!ECUCheck) {
+        return;
+    }
+    
+    cout << "Choose status:\n";
+    cout << "1. Online\n" << "2. Offline\n\n";
+    cin >> statusIndex;
+    validateInputIsInt(statusIndex);
+
+    while (statusIndex < 1 || statusIndex > 2) {
+        if (cin.fail()) {
+            clearLine();
+            cout << "\nPlease enter a number, not a character, or enter -1 to go back to the menu: ";
+            cin >> statusIndex;
+        } else {
+            cout << "\nPlease enter a number between 1 and 2, or enter -1 to go back to the menu: ";
+            cin >> statusIndex;
+        }
+
+        if (statusIndex == -1) return;
+    }
+
+    switch(statusIndex) {
+        case 1:
+            status = ECUStatus::Online;
+            break;
+        case 2:
+            status = ECUStatus::Offline;
+            break;
+    }
+
+    int set = vehicle.setECUStatusByName(ecuName, status);
+
+
+    if (set == 1) {
+        cout << '\n' << ecuName << " ECU was already " << ((status == ECUStatus::Online) ? "Online" : "Offline") << '\n';
+        return;
+    }
+
+    cout << '\n' << ecuName << " ECU status changed!\n";
+
+    return;
+}
+
 int main() {
 
     cout << "\nVehicle Diagnostics Simulator\n";
@@ -183,13 +238,13 @@ int main() {
 
     validateInputIsInt(option);
 
-    while (option != 8) {
-        if (option < 1 || option > 8) {
-            cout << "Please type in a number between 1 and 8: ";
+    while (option != 9) {
+        if (option < 1 || option > 9) {
+            cout << "Please type in a number between 1 and 9: ";
             cin >> option;
             validateInputIsInt(option);
         }
-        else if (option > 0 && option < 8) {
+        else if (option > 0 && option < 9) {
             switch (option) {
                 case 1:
                     vehicle.displayAllECUs();
@@ -215,6 +270,10 @@ int main() {
                     break;
                 case 7:
                     vehicle.displayLogs();
+                    break;
+                case 8:
+                    setStatusMenu(vehicle);
+                    break;
             }
 
             displayMenu();

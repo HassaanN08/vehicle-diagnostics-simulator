@@ -4,6 +4,8 @@
 #include "ECU.h"
 #include "DTC.h"
 
+enum class ECUStatus : int;
+
 class Vehicle {
     std::string name;
     std::vector<ECU> units;
@@ -20,6 +22,8 @@ class Vehicle {
         bool addECU(const ECU& ecu, const bool log);
 
         void addDTCToECU(const std::string& ecuName, const DTC& dtc);
+
+        int setECUStatusByName(const std::string ecuName, const ECUStatus& state);
 
         void displayAllECUs() const;
 

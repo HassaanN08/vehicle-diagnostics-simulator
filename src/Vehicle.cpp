@@ -4,6 +4,7 @@
 #include "Vehicle.h"
 #include "ECU.h"
 #include "DTC.h"
+#include "ECUStatus.h"
 
 Vehicle::Vehicle(const std::string& name) : name(name) {}
 
@@ -59,18 +60,38 @@ void Vehicle::addDTCToECU(const std::string& ecuName, const DTC& dtc) {
     }
 }
 
+int Vehicle::setECUStatusByName(const std::string ecuName, const ECUStatus& state) {
+    ECU* unit = searchECUByName(ecuName);
+
+    if (unit != nullptr) {
+        bool set = unit->setECUStatus(state);
+        if (set) {
+            std::string logEntry = "Set " + ecuName + " status to " + ((unit->getECUStatus() == ECUStatus::Online) ? "Online" : "Offline");
+            logs.push_back(logEntry);
+            return 2;
+        }
+        return 1;
+    }
+
+    return 0;
+}
+
 void Vehicle::displayAllECUs() const {
     int i = 0;
     for (const ECU& unit : units) {
         i++;
-        std::cout << '\n' << i << ". " << unit.getName();
+        std::cout << '\n' << i << ". " << unit.getName() << " - " << ((unit.getECUStatus() == ECUStatus::Online) ? "Online" : "Offline");
     }
 }
 
 void Vehicle::scanVehicle() {
     for (const ECU& unit : units) {
         std::cout << '\n' << unit.getName() << '\n';
-        unit.displayDTCs();
+        if (unit.getECUStatus() == ECUStatus::Offline) {
+            std::cout << '\n' << unit.getName() << " ECU status is Offline\n";
+        } else {
+            unit.displayDTCs();
+        }
     }
 
     std::string log = "Vehicle scan performed";
@@ -80,7 +101,7 @@ void Vehicle::scanVehicle() {
 
 bool Vehicle::hasActiveFaults() const {
     for (const ECU& unit : units) {
-        if (unit.hasFaults()) {
+        if (unit.hasFaults() || unit.getECUStatus() == ECUStatus::Offline) {
             return true;
         }
     }
