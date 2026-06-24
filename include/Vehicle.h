@@ -8,7 +8,7 @@ class Vehicle {
     std::string name;
     std::vector<ECU> units;
     std::vector<std::string> logs;
-    ECU* searchECUByName(const std::string ecuName);
+    ECU* searchECUByName(const std::string& ecuName);
 
     public:
         Vehicle(const std::string& name);
@@ -29,5 +29,5 @@ class Vehicle {
 
         bool doesECUExist(const std::string& ecuName);
 
-        void clearFaultsFromECU(const std::string& ecuName);
+        int clearFaultsFromECU(const std::string& ecuName);
 };

@@ -41,7 +41,7 @@ bool getValidECUName(string& ecuName, Vehicle& vehicle) {
 }
 
 void displayMenu() {
-    cout << '\n' << "=================\n    MAIN MENU    \n=================\n";
+    cout << "\n=================\n    MAIN MENU    \n=================\n";
     cout << "\n1. Display all ECUs";
     cout << "\n2. Scan vehicle";
     cout << "\n3. Display vehicle health";
@@ -85,7 +85,7 @@ void addFaultsToECU(Vehicle& vehicle) {
             cout << "\nPlease enter a number, not a character, or enter -1 to go back to the menu: ";
             cin >> severityIndex;
         } else {
-            cout << "Please enter a number between 1 and 3, or enter -1 to go back to the menu: ";
+            cout << "\nPlease enter a number between 1 and 3, or enter -1 to go back to the menu: ";
             cin >> severityIndex;
         }
 
@@ -105,21 +105,8 @@ void addFaultsToECU(Vehicle& vehicle) {
     }
 
     vehicle.addDTCToECU(ecuName, DTC(faultCode, faultDescription, severity));
-}
-
-void clearFaults(Vehicle& vehicle) {
-    string ecuName;
-
-    cout << "Enter ECU name: ";
-    getFullTextInput(ecuName);
-
-    bool ECUCheck = getValidECUName(ecuName, vehicle);
-
-    if (!ECUCheck) {
-        return;
-    }
-
-    vehicle.clearFaultsFromECU(ecuName);
+    cout << "\nFault added to " << ecuName << " ECU" << '\n';
+    return;
 }
 
 void addECUViaMenu(Vehicle& vehicle) {
@@ -132,7 +119,7 @@ void addECUViaMenu(Vehicle& vehicle) {
     bool added = vehicle.addECU(ECU(ecuName), true);
 
     while (!added) {
-        cout << ecuName << " ECU already exists in this Vehicle. Please enter a new ECU name, or enter -1 to go back to the menu: ";
+        cout << '\n' << ecuName << " ECU already exists in this Vehicle. Please enter a new ECU name, or enter -1 to go back to the menu: ";
         getFullTextInput(ecuName);
 
         if (ecuName == "-1") {
@@ -145,6 +132,33 @@ void addECUViaMenu(Vehicle& vehicle) {
     if (added) {
         cout << "\nECU added successfully!\n";
     }
+}
+
+void clearFaultsMenu(Vehicle& vehicle) {
+    string ecuName;
+    cout << "\nEnter ECU Name: ";
+    getFullTextInput(ecuName);
+
+    int clearFault = vehicle.clearFaultsFromECU(ecuName);
+
+    while(clearFault != 2) {
+        if (clearFault == 1) {
+            cout << '\n' << ecuName << " ECU has no faults. Enter another ECU or enter -1 to go back to the menu: ";
+            getFullTextInput(ecuName);
+        } else if (clearFault == 0) {
+            cout << '\n' << ecuName << " ECU does not exist in this vehicle. Enter another ECU or enter -1 to go back to the menu: ";
+            getFullTextInput(ecuName);
+        }
+
+        if (ecuName == "-1") {
+            return;
+        }
+
+        clearFault = vehicle.clearFaultsFromECU(ecuName);
+    }
+
+    cout << "Faults cleared from " << ecuName << " ECU\n";
+    return;
 }
 
 int main() {
@@ -194,7 +208,7 @@ int main() {
                     addFaultsToECU(vehicle);
                     break;
                 case 5:
-                    clearFaults(vehicle);
+                    clearFaultsMenu(vehicle);
                     break;
                 case 6:
                     addECUViaMenu(vehicle);

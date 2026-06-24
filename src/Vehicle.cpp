@@ -7,7 +7,7 @@
 
 Vehicle::Vehicle(const std::string& name) : name(name) {}
 
-ECU* Vehicle::searchECUByName(const std::string ecuName) {
+ECU* Vehicle::searchECUByName(const std::string& ecuName) {
     for (ECU& unit : units) {
         if (unit.getName() == ecuName) {
             return &unit;
@@ -54,7 +54,6 @@ void Vehicle::addDTCToECU(const std::string& ecuName, const DTC& dtc) {
 
     if (unit != nullptr) {
         unit->addDTC(dtc);
-        std::cout << "\nFault added successfully!\n";
         std::string log = "Added fault " + dtc.getCode() + " to " + ecuName;
         logs.push_back(log);
     }
@@ -98,13 +97,19 @@ bool Vehicle::doesECUExist(const std::string& ecuName) {
     return false;
 }
 
-void Vehicle::clearFaultsFromECU(const std::string& ecuName) {
+int Vehicle::clearFaultsFromECU(const std::string& ecuName) {
     ECU* unit = searchECUByName(ecuName);
 
     if (unit != nullptr) {
-        unit->clearFaults();
-        std::cout << "\nFaults cleared";
-        std::string log = "Cleared faults from " + ecuName;
-        logs.push_back(log);
+        if (unit->hasFaults()) {
+            unit->clearFaults();
+            std::string log = "Cleared faults from " + ecuName;
+            logs.push_back(log);
+            return 2;
+        } else {
+            return 1;
+        }
+    } else {
+        return 0;
     }
 }
