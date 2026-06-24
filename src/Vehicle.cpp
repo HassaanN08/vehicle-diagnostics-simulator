@@ -5,6 +5,7 @@
 #include "ECU.h"
 #include "DTC.h"
 #include "ECUStatus.h"
+#include "VehicleResults.h"
 
 Vehicle::Vehicle(const std::string& name) : name(name) {}
 
@@ -60,7 +61,7 @@ void Vehicle::addDTCToECU(const std::string& ecuName, const DTC& dtc) {
     }
 }
 
-int Vehicle::setECUStatusByName(const std::string ecuName, const ECUStatus& state) {
+ECUStatusResult Vehicle::setECUStatusByName(const std::string ecuName, const ECUStatus& state) {
     ECU* unit = searchECUByName(ecuName);
 
     if (unit != nullptr) {
@@ -68,12 +69,12 @@ int Vehicle::setECUStatusByName(const std::string ecuName, const ECUStatus& stat
         if (set) {
             std::string logEntry = "Set " + ecuName + " status to " + ((unit->getECUStatus() == ECUStatus::Online) ? "Online" : "Offline");
             logs.push_back(logEntry);
-            return 2;
+            return ECUStatusResult::StatusChanged;
         }
-        return 1;
+        return ECUStatusResult::AlreadyInRequestedState;
     }
 
-    return 0;
+    return ECUStatusResult::ECUNotFound;
 }
 
 void Vehicle::displayAllECUs() const {
@@ -118,7 +119,7 @@ bool Vehicle::doesECUExist(const std::string& ecuName) {
     return false;
 }
 
-int Vehicle::clearFaultsFromECU(const std::string& ecuName) {
+ClearFaultResult Vehicle::clearFaultsFromECU(const std::string& ecuName) {
     ECU* unit = searchECUByName(ecuName);
 
     if (unit != nullptr) {
@@ -126,11 +127,11 @@ int Vehicle::clearFaultsFromECU(const std::string& ecuName) {
             unit->clearFaults();
             std::string log = "Cleared faults from " + ecuName;
             logs.push_back(log);
-            return 2;
+            return ClearFaultResult::FaultsCleared;
         } else {
-            return 1;
+            return ClearFaultResult::NoFaultsToClear;
         }
     } else {
-        return 0;
+        return ClearFaultResult::ECUNotFound;
     }
 }

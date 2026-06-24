@@ -5,6 +5,8 @@
 #include "DTC.h"
 
 enum class ECUStatus : int;
+enum class ClearFaultResult : int;
+enum class ECUStatusResult : int;
 
 class Vehicle {
     std::string name;
@@ -23,7 +25,7 @@ class Vehicle {
 
         void addDTCToECU(const std::string& ecuName, const DTC& dtc);
 
-        int setECUStatusByName(const std::string ecuName, const ECUStatus& state);
+        ECUStatusResult setECUStatusByName(const std::string ecuName, const ECUStatus& state);
 
         void displayAllECUs() const;
 
@@ -33,5 +35,5 @@ class Vehicle {
 
         bool doesECUExist(const std::string& ecuName);
 
-        int clearFaultsFromECU(const std::string& ecuName);
+        ClearFaultResult clearFaultsFromECU(const std::string& ecuName);
 };

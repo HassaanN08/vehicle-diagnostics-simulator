@@ -7,6 +7,7 @@
 #include "ECU.h"
 #include "Vehicle.h"
 #include <limits>
+#include "VehicleResults.h"
 using namespace std;
 
 void clearLine() {
@@ -66,7 +67,7 @@ void addFaultsToECU(Vehicle& vehicle) {
 
     bool ECUCheck = getValidECUName(ecuName, vehicle);
 
-    while (!ECUCheck) {
+    if (!ECUCheck) {
         return;
     }
 
@@ -141,13 +142,13 @@ void clearFaultsMenu(Vehicle& vehicle) {
     cout << "\nEnter ECU Name: ";
     getFullTextInput(ecuName);
 
-    int clearFault = vehicle.clearFaultsFromECU(ecuName);
+    ClearFaultResult clearFault = vehicle.clearFaultsFromECU(ecuName);
 
-    while(clearFault != 2) {
-        if (clearFault == 1) {
+    while(clearFault != ClearFaultResult::FaultsCleared) {
+        if (clearFault == ClearFaultResult::NoFaultsToClear) {
             cout << '\n' << ecuName << " ECU has no faults. Enter another ECU or enter -1 to go back to the menu: ";
             getFullTextInput(ecuName);
-        } else if (clearFault == 0) {
+        } else if (clearFault == ClearFaultResult::ECUNotFound) {
             cout << '\n' << ecuName << " ECU does not exist in this vehicle. Enter another ECU or enter -1 to go back to the menu: ";
             getFullTextInput(ecuName);
         }
@@ -172,7 +173,7 @@ void setStatusMenu(Vehicle& vehicle) {
 
     bool ECUCheck = getValidECUName(ecuName, vehicle);
 
-    while (!ECUCheck) {
+    if (!ECUCheck) {
         return;
     }
     
@@ -203,10 +204,9 @@ void setStatusMenu(Vehicle& vehicle) {
             break;
     }
 
-    int set = vehicle.setECUStatusByName(ecuName, status);
+    ECUStatusResult set = vehicle.setECUStatusByName(ecuName, status);
 
-
-    if (set == 1) {
+    if (set == ECUStatusResult::AlreadyInRequestedState) {
         cout << '\n' << ecuName << " ECU was already " << ((status == ECUStatus::Online) ? "Online" : "Offline") << '\n';
         return;
     }
