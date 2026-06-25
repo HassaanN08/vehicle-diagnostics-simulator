@@ -5,6 +5,8 @@
 #include "ECUStatus.h"
 #include "ECU.h"
 #include "DTC.h"
+#include <algorithm>
+#include <iterator>
 
 ECU::ECU(const std::string name) : name(name), status(ECUStatus::Online) {}
 
@@ -31,12 +33,23 @@ std::string ECU::getName() const {
 
 void ECU::displayDTCs() const {
     if (faults.empty()) {
-        std::cout << '\n' << "No Active Faults.\n";
-        return;
+        std::cout << "\nNo Active Faults.\n";
+    } else {
+        std::cout << "\nActive faults:\n";
+        for (const DTC& fault : faults) {
+            fault.display();
+        }
     }
+}
 
-    for (const DTC& fault : faults) {
-        fault.display();
+void ECU::displayFaultHistory() const {
+    if (clearedFaults.empty()) {
+        std::cout << "\nNo cleared fault history for " << name << "ECU.\n";
+    } else {
+        std::cout << "\nCleared fault history:\n";
+        for (const DTC& clearedFault : clearedFaults) {
+            clearedFault.display();
+        }
     }
 }
 
@@ -44,7 +57,11 @@ bool ECU::hasFaults() const {
     return !faults.empty();
 }
 
-void ECU::clearFaults() {
-    faults.clear();
+bool ECU::hasFaultHistory() const {
+    return !clearedFaults.empty();
 }
 
+void ECU::clearFaults() {
+    std::move(faults.begin(), faults.end(), std::back_inserter(clearedFaults));
+    faults.clear();
+}

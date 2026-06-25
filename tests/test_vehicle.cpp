@@ -30,6 +30,21 @@ void testECUReportsNoFaultsWhenCreated() {
     assert(ecu.hasFaults() == false);
 }
 
+void testECUHistoryIsEmptyWhenCreated() {
+    ECU ecu("Engine");
+
+    assert(ecu.hasFaultHistory() == false);
+}
+
+void testClearingFaultsMovesActiveFaultsToHistory(const string& code, const string& name, const Severity& severity) {
+    ECU ecu("Engine");
+    DTC dtc(code, name, severity);
+    ecu.addDTC(dtc);
+    ecu.clearFaults();
+
+    assert(ecu.hasFaultHistory() == true);
+}
+
 void testECUReportsFaultsAfterAddingDTC(const string& code, const string& name, const Severity& severity) {
     ECU ecu("Engine");
     DTC dtc(code, name, severity);
@@ -45,7 +60,7 @@ void testECUReportsNoFaultsAfterClearingDTC(const string& code, const string& na
     ecu.clearFaults();
 
     assert(ecu.hasFaults() == false);
-}
+} 
 
 void testVehicleAcceptsNewECU(const string& ecuName) {
     Vehicle vehicle("Toyota Subaru");
@@ -130,6 +145,30 @@ void vehicleReturnsFaultsClearedWhenClearingFaults(const string& ecuName) {
     assert(vehicle.clearFaultsFromECU(ecuName) == ClearFaultResult::FaultsCleared);
 }
 
+void vehicleReturnsECUOfflineWhenClearingFaults(const string& ecuName) {
+    Vehicle vehicle("Toyota Subaru");
+
+    string code = "12345";
+    string name = "test faults";
+    Severity severity = Severity::High;
+
+    ECU ecu(ecuName);
+
+    bool added = vehicle.addECU(ecu, true);
+
+    DTC dtc(code, name, severity);
+
+    vehicle.addDTCToECU(ecuName, dtc);
+
+    ECUStatus state = ECUStatus::Offline;
+
+    vehicle.setECUStatusByName(ecuName, state);
+
+    assert(added == true);
+    assert(vehicle.clearFaultsFromECU(ecuName) == ClearFaultResult::ECUOffline);
+}
+
+
 void settingECUStatusReturnsStatusChanged(const string& ecuName) {
     Vehicle vehicle("Toyota Subaru");
 
@@ -170,6 +209,8 @@ void testECU(const string& code, const string& name, const Severity& severity) {
     testECUReportsNoFaultsWhenCreated();
     testECUReportsFaultsAfterAddingDTC(code, name, severity);
     testECUReportsNoFaultsAfterClearingDTC(code, name, severity);
+    testECUHistoryIsEmptyWhenCreated();
+    testClearingFaultsMovesActiveFaultsToHistory(code, name, severity);
 }
 
 void testVehicle(const string& ecuName) {
@@ -180,6 +221,7 @@ void testVehicle(const string& ecuName) {
     vehicleReturnsECUNotFoundWhenClearingFaults(ecuName);
     vehicleReturnsNoFaultsToClearWhenClearingFaults(ecuName);
     vehicleReturnsFaultsClearedWhenClearingFaults(ecuName);
+    vehicleReturnsECUOfflineWhenClearingFaults(ecuName);
 }
 
 void testStatus(const string& ecuName) {

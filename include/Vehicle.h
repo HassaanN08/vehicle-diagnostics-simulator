@@ -31,6 +31,8 @@ class Vehicle {
 
         void scanVehicle();
 
+        bool displayECUFaultHistory(const std::string& ecuName);
+
         bool hasActiveFaults() const;
 
         bool doesECUExist(const std::string& ecuName);

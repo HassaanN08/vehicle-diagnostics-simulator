@@ -3,7 +3,8 @@
 enum class ClearFaultResult : int {
     ECUNotFound,
     NoFaultsToClear,
-    FaultsCleared
+    FaultsCleared,
+    ECUOffline
 };
 
 enum class ECUStatusResult : int {

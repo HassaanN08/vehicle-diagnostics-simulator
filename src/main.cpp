@@ -52,7 +52,8 @@ void displayMenu() {
     cout << "\n6. Add ECU";
     cout << "\n7. Display diagnostic log";
     cout << "\n8. Set ECU communication status";
-    cout << "\n9. Exit\n" << '\n';
+    cout << "\n9. Display ECU fault history";
+    cout << "\n10. Exit\n" << '\n';
 }
 
 void addFaultsToECU(Vehicle& vehicle) {
@@ -151,6 +152,9 @@ void clearFaultsMenu(Vehicle& vehicle) {
         } else if (clearFault == ClearFaultResult::ECUNotFound) {
             cout << '\n' << ecuName << " ECU does not exist in this vehicle. Enter another ECU or enter -1 to go back to the menu: ";
             getFullTextInput(ecuName);
+        } else if (clearFault == ClearFaultResult::ECUOffline) {
+            cout << '\n' << ecuName << " ECU is currently offline. Enter an Online ECU or enter -1 to go back to the menu: ";
+            getFullTextInput(ecuName);
         }
 
         if (ecuName == "-1") {
@@ -173,9 +177,7 @@ void setStatusMenu(Vehicle& vehicle) {
 
     bool ECUCheck = getValidECUName(ecuName, vehicle);
 
-    if (!ECUCheck) {
-        return;
-    }
+    if (!ECUCheck) return;
     
     cout << "Choose status:\n";
     cout << "1. Online\n" << "2. Offline\n\n";
@@ -216,6 +218,21 @@ void setStatusMenu(Vehicle& vehicle) {
     return;
 }
 
+void ECUFaultHistoryMenu(Vehicle& vehicle) {
+    string ecuName;
+
+    cout << "Enter ECU name: ";
+    getFullTextInput(ecuName);
+
+    bool ECUCheck = getValidECUName(ecuName, vehicle);
+
+    if (!ECUCheck) return;
+
+    bool displayed = vehicle.displayECUFaultHistory(ecuName);
+
+    return;
+}
+
 int main() {
 
     cout << "\nVehicle Diagnostics Simulator\n";
@@ -238,13 +255,13 @@ int main() {
 
     validateInputIsInt(option);
 
-    while (option != 9) {
-        if (option < 1 || option > 9) {
-            cout << "Please type in a number between 1 and 9: ";
+    while (option != 10) {
+        if (option < 1 || option > 10) {
+            cout << "Please type in a number between 1 and 10: ";
             cin >> option;
             validateInputIsInt(option);
         }
-        else if (option > 0 && option < 9) {
+        else if (option > 0 && option < 10) {
             switch (option) {
                 case 1:
                     vehicle.displayAllECUs();
@@ -273,6 +290,9 @@ int main() {
                     break;
                 case 8:
                     setStatusMenu(vehicle);
+                    break;
+                case 9:
+                    ECUFaultHistoryMenu(vehicle);
                     break;
             }
 

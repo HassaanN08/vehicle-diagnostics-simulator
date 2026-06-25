@@ -100,6 +100,18 @@ void Vehicle::scanVehicle() {
     logs.push_back(log);
 }
 
+bool Vehicle::displayECUFaultHistory(const std::string& ecuName) {
+    ECU* unit = searchECUByName(ecuName);
+
+    if (unit != nullptr) {
+        std::cout << '\n' << unit->getName() << '\n';
+        unit->displayFaultHistory();
+        return true;
+    }
+
+    return false;
+}
+
 bool Vehicle::hasActiveFaults() const {
     for (const ECU& unit : units) {
         if (unit.hasFaults() || unit.getECUStatus() == ECUStatus::Offline) {
@@ -124,9 +136,15 @@ ClearFaultResult Vehicle::clearFaultsFromECU(const std::string& ecuName) {
 
     if (unit != nullptr) {
         if (unit->hasFaults()) {
+            if (unit->getECUStatus() == ECUStatus:: Offline) {
+                return ClearFaultResult::ECUOffline;
+            }
+
             unit->clearFaults();
+
             std::string log = "Cleared faults from " + ecuName;
             logs.push_back(log);
+
             return ClearFaultResult::FaultsCleared;
         } else {
             return ClearFaultResult::NoFaultsToClear;

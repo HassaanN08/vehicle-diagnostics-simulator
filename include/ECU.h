@@ -10,6 +10,7 @@ enum class ECUStatus : int;
 class ECU {
     std::string name;
     std::vector<DTC> faults;
+    std::vector<DTC> clearedFaults;
     ECUStatus status;
 
     public:
@@ -25,7 +26,11 @@ class ECU {
 
         void displayDTCs() const;
 
+        void displayFaultHistory() const;
+
         bool hasFaults() const;
+
+        bool hasFaultHistory() const;
 
         void clearFaults();
 };
