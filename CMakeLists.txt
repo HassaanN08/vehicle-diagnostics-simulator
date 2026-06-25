@@ -13,4 +13,13 @@ add_executable(vehicle-diagnostics-simulator
     src/Vehicle.cpp
 )
 
+add_executable(vehicle-diagnostics-tests
+    tests/test_vehicle.cpp
+    src/DTC.cpp
+    src/ECU.cpp
+    src/Vehicle.cpp
+)
+
 target_include_directories(vehicle-diagnostics-simulator PRIVATE include)
+
+target_include_directories(vehicle-diagnostics-tests PRIVATE include)
