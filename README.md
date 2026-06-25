@@ -1,15 +1,15 @@
 # Vehicle Diagnostics Simulator
 
-A C++ console-based vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, ECU communication status, vehicle health checks, diagnostic event logging, result-based operation handling, and basic diagnostic workflows.
+A C++ console-based vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, ECU communication status, active faults, cleared fault history, vehicle health checks, diagnostic event logging, result-based operation handling, and basic diagnostic workflows.
 
 This project is part of a long-term systems engineering portfolio focused on Modern C++, embedded-style thinking, diagnostics, vehicle platforms, and transferable software architecture skills.
 
 ## Current Version
 
-**Version:** v0.4
+**Version:** v0.5
 **Status:** Working release
 
-This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, and basic assert-based unit tests.
+This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, basic assert-based unit tests, and cleared fault history per ECU.
 
 ## Features
 
@@ -21,7 +21,10 @@ This version includes a multi-file C++ project structure, CMake build support, d
 * Scan the full vehicle
 * Display active DTCs for each online ECU
 * Show offline ECUs as not responding during scans
-* Clear faults from a specific ECU
+* Clear active faults from a specific ECU
+* Move cleared faults into ECU fault history
+* Display cleared fault history for a specific ECU
+* Prevent clearing faults from offline ECUs
 * Display overall vehicle health
 * Treat offline ECUs as vehicle health issues
 * Add new ECUs through the menu
@@ -56,7 +59,8 @@ Vehicle Diagnostics Simulator
 6. Add ECU
 7. Display diagnostic log
 8. Set ECU communication status
-9. Exit
+9. Display ECU fault history
+10. Exit
 ```
 
 ## Project Structure
@@ -136,15 +140,16 @@ This allows the simulator to model ECUs that are present in the vehicle but not 
 
 Contains scoped enum result types used by vehicle-level operations.
 
-Current result enums include:
+Current clear-fault results include:
 
 ```cpp
 ClearFaultResult::ECUNotFound
 ClearFaultResult::NoFaultsToClear
 ClearFaultResult::FaultsCleared
+ClearFaultResult::ECUOffline
 ```
 
-and:
+Current ECU status results include:
 
 ```cpp
 ECUStatusResult::ECUNotFound
@@ -162,12 +167,15 @@ Responsibilities:
 
 * Store ECU name
 * Store active DTCs
+* Store cleared fault history
 * Store communication status
 * Default to Online when created
 * Add diagnostic trouble codes
 * Display active faults
-* Clear all faults
+* Display cleared fault history
+* Move active faults into fault history when faults are cleared
 * Report whether active faults exist
+* Report whether cleared fault history exists
 * Set communication status
 
 Examples of ECUs:
@@ -194,6 +202,8 @@ Responsibilities:
 * Check overall vehicle health
 * Treat offline ECUs as health issues
 * Clear faults from a specific ECU
+* Prevent fault clearing when an ECU is offline
+* Display fault history for a specific ECU
 * Store diagnostic event logs
 * Display diagnostic event logs
 * Encapsulate ECU search logic
@@ -206,37 +216,53 @@ The simulator uses this hierarchy:
 ```text
 Vehicle
   └── ECU
-        └── DTC
+        ├── Active DTCs
+        └── Cleared DTC History
 ```
 
 A vehicle owns multiple ECUs.
-Each ECU owns multiple diagnostic trouble codes.
-Each ECU also owns its own communication status.
+Each ECU owns its active diagnostic trouble codes.
+Each ECU also owns cleared fault history.
+Each ECU owns its own communication status.
 
 The menu interacts with the vehicle, and the vehicle coordinates diagnostic actions.
 
-## ECU Communication Status
+## Active Faults vs Fault History
 
-Each ECU can currently be either:
+The simulator now separates active faults from cleared fault history.
+
+### Active Faults
+
+Active faults represent issues that currently exist in an ECU.
+
+These appear during a vehicle scan if the ECU is online.
+
+### Cleared Fault History
+
+Cleared fault history stores faults that previously existed but were cleared.
+
+When faults are cleared from an online ECU:
 
 ```text
-Online
-Offline
+Active faults -> Cleared fault history
+Active faults become empty
 ```
 
-Online ECUs can report their active DTCs during a scan.
+This allows the simulator to preserve diagnostic history instead of completely forgetting cleared faults.
 
-Offline ECUs are shown as not responding, and their DTCs are not displayed during the scan because the diagnostic tool cannot communicate with them.
+## Offline ECU Behavior
 
-Example:
+If an ECU is offline, the simulator treats it as not responding.
+
+During a vehicle scan:
 
 ```text
-Airbag Control Module
-
 Airbag Control Module ECU status is Offline
 ```
 
-Offline ECUs also affect vehicle health. If any ECU is offline, the vehicle health check reports that issues are detected.
+The simulator does not display that ECU’s active DTCs during the scan because the diagnostic tool cannot communicate with it.
+
+Fault clearing is also blocked when an ECU is offline. If the user tries to clear faults from an offline ECU, the simulator returns a clear result showing that the ECU is offline and does not move active faults into history.
 
 ## Diagnostic Log
 
@@ -273,16 +299,19 @@ Current tests cover:
 * ECU defaults to Online
 * ECU can be set to Offline
 * ECU reports no faults when created
+* ECU reports fault history as empty when created
 * ECU reports faults after adding a DTC
-* ECU reports no faults after clearing faults
+* ECU reports no active faults after clearing faults
+* Clearing faults moves active faults into cleared fault history
 * Vehicle accepts new ECUs
 * Vehicle rejects duplicate ECU names
 * Vehicle reports healthy when ECUs are online and no faults exist
 * Vehicle reports issues when an ECU is offline
 * Clearing faults returns the correct result enum
+* Clearing faults from an offline ECU returns `ClearFaultResult::ECUOffline`
 * Setting ECU status returns the correct result enum
 
-The tests are intentionally simple and use `assert()` instead of a full testing framework. This keeps the focus on learning testing fundamentals before introducing GoogleTest, Catch2, or other test frameworks.
+The tests are intentionally simple and use `assert()` instead of a full testing framework. This keeps the focus on testing fundamentals before introducing GoogleTest, Catch2, or other test frameworks.
 
 ## Example Workflow
 
@@ -292,15 +321,16 @@ A user can:
 2. Display all ECUs
 3. Add a new ECU such as `Transmission`
 4. Add a fault to `Transmission`
-5. Add an ECU such as `Airbag Control Module`
-6. Set `Airbag Control Module` to Offline
-7. Scan the vehicle
-8. See offline ECUs shown as not responding
-9. Display vehicle health
-10. Set the ECU back to Online
-11. Clear faults from an ECU
-12. Display the diagnostic log
-13. Exit the program
+5. Scan the vehicle and see active faults
+6. Clear faults from `Transmission`
+7. Display `Transmission` fault history
+8. Add an ECU such as `Airbag Control Module`
+9. Set `Airbag Control Module` to Offline
+10. Scan the vehicle and see it marked as offline
+11. Try to clear faults from an offline ECU and receive a clean failure message
+12. Display vehicle health
+13. Display the diagnostic log
+14. Exit the program
 
 ## Concepts Practiced
 
@@ -321,6 +351,7 @@ C++ concepts:
 * Value ownership
 * Return values for operation success/failure
 * Result enums instead of magic numbers
+* Moving data between vectors
 * Console input handling
 * Menu-driven program flow
 * `assert()`-based unit testing
@@ -339,6 +370,7 @@ Systems concepts:
 * Event logging
 * Communication status modeling
 * State-dependent behavior
+* Fault history tracking
 * Automated behavior verification
 * Build tooling
 
@@ -346,6 +378,8 @@ Automotive concepts:
 
 * ECUs
 * Diagnostic trouble codes
+* Active faults
+* Cleared fault history
 * Fault severity
 * Vehicle scanning
 * Fault clearing
@@ -428,6 +462,7 @@ Current limitations:
 * Limited input validation
 * No diagnostic session handling yet
 * ECU state is limited to Online and Offline only
+* Cleared fault history has no timestamps
 * Tests use basic `assert()` instead of a full testing framework
 
 ## Planned Improvements
@@ -437,8 +472,8 @@ Future versions may include:
 * Cleaner reusable input helpers
 * More ECU communication states
 * ECU readiness states
-* Fault history per ECU
 * Diagnostic log timestamps
+* Fault history timestamps
 * File persistence
 * GoogleTest or Catch2 integration
 * CAN bus message simulation
@@ -456,6 +491,6 @@ This simulator is an early step toward larger projects involving CAN bus simulat
 
 ## Repository Status
 
-This project is currently at **v0.4**.
+This project is currently at **v0.5**.
 
-The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, an interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, vehicle health checks, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, and basic assert-based unit tests.
+The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, an interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, active fault tracking, cleared fault history, vehicle health checks, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, and basic assert-based unit tests.
