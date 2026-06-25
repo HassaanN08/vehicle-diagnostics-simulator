@@ -53,6 +53,7 @@ void testVehicleAcceptsNewECU(const string& ecuName) {
     ECU ecu(ecuName);
     bool added = vehicle.addECU(ecu, true);
 
+    assert(added == true);
     assert(vehicle.doesECUExist(ecuName));
 }
 
@@ -63,6 +64,7 @@ void testVehicleRejectsDuplicateECUNames(const string& ecuName) {
 
     bool added = vehicle.addECU(ecu, true);
 
+    assert(added == true);
     assert(vehicle.addECU(ECU(ecuName), true) == false);
 }
 
@@ -73,6 +75,7 @@ void vehicleReportsHealthy(const string& ecuName) {
 
     bool added = vehicle.addECU(ecu, true);
 
+    assert(added == true);
     assert(vehicle.hasActiveFaults() == false);
 }
 
@@ -87,6 +90,7 @@ void vehicleReportsIssuesWhenECUIsOffline(const string& ecuName) {
 
     vehicle.setECUStatusByName(ecuName, status);
 
+    assert(added == true);
     assert(vehicle.hasActiveFaults() == true);
 }
 
@@ -103,6 +107,7 @@ void vehicleReturnsNoFaultsToClearWhenClearingFaults(const string& ecuName) {
 
     bool added = vehicle.addECU(ecu, true);
 
+    assert(added == true);
     assert(vehicle.clearFaultsFromECU(ecuName) == ClearFaultResult::NoFaultsToClear);
 }
 
@@ -121,6 +126,7 @@ void vehicleReturnsFaultsClearedWhenClearingFaults(const string& ecuName) {
 
     vehicle.addDTCToECU(ecuName, dtc);
 
+    assert(added == true);
     assert(vehicle.clearFaultsFromECU(ecuName) == ClearFaultResult::FaultsCleared);
 }
 
@@ -133,6 +139,7 @@ void settingECUStatusReturnsStatusChanged(const string& ecuName) {
 
     ECUStatus status = ECUStatus::Offline;
 
+    assert(added == true);
     assert(vehicle.setECUStatusByName(ecuName, status) == ECUStatusResult::StatusChanged);
 }
 
@@ -145,6 +152,7 @@ void settingSameECUStatusReturnsAlreadyInRequestedState(const string& ecuName) {
 
     ECUStatus status = ECUStatus::Online;
 
+    assert(added == true);
     assert(vehicle.setECUStatusByName(ecuName, status) == ECUStatusResult::AlreadyInRequestedState);
 }
 
