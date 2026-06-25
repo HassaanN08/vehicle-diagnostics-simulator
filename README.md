@@ -1,15 +1,15 @@
 # Vehicle Diagnostics Simulator
 
-A C++ console-based vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, ECU communication status, vehicle health checks, diagnostic event logging, and basic diagnostic workflows.
+A C++ console-based vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, ECU communication status, vehicle health checks, diagnostic event logging, result-based operation handling, and basic diagnostic workflows.
 
 This project is part of a long-term systems engineering portfolio focused on Modern C++, embedded-style thinking, diagnostics, vehicle platforms, and transferable software architecture skills.
 
 ## Current Version
 
-**Version:** v0.3
+**Version:** v0.4
 **Status:** Working release
 
-This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, diagnostic event logging, ECU communication status, and result enums for clearer operation outcomes.
+This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, and basic assert-based unit tests.
 
 ## Features
 
@@ -39,6 +39,7 @@ This version includes a multi-file C++ project structure, CMake build support, d
 * Use value ownership for ECUs and DTCs
 * Keep ECU search logic encapsulated inside the `Vehicle` class
 * Build the project using CMake
+* Build and run a separate assert-based test executable
 
 ## Menu Options
 
@@ -74,8 +75,11 @@ vehicle-diagnostics-simulator/
 │   ├── ECU.cpp
 │   ├── main.cpp
 │   └── Vehicle.cpp
+├── tests/
+│   └── test_vehicle.cpp
 ├── notes/
-│   └── project-scope.md
+│   ├── project-scope.md
+│   └── v0.4-plan.md
 ├── CMakeLists.txt
 ├── .gitignore
 └── README.md
@@ -213,7 +217,7 @@ The menu interacts with the vehicle, and the vehicle coordinates diagnostic acti
 
 ## ECU Communication Status
 
-Each ECU can now be either:
+Each ECU can currently be either:
 
 ```text
 Online
@@ -260,6 +264,26 @@ Diagnostic Log:
 
 The log does not currently persist after the program closes.
 
+## Unit Tests
+
+The project includes a separate assert-based test executable.
+
+Current tests cover:
+
+* ECU defaults to Online
+* ECU can be set to Offline
+* ECU reports no faults when created
+* ECU reports faults after adding a DTC
+* ECU reports no faults after clearing faults
+* Vehicle accepts new ECUs
+* Vehicle rejects duplicate ECU names
+* Vehicle reports healthy when ECUs are online and no faults exist
+* Vehicle reports issues when an ECU is offline
+* Clearing faults returns the correct result enum
+* Setting ECU status returns the correct result enum
+
+The tests are intentionally simple and use `assert()` instead of a full testing framework. This keeps the focus on learning testing fundamentals before introducing GoogleTest, Catch2, or other test frameworks.
+
 ## Example Workflow
 
 A user can:
@@ -299,7 +323,9 @@ C++ concepts:
 * Result enums instead of magic numbers
 * Console input handling
 * Menu-driven program flow
+* `assert()`-based unit testing
 * CMake build configuration
+* Multiple CMake executables
 
 Systems concepts:
 
@@ -313,6 +339,7 @@ Systems concepts:
 * Event logging
 * Communication status modeling
 * State-dependent behavior
+* Automated behavior verification
 * Build tooling
 
 Automotive concepts:
@@ -331,38 +358,57 @@ Automotive concepts:
 
 This project uses CMake.
 
-### Linux / macOS
+### Build
 
 ```bash
 cmake -S . -B build
 cmake --build build
+```
+
+### Run the Simulator
+
+#### Linux / macOS
+
+```bash
 ./build/vehicle-diagnostics-simulator
 ```
 
-### Windows
+#### Windows
 
 ```bash
-cmake -S . -B build
-cmake --build build
 build\Debug\vehicle-diagnostics-simulator.exe
+```
+
+### Run the Tests
+
+#### Linux / macOS
+
+```bash
+./build/vehicle-diagnostics-tests
+```
+
+#### Windows
+
+```bash
+build\Debug\vehicle-diagnostics-tests.exe
 ```
 
 ## Manual Build Alternative
 
 You can also compile manually with `g++`.
 
-### Linux / macOS
+### Simulator
 
 ```bash
 g++ -std=c++17 src/main.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp -Iinclude -o vehicle-diagnostics-simulator
 ./vehicle-diagnostics-simulator
 ```
 
-### Windows
+### Tests
 
 ```bash
-g++ -std=c++17 src/main.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp -Iinclude -o vehicle-diagnostics-simulator.exe
-vehicle-diagnostics-simulator.exe
+g++ -std=c++17 tests/test_vehicle.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp -Iinclude -o vehicle-diagnostics-tests
+./vehicle-diagnostics-tests
 ```
 
 ## Current Limitations
@@ -377,12 +423,12 @@ Current limitations:
 * No timestamps in diagnostic log
 * No CAN bus simulation yet
 * No UDS request/response behavior yet
-* No unit tests yet
 * No persistent diagnostic history
 * No real vehicle communication
 * Limited input validation
 * No diagnostic session handling yet
 * ECU state is limited to Online and Offline only
+* Tests use basic `assert()` instead of a full testing framework
 
 ## Planned Improvements
 
@@ -394,7 +440,7 @@ Future versions may include:
 * Fault history per ECU
 * Diagnostic log timestamps
 * File persistence
-* Unit tests
+* GoogleTest or Catch2 integration
 * CAN bus message simulation
 * UDS-inspired diagnostic requests
 * ECU state machine behavior
@@ -410,6 +456,6 @@ This simulator is an early step toward larger projects involving CAN bus simulat
 
 ## Repository Status
 
-This project is currently at **v0.3**.
+This project is currently at **v0.4**.
 
-The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, an interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, vehicle health checks, diagnostic event logging, ECU communication status, and result enums for clearer operation outcomes.
+The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, an interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, vehicle health checks, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, and basic assert-based unit tests.
