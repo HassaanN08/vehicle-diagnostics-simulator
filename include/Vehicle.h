@@ -7,12 +7,15 @@
 enum class ECUStatus : int;
 enum class ClearFaultResult : int;
 enum class ECUStatusResult : int;
+enum class VehicleSession : int;
+enum class DiagnosticSessionResult : int;
 
 class Vehicle {
     std::string name;
     std::vector<ECU> units;
     std::vector<std::string> logs;
     ECU* searchECUByName(const std::string& ecuName);
+    VehicleSession currentSession;
 
     public:
         Vehicle(const std::string& name);
@@ -36,6 +39,10 @@ class Vehicle {
         bool hasActiveFaults() const;
 
         bool doesECUExist(const std::string& ecuName);
+
+        DiagnosticSessionResult setDiagnosticSession(const VehicleSession& session);
+
+        VehicleSession getDiagnosticSession() const;
 
         ClearFaultResult clearFaultsFromECU(const std::string& ecuName);
 };

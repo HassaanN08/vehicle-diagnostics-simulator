@@ -8,6 +8,7 @@
 #include "Vehicle.h"
 #include <limits>
 #include "VehicleResults.h"
+#include "VehicleSession.h"
 using namespace std;
 
 void clearLine() {
@@ -53,7 +54,9 @@ void displayMenu() {
     cout << "\n7. Display diagnostic log";
     cout << "\n8. Set ECU communication status";
     cout << "\n9. Display ECU fault history";
-    cout << "\n10. Exit\n" << '\n';
+    cout << "\n10. Display Diagnostic Session";
+    cout << "\n11. Set Diagnostic Session";
+    cout << "\n12. Exit\n" << '\n';
 }
 
 void addFaultsToECU(Vehicle& vehicle) {
@@ -146,7 +149,10 @@ void clearFaultsMenu(Vehicle& vehicle) {
     ClearFaultResult clearFault = vehicle.clearFaultsFromECU(ecuName);
 
     while(clearFault != ClearFaultResult::FaultsCleared) {
-        if (clearFault == ClearFaultResult::NoFaultsToClear) {
+        if (clearFault == ClearFaultResult::SessionNotAllowed) {
+            cout << "\nCannot clear faults in Default Session. Switch to Extended Session first.\n";
+            return;
+        } else if (clearFault == ClearFaultResult::NoFaultsToClear) {
             cout << '\n' << ecuName << " ECU has no faults. Enter another ECU or enter -1 to go back to the menu: ";
             getFullTextInput(ecuName);
         } else if (clearFault == ClearFaultResult::ECUNotFound) {
@@ -233,6 +239,49 @@ void ECUFaultHistoryMenu(Vehicle& vehicle) {
     return;
 }
 
+void setDiagnosticSessionMenu(Vehicle& vehicle) {
+    int option;
+    VehicleSession session;
+
+    cout << "\n1. Default Session" << "\n2. Extended Session\n";
+    cout << "\nPick a session: ";
+
+    cin >> option;
+
+    validateInputIsInt(option);
+    while (option < 1 || option > 2) {
+        cout << "\nPlease enter a number between 1 and 2. Or enter -1 to return to the menu: ";
+
+        cin >> option;
+
+        validateInputIsInt(option);
+
+        if (option == -1) {
+            return;
+        }
+    }
+
+    switch(option) {
+        case 1:
+            session = VehicleSession::DefaultSession;
+            break;
+        case 2:
+            session = VehicleSession::ExtendedSession;
+            break;
+    }
+
+    DiagnosticSessionResult set = vehicle.setDiagnosticSession(session);
+
+    if (set == DiagnosticSessionResult::AlreadyInRequestedState) {
+        cout << "\nVehicle was already in" << ((session == VehicleSession::DefaultSession) ? "Default" : "Extended") << " Session" << '\n';
+        return;
+    }
+
+    cout << "\nVehicle session changed!\n";
+
+    return;
+}
+
 int main() {
 
     cout << "\nVehicle Diagnostics Simulator\n";
@@ -255,13 +304,13 @@ int main() {
 
     validateInputIsInt(option);
 
-    while (option != 10) {
-        if (option < 1 || option > 10) {
-            cout << "Please type in a number between 1 and 10: ";
+    while (option != 12) {
+        if (option < 1 || option > 12) {
+            cout << "Please type in a number between 1 and 12: ";
             cin >> option;
             validateInputIsInt(option);
         }
-        else if (option > 0 && option < 10) {
+        else if (option > 0 && option < 12) {
             switch (option) {
                 case 1:
                     vehicle.displayAllECUs();
@@ -293,6 +342,16 @@ int main() {
                     break;
                 case 9:
                     ECUFaultHistoryMenu(vehicle);
+                    break;
+                case 10:
+                    if (vehicle.getDiagnosticSession() == VehicleSession::DefaultSession) {
+                        cout << "\nVehicle is in Default Session\n";
+                    } else {
+                        cout << "\nVehicle is in Extended Session\n";
+                    }
+                    break;
+                case 11:
+                    setDiagnosticSessionMenu(vehicle);
                     break;
             }
 

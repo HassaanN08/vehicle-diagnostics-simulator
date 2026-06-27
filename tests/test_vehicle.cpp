@@ -6,6 +6,7 @@
 #include "ECUStatus.h"
 #include "Severity.h"
 #include "VehicleResults.h"
+#include "VehicleSession.h"
 #include <cassert>
 using namespace std;
 
@@ -112,6 +113,10 @@ void vehicleReportsIssuesWhenECUIsOffline(const string& ecuName) {
 void vehicleReturnsECUNotFoundWhenClearingFaults(const string& ecuName) {
     Vehicle vehicle("Toyota Subaru");
 
+    VehicleSession session = VehicleSession::ExtendedSession;
+
+    vehicle.setDiagnosticSession(session);
+
     assert(vehicle.clearFaultsFromECU(ecuName) == ClearFaultResult::ECUNotFound);
 }
 
@@ -122,12 +127,20 @@ void vehicleReturnsNoFaultsToClearWhenClearingFaults(const string& ecuName) {
 
     bool added = vehicle.addECU(ecu, true);
 
+    VehicleSession session = VehicleSession::ExtendedSession;
+
+    vehicle.setDiagnosticSession(session);
+
     assert(added == true);
     assert(vehicle.clearFaultsFromECU(ecuName) == ClearFaultResult::NoFaultsToClear);
 }
 
 void vehicleReturnsFaultsClearedWhenClearingFaults(const string& ecuName) {
     Vehicle vehicle("Toyota Subaru");
+
+    VehicleSession session = VehicleSession::ExtendedSession;
+
+    vehicle.setDiagnosticSession(session);
 
     string code = "12345";
     string name = "test faults";
@@ -147,6 +160,10 @@ void vehicleReturnsFaultsClearedWhenClearingFaults(const string& ecuName) {
 
 void vehicleReturnsECUOfflineWhenClearingFaults(const string& ecuName) {
     Vehicle vehicle("Toyota Subaru");
+
+    VehicleSession session = VehicleSession::ExtendedSession;
+
+    vehicle.setDiagnosticSession(session);
 
     string code = "12345";
     string name = "test faults";
@@ -168,6 +185,74 @@ void vehicleReturnsECUOfflineWhenClearingFaults(const string& ecuName) {
     assert(vehicle.clearFaultsFromECU(ecuName) == ClearFaultResult::ECUOffline);
 }
 
+//Vehicle starts in Default Session
+void vehicleDefaultSession() {
+    Vehicle vehicle("Toyota Subaru");
+
+    assert(vehicle.getDiagnosticSession() == VehicleSession::DefaultSession);
+}
+
+//Changing to Extended Session returns SessionChanged
+void returnsSessionChanged() {
+    Vehicle vehicle("Toyota Subaru");
+
+    VehicleSession session = VehicleSession::ExtendedSession;
+
+    assert(vehicle.setDiagnosticSession(session) == DiagnosticSessionResult::SessionChanged);
+}
+
+//Changing to the same session returns AlreadyInRequestedState
+void returnsAlreadyInRequestedSession() {
+    Vehicle vehicle("Toyota Subaru");
+
+    VehicleSession session = VehicleSession::DefaultSession;
+
+    assert(vehicle.setDiagnosticSession(session) == DiagnosticSessionResult::AlreadyInRequestedState);
+}
+
+//Clearing faults in Default Session returns SessionNotAllowed
+void returnSessionNotAllowed(const string& ecuName) {
+    Vehicle vehicle("Toyota Subaru");
+
+    string code = "12345";
+    string name = "test faults";
+    Severity severity = Severity::High;
+
+    ECU ecu(ecuName);
+
+    bool added = vehicle.addECU(ecu, true);
+
+    DTC dtc(code, name, severity);
+
+    vehicle.addDTCToECU(ecuName, dtc);
+
+    assert(added == true);
+    assert(vehicle.clearFaultsFromECU(ecuName) == ClearFaultResult::SessionNotAllowed);
+}
+
+//Clearing faults in Extended Session returns FaultsCleared when ECU has active faults
+void returnsFaultsCleared(const string& ecuName) {
+    Vehicle vehicle("Toyota Subaru");
+
+    string code = "12345";
+    string name = "test faults";
+    Severity severity = Severity::High;
+
+    ECU ecu(ecuName);
+
+    bool added = vehicle.addECU(ecu, true);
+
+    DTC dtc(code, name, severity);
+
+    vehicle.addDTCToECU(ecuName, dtc);
+
+    VehicleSession session = VehicleSession::ExtendedSession;
+
+    vehicle.setDiagnosticSession(session);
+
+    assert(added == true);
+    assert(vehicle.clearFaultsFromECU(ecuName) == ClearFaultResult::FaultsCleared);
+}
 
 void settingECUStatusReturnsStatusChanged(const string& ecuName) {
     Vehicle vehicle("Toyota Subaru");
@@ -222,6 +307,12 @@ void testVehicle(const string& ecuName) {
     vehicleReturnsNoFaultsToClearWhenClearingFaults(ecuName);
     vehicleReturnsFaultsClearedWhenClearingFaults(ecuName);
     vehicleReturnsECUOfflineWhenClearingFaults(ecuName);
+    vehicleDefaultSession();
+    returnsSessionChanged();
+    returnsAlreadyInRequestedSession();
+    returnSessionNotAllowed(ecuName);
+    returnsFaultsCleared(ecuName);
+
 }
 
 void testStatus(const string& ecuName) {

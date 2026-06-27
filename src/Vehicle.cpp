@@ -6,8 +6,9 @@
 #include "DTC.h"
 #include "ECUStatus.h"
 #include "VehicleResults.h"
+#include "VehicleSession.h"
 
-Vehicle::Vehicle(const std::string& name) : name(name) {}
+Vehicle::Vehicle(const std::string& name) : name(name), currentSession(VehicleSession::DefaultSession) {}
 
 ECU* Vehicle::searchECUByName(const std::string& ecuName) {
     for (ECU& unit : units) {
@@ -131,8 +132,28 @@ bool Vehicle::doesECUExist(const std::string& ecuName) {
     return false;
 }
 
+DiagnosticSessionResult Vehicle::setDiagnosticSession(const VehicleSession& session) {
+    if (currentSession == session) {
+        return DiagnosticSessionResult::AlreadyInRequestedState;
+    }
+
+    currentSession = session;
+    std::string log = "Diagnostic Session changed to ";
+    log += ((session == VehicleSession::DefaultSession) ? "Default" : "Extended");
+    logs.push_back(log);
+    return DiagnosticSessionResult::SessionChanged;
+}
+
+VehicleSession Vehicle::getDiagnosticSession() const {
+    return currentSession;
+}
+
 ClearFaultResult Vehicle::clearFaultsFromECU(const std::string& ecuName) {
     ECU* unit = searchECUByName(ecuName);
+
+    if (currentSession == VehicleSession::DefaultSession) {
+        return ClearFaultResult::SessionNotAllowed;
+    }
 
     if (unit != nullptr) {
         if (unit->hasFaults()) {
