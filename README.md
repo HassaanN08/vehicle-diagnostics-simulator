@@ -1,15 +1,15 @@
 # Vehicle Diagnostics Simulator
 
-A C++ console-based vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, ECU communication status, active faults, cleared fault history, vehicle health checks, diagnostic event logging, result-based operation handling, and basic diagnostic workflows.
+A C++ console-based vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, ECU communication status, active faults, cleared fault history, diagnostic sessions, vehicle health checks, diagnostic event logging, result-based operation handling, and basic diagnostic workflows.
 
 This project is part of a long-term systems engineering portfolio focused on Modern C++, embedded-style thinking, diagnostics, vehicle platforms, and transferable software architecture skills.
 
 ## Current Version
 
-**Version:** v0.5
+**Version:** v0.6
 **Status:** Working release
 
-This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, basic assert-based unit tests, and cleared fault history per ECU.
+This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, basic assert-based unit tests, cleared fault history per ECU, and diagnostic session handling.
 
 ## Features
 
@@ -30,12 +30,16 @@ This version includes a multi-file C++ project structure, CMake build support, d
 * Add new ECUs through the menu
 * Reject duplicate ECU names
 * Set ECU communication status to Online or Offline
+* Display the current diagnostic session
+* Switch between Default Session and Extended Session
+* Require Extended Session before clearing faults
 * Display a diagnostic event log
 * Log successful ECU additions
 * Log successful fault additions
 * Log successful fault clearing
 * Log vehicle scan events
 * Log successful ECU status changes
+* Log diagnostic session changes
 * Handle invalid ECU names
 * Convert user severity input into a strongly typed `Severity` enum
 * Use `enum class` result types instead of magic return codes
@@ -60,7 +64,9 @@ Vehicle Diagnostics Simulator
 7. Display diagnostic log
 8. Set ECU communication status
 9. Display ECU fault history
-10. Exit
+10. Display Diagnostic Session
+11. Set Diagnostic Session
+12. Exit
 ```
 
 ## Project Structure
@@ -73,7 +79,8 @@ vehicle-diagnostics-simulator/
 │   ├── ECUStatus.h
 │   ├── Severity.h
 │   ├── Vehicle.h
-│   └── VehicleResults.h
+│   ├── VehicleResults.h
+│   └── VehicleSession.h
 ├── src/
 │   ├── DTC.cpp
 │   ├── ECU.cpp
@@ -136,6 +143,19 @@ ECUStatus::Offline
 
 This allows the simulator to model ECUs that are present in the vehicle but not currently responding during a diagnostic scan.
 
+### VehicleSession
+
+A scoped enum used to represent the current diagnostic session for the vehicle.
+
+Current values:
+
+```cpp
+VehicleSession::DefaultSession
+VehicleSession::ExtendedSession
+```
+
+The vehicle starts in Default Session. Certain actions, such as clearing faults, require Extended Session.
+
 ### VehicleResults
 
 Contains scoped enum result types used by vehicle-level operations.
@@ -143,6 +163,7 @@ Contains scoped enum result types used by vehicle-level operations.
 Current clear-fault results include:
 
 ```cpp
+ClearFaultResult::SessionNotAllowed
 ClearFaultResult::ECUNotFound
 ClearFaultResult::NoFaultsToClear
 ClearFaultResult::FaultsCleared
@@ -155,6 +176,13 @@ Current ECU status results include:
 ECUStatusResult::ECUNotFound
 ECUStatusResult::AlreadyInRequestedState
 ECUStatusResult::StatusChanged
+```
+
+Current diagnostic session results include:
+
+```cpp
+DiagnosticSessionResult::AlreadyInRequestedState
+DiagnosticSessionResult::SessionChanged
 ```
 
 These result enums replace unclear integer return codes and make the code easier to read, maintain, and extend.
@@ -193,16 +221,19 @@ Represents the full simulated vehicle.
 Responsibilities:
 
 * Store multiple ECUs
+* Store the current diagnostic session
 * Add ECUs
 * Prevent duplicate ECU names
 * Add faults to a specific ECU
 * Set ECU communication status
+* Set diagnostic session
 * Scan all ECUs
 * Display all ECUs and their status
 * Check overall vehicle health
 * Treat offline ECUs as health issues
 * Clear faults from a specific ECU
 * Prevent fault clearing when an ECU is offline
+* Prevent fault clearing when the vehicle is in Default Session
 * Display fault history for a specific ECU
 * Store diagnostic event logs
 * Display diagnostic event logs
@@ -224,12 +255,34 @@ A vehicle owns multiple ECUs.
 Each ECU owns its active diagnostic trouble codes.
 Each ECU also owns cleared fault history.
 Each ECU owns its own communication status.
+The vehicle owns the current diagnostic session.
 
 The menu interacts with the vehicle, and the vehicle coordinates diagnostic actions.
 
+## Diagnostic Sessions
+
+The simulator now supports basic diagnostic sessions.
+
+Current sessions:
+
+```text
+Default Session
+Extended Session
+```
+
+The vehicle starts in Default Session.
+
+Default Session represents a basic diagnostic mode where the user can view information, scan the vehicle, add simulator faults, and inspect state.
+
+Extended Session represents a deeper diagnostic mode where stronger diagnostic actions are allowed.
+
+Clearing faults requires Extended Session. If the user attempts to clear faults while the vehicle is still in Default Session, the simulator rejects the operation and returns a session-related result.
+
+This makes the simulator more realistic because diagnostic tools do not allow every operation in every mode.
+
 ## Active Faults vs Fault History
 
-The simulator now separates active faults from cleared fault history.
+The simulator separates active faults from cleared fault history.
 
 ### Active Faults
 
@@ -241,7 +294,7 @@ These appear during a vehicle scan if the ECU is online.
 
 Cleared fault history stores faults that previously existed but were cleared.
 
-When faults are cleared from an online ECU:
+When faults are cleared from an online ECU while the vehicle is in Extended Session:
 
 ```text
 Active faults -> Cleared fault history
@@ -275,6 +328,7 @@ The log records successful actions such as:
 * Clearing faults from an ECU
 * Scanning the vehicle
 * Changing ECU communication status
+* Changing diagnostic session
 
 Example:
 
@@ -285,7 +339,8 @@ Diagnostic Log:
 2. Added fault P0301 to Engine
 3. Vehicle scan performed
 4. Set Airbag Control Module status to Offline
-5. Cleared faults from Engine
+5. Diagnostic Session changed to Extended
+6. Cleared faults from Engine
 ```
 
 The log does not currently persist after the program closes.
@@ -309,6 +364,11 @@ Current tests cover:
 * Vehicle reports issues when an ECU is offline
 * Clearing faults returns the correct result enum
 * Clearing faults from an offline ECU returns `ClearFaultResult::ECUOffline`
+* Vehicle starts in Default Session
+* Changing to Extended Session returns `DiagnosticSessionResult::SessionChanged`
+* Changing to the same session returns `DiagnosticSessionResult::AlreadyInRequestedState`
+* Clearing faults in Default Session returns `ClearFaultResult::SessionNotAllowed`
+* Clearing faults in Extended Session returns `ClearFaultResult::FaultsCleared`
 * Setting ECU status returns the correct result enum
 
 The tests are intentionally simple and use `assert()` instead of a full testing framework. This keeps the focus on testing fundamentals before introducing GoogleTest, Catch2, or other test frameworks.
@@ -318,19 +378,22 @@ The tests are intentionally simple and use `assert()` instead of a full testing 
 A user can:
 
 1. Start the simulator
-2. Display all ECUs
-3. Add a new ECU such as `Transmission`
-4. Add a fault to `Transmission`
-5. Scan the vehicle and see active faults
-6. Clear faults from `Transmission`
-7. Display `Transmission` fault history
-8. Add an ECU such as `Airbag Control Module`
-9. Set `Airbag Control Module` to Offline
-10. Scan the vehicle and see it marked as offline
-11. Try to clear faults from an offline ECU and receive a clean failure message
-12. Display vehicle health
-13. Display the diagnostic log
-14. Exit the program
+2. Display the current diagnostic session
+3. Display all ECUs
+4. Add a new ECU such as `Transmission`
+5. Add a fault to `Transmission`
+6. Scan the vehicle and see active faults
+7. Try to clear faults in Default Session and receive a clean failure message
+8. Switch to Extended Session
+9. Clear faults from `Transmission`
+10. Display `Transmission` fault history
+11. Add an ECU such as `Airbag Control Module`
+12. Set `Airbag Control Module` to Offline
+13. Scan the vehicle and see it marked as offline
+14. Try to clear faults from an offline ECU and receive a clean failure message
+15. Display vehicle health
+16. Display the diagnostic log
+17. Exit the program
 
 ## Concepts Practiced
 
@@ -370,6 +433,8 @@ Systems concepts:
 * Event logging
 * Communication status modeling
 * State-dependent behavior
+* Session-dependent behavior
+* Permission-gated operations
 * Fault history tracking
 * Automated behavior verification
 * Build tooling
@@ -385,6 +450,7 @@ Automotive concepts:
 * Fault clearing
 * ECU communication status
 * Offline / not responding ECU behavior
+* Diagnostic sessions
 * Basic diagnostic workflow
 * Diagnostic event history
 
@@ -460,8 +526,8 @@ Current limitations:
 * No persistent diagnostic history
 * No real vehicle communication
 * Limited input validation
-* No diagnostic session handling yet
-* ECU state is limited to Online and Offline only
+* ECU communication state is limited to Online and Offline only
+* Diagnostic sessions are limited to Default and Extended only
 * Cleared fault history has no timestamps
 * Tests use basic `assert()` instead of a full testing framework
 
@@ -478,6 +544,7 @@ Future versions may include:
 * GoogleTest or Catch2 integration
 * CAN bus message simulation
 * UDS-inspired diagnostic requests
+* Security access simulation
 * ECU state machine behavior
 * Improved Linux-first development workflow
 
@@ -491,6 +558,6 @@ This simulator is an early step toward larger projects involving CAN bus simulat
 
 ## Repository Status
 
-This project is currently at **v0.5**.
+This project is currently at **v0.6**.
 
-The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, an interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, active fault tracking, cleared fault history, vehicle health checks, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, and basic assert-based unit tests.
+The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, an interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, active fault tracking, cleared fault history, vehicle health checks, diagnostic event logging, ECU communication status, diagnostic sessions, result enums for clearer operation outcomes, and basic assert-based unit tests.
