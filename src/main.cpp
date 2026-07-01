@@ -6,33 +6,14 @@
 #include "DTC.h"
 #include "ECU.h"
 #include "Vehicle.h"
-#include <limits>
 #include "VehicleResults.h"
 #include "VehicleSession.h"
+#include "ConsoleInput.h"
 using namespace std;
 
-void clearLine() {
-    cin.clear();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-}
-
-void validateInputIsInt(int& input) {
-    while (cin.fail()) {
-        clearLine();
-        cout << "Please type in a number, not a character: ";
-        cin >> input;
-    }
-
-    return;
-}
-
-void getFullTextInput(string& input) {
-    getline(cin >> ws, input);
-}
-
-bool getValidECUName(string& ecuName, Vehicle& vehicle) {
+bool getValidECUName(std::string& ecuName, Vehicle& vehicle) {
     while (!vehicle.doesECUExist(ecuName)) {
-        cout << ecuName << " ECU does not exist in this Vehicle. Please enter a valid ECU name, or enter -1 to go back to the menu: ";
+        std::cout << ecuName << " ECU does not exist in this Vehicle. Please enter a valid ECU name, or enter -1 to go back to the menu: ";
         getFullTextInput(ecuName);
 
         if (ecuName == "-1") {
