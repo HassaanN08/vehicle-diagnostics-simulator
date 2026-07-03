@@ -1,9 +1,12 @@
 #include "DiagnosticLog.h"
 #include <iostream>
-#include <vector>
 #include <string>
 
-void DiagnosticLog::addLog(std::string& log) {
+void DiagnosticLog::addLog(const std::string& log) {
+    if (logs.size() == 50) {
+        logs.pop_front();
+    }
+
     logs.push_back(log);
 }
 
@@ -23,4 +26,16 @@ void DiagnosticLog::displayLogs() const {
 
 bool DiagnosticLog::logsExist() const {
     return !logs.empty();
+}
+
+std::string DiagnosticLog::getFirstLog() const{
+    if (!logs.empty()) {
+        return logs[0];
+    }
+
+    return "No Logs Found";
+}
+
+size_t DiagnosticLog::getSize() const {
+    return logs.size();
 }

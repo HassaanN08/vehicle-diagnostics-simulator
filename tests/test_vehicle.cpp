@@ -8,6 +8,8 @@
 #include "VehicleResults.h"
 #include "VehicleSession.h"
 #include <cassert>
+#include "DiagnosticLog.h"
+#include <deque>
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -288,6 +290,18 @@ void settingMissingECUStatusReturnsECUNotFound(const string& ecuName) {
     assert(vehicle.setECUStatusByName(ecuName, status) == ECUStatusResult::ECUNotFound);
 }
 
+void checkLogLimit() {
+    DiagnosticLog logs;
+    logs.addLog("First log");
+
+    for (int i = 0; i < 51; i++) {
+        logs.addLog("Next Log");
+    }
+
+    assert(logs.getFirstLog() == "Next Log");
+    assert(logs.getSize() ==  50);
+}
+
 void testECU(const string& code, const string& name, const Severity& severity) {
     testECUDefaultsToOnline();
     testECUCanBeSetToOffline();
@@ -321,6 +335,10 @@ void testStatus(const string& ecuName) {
     settingMissingECUStatusReturnsECUNotFound(ecuName);
 }
 
+void testLogging() {
+    checkLogLimit();
+}
+
 int main() {
     string DTCcode = "12345";
     string DTCname = "Test DTC";
@@ -331,6 +349,7 @@ int main() {
     testECU(DTCcode, DTCname, DTCseverity);
     testVehicle(ecuName);
     testStatus(ecuName);
+    testLogging();
 
     cout << "\nAll Tests Passed!\n";
     return 0;

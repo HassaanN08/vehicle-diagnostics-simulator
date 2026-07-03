@@ -1,14 +1,18 @@
 #pragma once
-#include <vector>
+#include <deque>
 #include <string>
 
 class DiagnosticLog {
-    std::vector<std::string> logs;
+    std::deque<std::string> logs;
 
     public:
-        void addLog(std::string& log);
+        void addLog(const std::string& log);
 
         void displayLogs() const;
 
         bool logsExist() const;
+
+        std::string getFirstLog() const;
+
+        size_t getSize() const;
 };
