@@ -6,10 +6,10 @@ This project is part of a long-term systems engineering portfolio focused on Mod
 
 ## Current Version
 
-**Version:** v0.6
+**Version:** v0.7
 **Status:** Working release
 
-This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, basic assert-based unit tests, cleared fault history per ECU, and diagnostic session handling.
+This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, basic assert-based unit tests, cleared fault history per ECU, diagnostic session handling, extracted console input helpers, an extracted `DiagnosticLog` component, and a capacity-limited diagnostic log buffer.
 
 ## Features
 
@@ -34,6 +34,9 @@ This version includes a multi-file C++ project structure, CMake build support, d
 * Switch between Default Session and Extended Session
 * Require Extended Session before clearing faults
 * Display a diagnostic event log
+* Store diagnostic log events in a dedicated `DiagnosticLog` component
+* Limit diagnostic log storage to the most recent 50 events
+* Discard the oldest log entry when log capacity is exceeded
 * Log successful ECU additions
 * Log successful fault additions
 * Log successful fault clearing
@@ -45,6 +48,7 @@ This version includes a multi-file C++ project structure, CMake build support, d
 * Use `enum class` result types instead of magic return codes
 * Use value ownership for ECUs and DTCs
 * Keep ECU search logic encapsulated inside the `Vehicle` class
+* Extract low-level console input helpers into a separate module
 * Build the project using CMake
 * Build and run a separate assert-based test executable
 
@@ -74,6 +78,8 @@ Vehicle Diagnostics Simulator
 ```text
 vehicle-diagnostics-simulator/
 ├── include/
+│   ├── ConsoleInput.h
+│   ├── DiagnosticLog.h
 │   ├── DTC.h
 │   ├── ECU.h
 │   ├── ECUStatus.h
@@ -82,6 +88,8 @@ vehicle-diagnostics-simulator/
 │   ├── VehicleResults.h
 │   └── VehicleSession.h
 ├── src/
+│   ├── ConsoleInput.cpp
+│   ├── DiagnosticLog.cpp
 │   ├── DTC.cpp
 │   ├── ECU.cpp
 │   ├── main.cpp
@@ -222,6 +230,7 @@ Responsibilities:
 
 * Store multiple ECUs
 * Store the current diagnostic session
+* Own a `DiagnosticLog` component
 * Add ECUs
 * Prevent duplicate ECU names
 * Add faults to a specific ECU
@@ -235,10 +244,37 @@ Responsibilities:
 * Prevent fault clearing when an ECU is offline
 * Prevent fault clearing when the vehicle is in Default Session
 * Display fault history for a specific ECU
-* Store diagnostic event logs
-* Display diagnostic event logs
+* Record diagnostic events through `DiagnosticLog`
 * Encapsulate ECU search logic
 * Return meaningful operation results using enum classes
+
+### DiagnosticLog
+
+Represents the simulator’s diagnostic event log.
+
+Responsibilities:
+
+* Store diagnostic log messages
+* Add new diagnostic log entries
+* Display stored diagnostic log entries
+* Report whether logs exist
+* Limit stored log entries to a fixed maximum capacity
+* Remove the oldest log entry when capacity is exceeded
+
+The current diagnostic log stores the most recent 50 events. This introduces bounded storage and prevents the log from growing indefinitely.
+
+### ConsoleInput
+
+Contains low-level console input helper functions.
+
+Responsibilities:
+
+* Clear invalid `cin` state
+* Ignore leftover input
+* Validate integer input
+* Read full-line text input
+
+This keeps `main.cpp` more focused on menu flow instead of low-level input handling.
 
 ## Current Diagnostic Model
 
@@ -246,6 +282,7 @@ The simulator uses this hierarchy:
 
 ```text
 Vehicle
+  ├── DiagnosticLog
   └── ECU
         ├── Active DTCs
         └── Cleared DTC History
@@ -256,12 +293,13 @@ Each ECU owns its active diagnostic trouble codes.
 Each ECU also owns cleared fault history.
 Each ECU owns its own communication status.
 The vehicle owns the current diagnostic session.
+The vehicle also owns a diagnostic log component.
 
 The menu interacts with the vehicle, and the vehicle coordinates diagnostic actions.
 
 ## Diagnostic Sessions
 
-The simulator now supports basic diagnostic sessions.
+The simulator supports basic diagnostic sessions.
 
 Current sessions:
 
@@ -343,6 +381,10 @@ Diagnostic Log:
 6. Cleared faults from Engine
 ```
 
+The diagnostic log is now stored in a dedicated `DiagnosticLog` component.
+
+The current log has a maximum capacity of 50 entries. When the log is full and a new event is added, the oldest stored event is discarded and the newest event is stored.
+
 The log does not currently persist after the program closes.
 
 ## Unit Tests
@@ -370,6 +412,8 @@ Current tests cover:
 * Clearing faults in Default Session returns `ClearFaultResult::SessionNotAllowed`
 * Clearing faults in Extended Session returns `ClearFaultResult::FaultsCleared`
 * Setting ECU status returns the correct result enum
+* Diagnostic log capacity remains capped
+* Diagnostic log discards the oldest entry when capacity is exceeded
 
 The tests are intentionally simple and use `assert()` instead of a full testing framework. This keeps the focus on testing fundamentals before introducing GoogleTest, Catch2, or other test frameworks.
 
@@ -406,6 +450,7 @@ C++ concepts:
 * Multi-file project structure
 * Header and implementation separation
 * `std::vector`
+* `std::deque`
 * `std::string`
 * `enum class`
 * Const member functions
@@ -415,6 +460,8 @@ C++ concepts:
 * Return values for operation success/failure
 * Result enums instead of magic numbers
 * Moving data between vectors
+* Bounded storage
+* FIFO-style log behavior
 * Console input handling
 * Menu-driven program flow
 * `assert()`-based unit testing
@@ -436,6 +483,8 @@ Systems concepts:
 * Session-dependent behavior
 * Permission-gated operations
 * Fault history tracking
+* Bounded log storage
+* Capacity-limited buffers
 * Automated behavior verification
 * Build tooling
 
@@ -500,14 +549,14 @@ You can also compile manually with `g++`.
 ### Simulator
 
 ```bash
-g++ -std=c++17 src/main.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp -Iinclude -o vehicle-diagnostics-simulator
+g++ -std=c++17 src/main.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp src/ConsoleInput.cpp src/DiagnosticLog.cpp -Iinclude -o vehicle-diagnostics-simulator
 ./vehicle-diagnostics-simulator
 ```
 
 ### Tests
 
 ```bash
-g++ -std=c++17 tests/test_vehicle.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp -Iinclude -o vehicle-diagnostics-tests
+g++ -std=c++17 tests/test_vehicle.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp src/ConsoleInput.cpp src/DiagnosticLog.cpp -Iinclude -o vehicle-diagnostics-tests
 ./vehicle-diagnostics-tests
 ```
 
@@ -520,7 +569,8 @@ Current limitations:
 * Default startup ECUs are still hardcoded
 * No file saving or loading
 * Diagnostic log is session-only
-* No timestamps in diagnostic log
+* Diagnostic log has no timestamps
+* Diagnostic log stores plain strings instead of structured event objects
 * No CAN bus simulation yet
 * No UDS request/response behavior yet
 * No persistent diagnostic history
@@ -539,6 +589,7 @@ Future versions may include:
 * More ECU communication states
 * ECU readiness states
 * Diagnostic log timestamps
+* Structured diagnostic log events
 * Fault history timestamps
 * File persistence
 * GoogleTest or Catch2 integration
@@ -546,6 +597,7 @@ Future versions may include:
 * UDS-inspired diagnostic requests
 * Security access simulation
 * ECU state machine behavior
+* Ring buffer implementation
 * Improved Linux-first development workflow
 
 ## Why This Project Exists
@@ -554,10 +606,10 @@ This project is designed to move beyond generic beginner C++ projects and start 
 
 The goal is to build toward a Modern C++ Systems Engineering profile with relevance to automotive, embedded systems, diagnostics, vehicle platforms, cyber-physical systems, and other engineering-heavy industries.
 
-This simulator is an early step toward larger projects involving CAN bus simulation, ECU state machines, diagnostics tooling, and automotive middleware-style architecture.
+This simulator is an early step toward larger projects involving CAN bus simulation, ECU state machines, diagnostics tooling, low-level logging, and automotive middleware-style architecture.
 
 ## Repository Status
 
-This project is currently at **v0.6**.
+This project is currently at **v0.7**.
 
-The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, an interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, active fault tracking, cleared fault history, vehicle health checks, diagnostic event logging, ECU communication status, diagnostic sessions, result enums for clearer operation outcomes, and basic assert-based unit tests.
+The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, an interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, active fault tracking, cleared fault history, vehicle health checks, diagnostic event logging, a dedicated diagnostic log component, capacity-limited log storage, ECU communication status, diagnostic sessions, result enums for clearer operation outcomes, extracted console input helpers, and basic assert-based unit tests.
