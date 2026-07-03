@@ -7,6 +7,7 @@
 #include "ECUStatus.h"
 #include "VehicleResults.h"
 #include "VehicleSession.h"
+#include "DiagnosticLog.h"
 
 Vehicle::Vehicle(const std::string& name) : name(name), currentSession(VehicleSession::DefaultSession) {}
 
@@ -24,17 +25,7 @@ std::string Vehicle::getName() const {
 }
 
 void Vehicle::displayLogs() const {
-    if (logs.empty()) {
-        std::cout << "\nNo diagnostic events recorded.\n";
-        return;
-    }
-
-    int i = 0;
-
-    for(const std::string& log : logs) {
-        i++;
-        std::cout << i << ". " << log << '\n';
-    }
+    logs.displayLogs();
 }
 
 bool Vehicle::addECU(const ECU& ecu, const bool shouldLog) {
@@ -44,7 +35,7 @@ bool Vehicle::addECU(const ECU& ecu, const bool shouldLog) {
         units.push_back(ecu);
         if (shouldLog) {
             std::string logEntry = "Added ECU: " + ecu.getName();
-            logs.push_back(logEntry);
+            logs.addLog(logEntry);
         }
         return true;
     }
@@ -57,8 +48,8 @@ void Vehicle::addDTCToECU(const std::string& ecuName, const DTC& dtc) {
 
     if (unit != nullptr) {
         unit->addDTC(dtc);
-        std::string log = "Added fault " + dtc.getCode() + " to " + ecuName;
-        logs.push_back(log);
+        std::string logEntry = "Added fault " + dtc.getCode() + " to " + ecuName;
+        logs.addLog(logEntry);
     }
 }
 
@@ -69,7 +60,7 @@ ECUStatusResult Vehicle::setECUStatusByName(const std::string ecuName, const ECU
         bool set = unit->setECUStatus(state);
         if (set) {
             std::string logEntry = "Set " + ecuName + " status to " + ((unit->getECUStatus() == ECUStatus::Online) ? "Online" : "Offline");
-            logs.push_back(logEntry);
+            logs.addLog(logEntry);
             return ECUStatusResult::StatusChanged;
         }
         return ECUStatusResult::AlreadyInRequestedState;
@@ -98,7 +89,7 @@ void Vehicle::scanVehicle() {
 
     std::string log = "Vehicle scan performed";
 
-    logs.push_back(log);
+    logs.addLog(log);
 }
 
 bool Vehicle::displayECUFaultHistory(const std::string& ecuName) {
@@ -140,7 +131,7 @@ DiagnosticSessionResult Vehicle::setDiagnosticSession(const VehicleSession& sess
     currentSession = session;
     std::string log = "Diagnostic Session changed to ";
     log += ((session == VehicleSession::DefaultSession) ? "Default" : "Extended");
-    logs.push_back(log);
+    logs.addLog(log);
     return DiagnosticSessionResult::SessionChanged;
 }
 
@@ -164,7 +155,7 @@ ClearFaultResult Vehicle::clearFaultsFromECU(const std::string& ecuName) {
             unit->clearFaults();
 
             std::string log = "Cleared faults from " + ecuName;
-            logs.push_back(log);
+            logs.addLog(log);
 
             return ClearFaultResult::FaultsCleared;
         } else {

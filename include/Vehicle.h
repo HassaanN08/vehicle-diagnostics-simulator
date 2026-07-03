@@ -3,6 +3,7 @@
 #include <vector>
 #include "ECU.h"
 #include "DTC.h"
+#include "DiagnosticLog.h"
 
 enum class ECUStatus : int;
 enum class ClearFaultResult : int;
@@ -13,7 +14,7 @@ enum class DiagnosticSessionResult : int;
 class Vehicle {
     std::string name;
     std::vector<ECU> units;
-    std::vector<std::string> logs;
+    DiagnosticLog logs;
     ECU* searchECUByName(const std::string& ecuName);
     VehicleSession currentSession;
 

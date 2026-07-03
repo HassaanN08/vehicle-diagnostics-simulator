@@ -12,6 +12,7 @@ add_executable(vehicle-diagnostics-simulator
     src/main.cpp
     src/Vehicle.cpp
     src/ConsoleInput.cpp
+    src/DiagnosticLog.cpp
 )
 
 add_executable(vehicle-diagnostics-tests
@@ -20,6 +21,7 @@ add_executable(vehicle-diagnostics-tests
     src/ECU.cpp
     src/Vehicle.cpp
     src/ConsoleInput.cpp
+    src/DiagnosticLog.cpp
 )
 
 target_include_directories(vehicle-diagnostics-simulator PRIVATE include)
