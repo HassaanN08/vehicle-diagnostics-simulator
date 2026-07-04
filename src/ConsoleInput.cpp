@@ -3,6 +3,10 @@
 #include <string>
 #include "ConsoleInput.h"
 
+void getFullTextInput(std::string& input) {
+    getline(std::cin >> std::ws, input);
+}
+
 void clearLine() {
     std::cin.clear();
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -16,8 +20,4 @@ void validateInputIsInt(int& input) {
     }
 
     return;
-}
-
-void getFullTextInput(std::string& input) {
-    getline(std::cin >> std::ws, input);
 }

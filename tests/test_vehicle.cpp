@@ -292,13 +292,13 @@ void settingMissingECUStatusReturnsECUNotFound(const string& ecuName) {
 
 void checkLogLimit() {
     DiagnosticLog logs;
-    logs.addLog("First log");
+    logs.addLog("1. First log");
 
-    for (int i = 0; i < 51; i++) {
-        logs.addLog("Next Log");
+    for (int i = 2; i < 52; i++) {
+        logs.addLog(std::to_string(i) + ". Next Log");
     }
 
-    assert(logs.getFirstLog() == "Next Log");
+    assert(logs.getFirstLog() == "2. Next Log");
     assert(logs.getSize() ==  50);
 }
 

@@ -13,6 +13,7 @@ add_executable(vehicle-diagnostics-simulator
     src/Vehicle.cpp
     src/ConsoleInput.cpp
     src/DiagnosticLog.cpp
+    src/MenuActions.cpp
 )
 
 add_executable(vehicle-diagnostics-tests
@@ -20,7 +21,6 @@ add_executable(vehicle-diagnostics-tests
     src/DTC.cpp
     src/ECU.cpp
     src/Vehicle.cpp
-    src/ConsoleInput.cpp
     src/DiagnosticLog.cpp
 )
 
