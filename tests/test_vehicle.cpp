@@ -10,6 +10,7 @@
 #include <cassert>
 #include "DiagnosticLog.h"
 #include <deque>
+#include "CANFrame.h"
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -302,6 +303,38 @@ void checkLogLimit() {
     assert(logs.getSize() ==  50);
 }
 
+//CANFrame stores message ID
+void storesMessageID(const CANFrame& message) {
+    assert(message.getID() == 123);
+}
+
+//CANFrame stores sender name
+void storesSenderName(const CANFrame& message) {
+    assert(message.getSender() == "Engine");
+}
+
+//CANFrame reports correct data length
+void dataLength(const CANFrame& message) {
+    assert(message.getLength() == 2);
+}
+
+//CANFrame reports true when it has data
+void trueWhenDataExists(const CANFrame& message) {
+    assert(message.hasData());
+}
+
+//CANFrame reports false when data is empty
+void falseWhenDataIsEmpty() {
+    CANFrame message(123, "Engine", {});
+    assert(!message.hasData());
+}
+
+//CANFrame caps data length at 8 bytes
+void capsDataLength() {
+    CANFrame message(123, "Engine", {1, 2, 3, 4, 5, 6, 7, 8, 9});
+    assert(message.getLength() == 8);
+}
+
 void testECU(const string& code, const string& name, const Severity& severity) {
     testECUDefaultsToOnline();
     testECUCanBeSetToOffline();
@@ -339,6 +372,16 @@ void testLogging() {
     checkLogLimit();
 }
 
+void testCAN() {
+    CANFrame message(123, "Engine", {12, 8});
+    storesMessageID(message);
+    storesSenderName(message);
+    dataLength(message);
+    trueWhenDataExists(message);
+    falseWhenDataIsEmpty();
+    capsDataLength();
+}
+
 int main() {
     string DTCcode = "12345";
     string DTCname = "Test DTC";
@@ -350,6 +393,7 @@ int main() {
     testVehicle(ecuName);
     testStatus(ecuName);
     testLogging();
+    testCAN();
 
     cout << "\nAll Tests Passed!\n";
     return 0;
