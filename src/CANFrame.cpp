@@ -33,10 +33,10 @@ bool CANFrame::hasData() const {
 void CANFrame::display() const {
     std::cout << "\nID: " << id;
     std::cout << "\nSender: " << sender;
-    std::cout << "\nData bytes: " << "[";
+    std::cout << "\nLength: " << dataBytes.size();
+    std::cout << "\nData: ";
     for (const uint8_t& byte : dataBytes) {
-        std::cout << static_cast<int>(byte) << ", ";
+        std::cout << static_cast<int>(byte) << " ";
     }
-    std::cout << "]\n";
-    std::cout << "\nData length: " << dataBytes.size();
+    std::cout << '\n';
 }

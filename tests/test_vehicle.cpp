@@ -11,6 +11,7 @@
 #include "DiagnosticLog.h"
 #include <deque>
 #include "CANFrame.h"
+#include "CANBus.h"
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -335,6 +336,59 @@ void capsDataLength() {
     assert(message.getLength() == 8);
 }
 
+//new CANBus starts empty
+void startsEmpty() {
+    CANBus bus;
+
+    assert(bus.trafficExists() == false);
+}
+
+//transmitting one frame makes bus non-empty
+void getsNonEmpty(const CANFrame& message) {
+    CANBus bus;
+    bus.transmit(message);
+    assert(bus.trafficExists() == true);
+}
+
+//transmitting one frame increases count to 1
+void countChangesForOneTransmit(const CANFrame& message) {
+    CANBus bus;
+    bus.transmit(message);
+    assert(bus.trafficCount() == 1);
+}
+
+//transmitting multiple frames increases count correctly
+void countChangesForMultipleTransmits(CANFrame message) {
+    CANBus bus;
+    bus.transmit(message);
+    bus.transmit(message);
+    assert(bus.trafficCount() == 2);
+}
+
+//CANBus caps traffic history at 100 frames
+void capTrafficHistory(CANFrame message) {
+    CANBus bus;
+
+    for (int i = 0; i < 110; i++) {
+        CANFrame newMessage = message;
+        bus.transmit(newMessage);
+    }
+
+    assert(bus.trafficCount() == 100);
+}
+
+//when capacity is exceeded, the oldest frame is discarded
+void oldestFrameGetsDiscarded() {
+    CANBus bus;
+
+    for (int i = 0; i < 101; i++) {
+        CANFrame message(i, "Engine", {12, 8});
+        bus.transmit(message);
+    }
+
+    assert(bus.getFirstFrameID() == 1);
+}
+
 void testECU(const string& code, const string& name, const Severity& severity) {
     testECUDefaultsToOnline();
     testECUCanBeSetToOffline();
@@ -380,6 +434,12 @@ void testCAN() {
     trueWhenDataExists(message);
     falseWhenDataIsEmpty();
     capsDataLength();
+    startsEmpty();
+    getsNonEmpty(message);
+    countChangesForOneTransmit(message);
+    countChangesForMultipleTransmits(message);
+    capTrafficHistory(message);
+    oldestFrameGetsDiscarded();
 }
 
 int main() {
