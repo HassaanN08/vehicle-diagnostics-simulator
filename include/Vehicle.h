@@ -4,6 +4,8 @@
 #include "ECU.h"
 #include "DTC.h"
 #include "DiagnosticLog.h"
+#include "CANBus.h"
+#include "CANFrame.h"
 
 enum class ECUStatus : int;
 enum class ClearFaultResult : int;
@@ -17,6 +19,7 @@ class Vehicle {
     DiagnosticLog logs;
     ECU* searchECUByName(const std::string& ecuName);
     VehicleSession currentSession;
+    CANBus bus;
 
     public:
         Vehicle(const std::string& name);
@@ -46,4 +49,12 @@ class Vehicle {
         VehicleSession getDiagnosticSession() const;
 
         ClearFaultResult clearFaultsFromECU(const std::string& ecuName);
+
+        void transmitCANFrame(const CANFrame& frame);
+
+        void displayCANBusTraffic() const;
+
+        bool CANTrafficExists() const;
+
+        size_t CANTrafficCount() const;
 };

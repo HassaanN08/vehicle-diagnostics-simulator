@@ -389,6 +389,37 @@ void oldestFrameGetsDiscarded() {
     assert(bus.getFirstFrameID() == 1);
 }
 
+//new Vehicle starts with no CAN traffic
+void vehicleStartsWithNoCANTraffic() {
+    Vehicle vehicle("Toyota Subaru");
+
+    assert(!vehicle.CANTrafficExists());
+}
+
+void CANTrafficExistsReturnsTrue() {
+    Vehicle vehicle("Toyota Subaru");
+    vehicle.transmitCANFrame(CANFrame(256, "Engine", {11, 184}));
+
+    assert(vehicle.CANTrafficExists());
+}
+
+//Vehicle CAN traffic count becomes 1 after one frame
+void countBecomesOne() {
+    Vehicle vehicle("Toyota Subaru");
+    vehicle.transmitCANFrame(CANFrame(256, "Engine", {11, 184}));
+
+    assert(vehicle.CANTrafficCount() == 1);
+}
+
+//Vehicle CAN traffic count becomes 2 after two frames
+void countBecomesTwo() {
+    Vehicle vehicle("Toyota Subaru");
+    vehicle.transmitCANFrame(CANFrame(256, "Engine", {11, 184}));
+    vehicle.transmitCANFrame(CANFrame(256, "Engine", {11, 184}));
+
+    assert(vehicle.CANTrafficCount() == 2);
+}
+
 void testECU(const string& code, const string& name, const Severity& severity) {
     testECUDefaultsToOnline();
     testECUCanBeSetToOffline();
@@ -413,7 +444,10 @@ void testVehicle(const string& ecuName) {
     returnsAlreadyInRequestedSession();
     returnSessionNotAllowed(ecuName);
     returnsFaultsCleared(ecuName);
-
+    vehicleStartsWithNoCANTraffic();
+    CANTrafficExistsReturnsTrue();
+    countBecomesOne();
+    countBecomesTwo();
 }
 
 void testStatus(const string& ecuName) {

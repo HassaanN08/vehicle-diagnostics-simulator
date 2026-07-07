@@ -9,6 +9,7 @@
 #include "VehicleSession.h"
 #include "ConsoleInput.h"
 #include "MenuActions.h"
+#include "CANFrame.h"
 
 bool getValidECUName(std::string& ecuName, Vehicle& vehicle) {
     while (!vehicle.doesECUExist(ecuName)) {
@@ -36,7 +37,9 @@ void displayMenu() {
     std::cout << "\n9. Display ECU fault history";
     std::cout << "\n10. Display Diagnostic Session";
     std::cout << "\n11. Set Diagnostic Session";
-    std::cout << "\n12. Exit\n" << '\n';
+    std::cout << "\n12. Simulate sample CAN traffic";
+    std::cout << "\n13. Display CAN bus traffic";
+    std::cout << "\n14. Exit\n" << '\n';
 }
 
 void addFaultsToECU(Vehicle& vehicle) {
@@ -260,4 +263,22 @@ void setDiagnosticSessionMenu(Vehicle& vehicle) {
     std::cout << "\nVehicle session changed!\n";
 
     return;
+}
+
+void simulateSampleCANTraffic(Vehicle& vehicle) {
+    vehicle.transmitCANFrame(CANFrame(256, "Engine", {11, 184}));
+    vehicle.transmitCANFrame(CANFrame(512, "Brake", {1}));
+    vehicle.transmitCANFrame(CANFrame(768, "Battery", {12, 6}));
+
+    std::cout << "\nSample CAN traffic transmitted.\n";
+
+    return;
+}
+
+void displayCANBusTrafficMenu(Vehicle& vehicle) {
+    if (vehicle.CANTrafficExists()) {
+        vehicle.displayCANBusTraffic();
+    } else {
+        std::cout << "\nNo CAN Traffic recorded\n";
+    }
 }

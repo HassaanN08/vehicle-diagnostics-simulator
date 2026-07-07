@@ -17,3 +17,7 @@ void setStatusMenu(Vehicle& vehicle);
 void ECUFaultHistoryMenu(Vehicle& vehicle);
 
 void setDiagnosticSessionMenu(Vehicle& vehicle);
+
+void simulateSampleCANTraffic(Vehicle& vehicle);
+
+void displayCANBusTrafficMenu(Vehicle& vehicle);

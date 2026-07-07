@@ -8,6 +8,7 @@
 #include "VehicleResults.h"
 #include "VehicleSession.h"
 #include "DiagnosticLog.h"
+#include "CANFrame.h"
 
 Vehicle::Vehicle(const std::string& name) : name(name), currentSession(VehicleSession::DefaultSession) {}
 
@@ -164,4 +165,20 @@ ClearFaultResult Vehicle::clearFaultsFromECU(const std::string& ecuName) {
     } else {
         return ClearFaultResult::ECUNotFound;
     }
+}
+
+void Vehicle::transmitCANFrame(const CANFrame& frame) {
+    bus.transmit(frame);
+}
+
+void Vehicle::displayCANBusTraffic() const {
+    bus.display();
+}
+
+bool Vehicle::CANTrafficExists() const {
+    return bus.trafficExists();
+}
+
+size_t Vehicle::CANTrafficCount() const {
+    return bus.trafficCount();
 }
