@@ -1,15 +1,15 @@
 # Vehicle Diagnostics Simulator
 
-A C++ console-based vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, ECU communication status, active faults, cleared fault history, diagnostic sessions, vehicle health checks, diagnostic event logging, result-based operation handling, and basic diagnostic workflows.
+A C++ console-based vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, ECU communication status, active faults, cleared fault history, diagnostic sessions, diagnostic event logging, result-based operation handling, and basic CAN bus traffic simulation.
 
 This project is part of a long-term systems engineering portfolio focused on Modern C++, embedded-style thinking, diagnostics, vehicle platforms, and transferable software architecture skills.
 
 ## Current Version
 
-**Version:** v0.7
+**Version:** v0.8  
 **Status:** Working release
 
-This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, basic assert-based unit tests, cleared fault history per ECU, diagnostic session handling, extracted console input helpers, an extracted `DiagnosticLog` component, and a capacity-limited diagnostic log buffer.
+This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, assert-based tests, cleared fault history per ECU, diagnostic session handling, extracted console input helpers, an extracted `DiagnosticLog` component, a capacity-limited diagnostic log buffer, and basic CAN bus simulation.
 
 ## Features
 
@@ -46,11 +46,18 @@ This version includes a multi-file C++ project structure, CMake build support, d
 * Handle invalid ECU names
 * Convert user severity input into a strongly typed `Severity` enum
 * Use `enum class` result types instead of magic return codes
-* Use value ownership for ECUs and DTCs
+* Use value ownership for ECUs, DTCs, CAN frames, logs, and the CAN bus
 * Keep ECU search logic encapsulated inside the `Vehicle` class
 * Extract low-level console input helpers into a separate module
+* Extract menu actions into a separate module
 * Build the project using CMake
 * Build and run a separate assert-based test executable
+* Basic CAN frame model with message ID, sender name, and raw data bytes
+* CAN frame payload capped at 8 bytes to model classic CAN behavior
+* CAN bus traffic history using a capacity-limited buffer
+* Vehicle-owned CAN bus integration
+* Menu option to simulate sample CAN traffic
+* Menu option to display recorded CAN bus traffic
 
 ## Menu Options
 
@@ -70,7 +77,9 @@ Vehicle Diagnostics Simulator
 9. Display ECU fault history
 10. Display Diagnostic Session
 11. Set Diagnostic Session
-12. Exit
+12. Simulate sample CAN traffic
+13. Display CAN bus traffic
+14. Exit
 ```
 
 ## Project Structure
@@ -78,21 +87,27 @@ Vehicle Diagnostics Simulator
 ```text
 vehicle-diagnostics-simulator/
 ├── include/
+│   ├── CANBus.h
+│   ├── CANFrame.h
 │   ├── ConsoleInput.h
 │   ├── DiagnosticLog.h
 │   ├── DTC.h
 │   ├── ECU.h
 │   ├── ECUStatus.h
+│   ├── MenuActions.h
 │   ├── Severity.h
 │   ├── Vehicle.h
 │   ├── VehicleResults.h
 │   └── VehicleSession.h
 ├── src/
+│   ├── CANBus.cpp
+│   ├── CANFrame.cpp
 │   ├── ConsoleInput.cpp
 │   ├── DiagnosticLog.cpp
 │   ├── DTC.cpp
 │   ├── ECU.cpp
 │   ├── main.cpp
+│   ├── MenuActions.cpp
 │   └── Vehicle.cpp
 ├── tests/
 │   └── test_vehicle.cpp
@@ -222,6 +237,47 @@ Examples of ECUs:
 * Transmission
 * Airbag Control Module
 
+### CANFrame
+
+Represents one CAN-style message.
+
+Responsibilities:
+
+* Store a message ID
+* Store the sender name
+* Store raw data bytes
+* Report payload length
+* Report whether the frame has data
+* Display frame contents
+* Cap payload data at 8 bytes to model classic CAN behavior
+
+The frame does not decode its data. It only stores raw message information.
+
+Example sample frame:
+
+```text
+ID: 256
+Sender: Engine
+Length: 2
+Data: 11 184
+```
+
+### CANBus
+
+Represents the simulated vehicle CAN bus traffic history.
+
+Responsibilities:
+
+* Store transmitted CAN frames
+* Accept new CAN frames through `transmit`
+* Report whether traffic exists
+* Report traffic count
+* Display recorded traffic
+* Limit stored traffic to a fixed maximum capacity
+* Discard the oldest frame when capacity is exceeded
+
+The current CAN bus stores the most recent 100 frames.
+
 ### Vehicle
 
 Represents the full simulated vehicle.
@@ -231,6 +287,7 @@ Responsibilities:
 * Store multiple ECUs
 * Store the current diagnostic session
 * Own a `DiagnosticLog` component
+* Own a `CANBus` component
 * Add ECUs
 * Prevent duplicate ECU names
 * Add faults to a specific ECU
@@ -245,6 +302,10 @@ Responsibilities:
 * Prevent fault clearing when the vehicle is in Default Session
 * Display fault history for a specific ECU
 * Record diagnostic events through `DiagnosticLog`
+* Transmit CAN frames into the vehicle-owned CAN bus
+* Display CAN bus traffic
+* Report whether CAN traffic exists
+* Report CAN traffic count
 * Encapsulate ECU search logic
 * Return meaningful operation results using enum classes
 
@@ -276,6 +337,24 @@ Responsibilities:
 
 This keeps `main.cpp` more focused on menu flow instead of low-level input handling.
 
+### MenuActions
+
+Contains menu-related user workflow functions.
+
+Responsibilities:
+
+* Display the main menu
+* Add faults through user input
+* Add ECUs through user input
+* Clear faults through user input
+* Set ECU communication status through user input
+* Display ECU fault history through user input
+* Set diagnostic sessions through user input
+* Simulate sample CAN traffic
+* Display CAN bus traffic through the menu
+
+This keeps `main.cpp` smaller and makes menu behavior easier to maintain.
+
 ## Current Diagnostic Model
 
 The simulator uses this hierarchy:
@@ -283,6 +362,8 @@ The simulator uses this hierarchy:
 ```text
 Vehicle
   ├── DiagnosticLog
+  ├── CANBus
+  │     └── CANFrames
   └── ECU
         ├── Active DTCs
         └── Cleared DTC History
@@ -293,9 +374,11 @@ Each ECU owns its active diagnostic trouble codes.
 Each ECU also owns cleared fault history.
 Each ECU owns its own communication status.
 The vehicle owns the current diagnostic session.
-The vehicle also owns a diagnostic log component.
+The vehicle owns a diagnostic log component.
+The vehicle owns a CAN bus component.
+The CAN bus stores CAN frames.
 
-The menu interacts with the vehicle, and the vehicle coordinates diagnostic actions.
+The menu interacts with the vehicle, and the vehicle coordinates diagnostic and bus-related actions.
 
 ## Diagnostic Sessions
 
@@ -310,7 +393,7 @@ Extended Session
 
 The vehicle starts in Default Session.
 
-Default Session represents a basic diagnostic mode where the user can view information, scan the vehicle, add simulator faults, and inspect state.
+Default Session represents a basic diagnostic mode where the user can view information, scan the vehicle, add simulator faults, inspect state, and simulate sample CAN traffic.
 
 Extended Session represents a deeper diagnostic mode where stronger diagnostic actions are allowed.
 
@@ -381,11 +464,36 @@ Diagnostic Log:
 6. Cleared faults from Engine
 ```
 
-The diagnostic log is now stored in a dedicated `DiagnosticLog` component.
+The diagnostic log is stored in a dedicated `DiagnosticLog` component.
 
 The current log has a maximum capacity of 50 entries. When the log is full and a new event is added, the oldest stored event is discarded and the newest event is stored.
 
 The log does not currently persist after the program closes.
+
+## CAN Bus Simulation
+
+The simulator now includes a basic CAN bus model.
+
+Current CAN behavior includes:
+
+* `CANFrame` represents one CAN-style message
+* `CANBus` stores transmitted CAN frames
+* `Vehicle` owns the `CANBus`
+* The menu can simulate sample CAN traffic
+* The menu can display recorded CAN bus traffic
+* CAN frame data is stored as raw bytes
+* Classic CAN payload length is capped at 8 bytes
+* CAN bus traffic history is capacity-limited
+
+Current sample traffic:
+
+```text
+ID 256, Sender Engine, Data [11, 184]
+ID 512, Sender Brake, Data [1]
+ID 768, Sender Battery, Data [12, 6]
+```
+
+These are temporary sample messages used to demonstrate bus behavior. They are not decoded into real signals yet.
 
 ## Unit Tests
 
@@ -414,6 +522,19 @@ Current tests cover:
 * Setting ECU status returns the correct result enum
 * Diagnostic log capacity remains capped
 * Diagnostic log discards the oldest entry when capacity is exceeded
+* CANFrame stores message ID
+* CANFrame stores sender name
+* CANFrame reports correct data length
+* CANFrame reports whether it has data
+* CANFrame caps payload length at 8 bytes
+* CANBus starts empty
+* CANBus becomes non-empty after transmitting a frame
+* CANBus traffic count changes after transmitting frames
+* CANBus traffic history remains capped at 100 frames
+* CANBus discards the oldest frame when capacity is exceeded
+* Vehicle starts with no CAN traffic
+* Vehicle reports CAN traffic after transmitting a frame
+* Vehicle CAN traffic count updates after transmitting frames
 
 The tests are intentionally simple and use `assert()` instead of a full testing framework. This keeps the focus on testing fundamentals before introducing GoogleTest, Catch2, or other test frameworks.
 
@@ -437,7 +558,10 @@ A user can:
 14. Try to clear faults from an offline ECU and receive a clean failure message
 15. Display vehicle health
 16. Display the diagnostic log
-17. Exit the program
+17. Display CAN bus traffic before simulation and see no recorded traffic
+18. Simulate sample CAN traffic
+19. Display recorded CAN bus traffic
+20. Exit the program
 
 ## Concepts Practiced
 
@@ -452,6 +576,7 @@ C++ concepts:
 * `std::vector`
 * `std::deque`
 * `std::string`
+* `uint8_t`
 * `enum class`
 * Const member functions
 * Passing by reference and const reference
@@ -459,9 +584,9 @@ C++ concepts:
 * Value ownership
 * Return values for operation success/failure
 * Result enums instead of magic numbers
-* Moving data between vectors
+* Moving data between containers
 * Bounded storage
-* FIFO-style log behavior
+* FIFO-style log and bus behavior
 * Console input handling
 * Menu-driven program flow
 * `assert()`-based unit testing
@@ -485,6 +610,8 @@ Systems concepts:
 * Fault history tracking
 * Bounded log storage
 * Capacity-limited buffers
+* Message modeling
+* Traffic history modeling
 * Automated behavior verification
 * Build tooling
 
@@ -502,6 +629,10 @@ Automotive concepts:
 * Diagnostic sessions
 * Basic diagnostic workflow
 * Diagnostic event history
+* CAN-style message modeling
+* CAN bus traffic history
+* Raw CAN payload bytes
+* Classic CAN 8-byte payload limit
 
 ## How to Run
 
@@ -549,16 +680,75 @@ You can also compile manually with `g++`.
 ### Simulator
 
 ```bash
-g++ -std=c++17 src/main.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp src/ConsoleInput.cpp src/DiagnosticLog.cpp -Iinclude -o vehicle-diagnostics-simulator
+g++ -std=c++17 src/main.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp src/ConsoleInput.cpp src/DiagnosticLog.cpp src/MenuActions.cpp src/CANFrame.cpp src/CANBus.cpp -Iinclude -o vehicle-diagnostics-simulator
 ./vehicle-diagnostics-simulator
 ```
 
 ### Tests
 
 ```bash
-g++ -std=c++17 tests/test_vehicle.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp src/ConsoleInput.cpp src/DiagnosticLog.cpp -Iinclude -o vehicle-diagnostics-tests
+g++ -std=c++17 tests/test_vehicle.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp src/DiagnosticLog.cpp src/CANFrame.cpp src/CANBus.cpp -Iinclude -o vehicle-diagnostics-tests
 ./vehicle-diagnostics-tests
 ```
+
+## Version History
+
+### v0.8 - Basic CAN Bus Simulation
+
+* Added `CANFrame` to represent a single CAN-style message
+* Added `CANBus` to store recent CAN traffic
+* Integrated `CANBus` into `Vehicle`
+* Added sample CAN traffic simulation from Engine, Brake, and Battery ECUs
+* Added menu support for displaying CAN bus traffic
+* Added tests for CANFrame, CANBus, and Vehicle-level CAN traffic behavior
+* Updated menu flow to include CAN traffic actions
+
+### v0.7 - Diagnostic Log Component and Capacity-Limited Logging
+
+* Extracted diagnostic log behavior into a dedicated `DiagnosticLog` component
+* Added capacity-limited diagnostic log storage
+* Limited diagnostic logs to the most recent 50 events
+* Added FIFO-style behavior that discards the oldest log when full
+* Expanded tests for diagnostic log behavior
+
+### v0.6 - Diagnostic Sessions
+
+* Added Default Session and Extended Session
+* Required Extended Session before clearing faults
+* Added diagnostic session result enums
+* Added session-related tests
+
+### v0.5 - Fault History and Offline Clear Protection
+
+* Added cleared fault history per ECU
+* Moved cleared active faults into fault history
+* Prevented clearing faults from offline ECUs
+* Added tests for fault history and offline clearing behavior
+
+### v0.4 - Basic Tests
+
+* Added assert-based tests for ECU and Vehicle behavior
+* Added separate test executable through CMake
+
+### v0.3 - ECU Communication Status and Result Enums
+
+* Added Online and Offline ECU status
+* Added result enums for vehicle operations
+* Treated offline ECUs as vehicle health issues
+
+### v0.2 - Menu Cleanup, ECU Registration, and Diagnostic Logging
+
+* Added ECU registration through the menu
+* Added duplicate ECU rejection
+* Added basic diagnostic event logging
+* Improved menu flow
+
+### v0.1 - Initial Simulator
+
+* Added basic Vehicle, ECU, and DTC models
+* Added active fault storage
+* Added vehicle scanning
+* Added basic menu-driven workflow
 
 ## Current Limitations
 
@@ -571,10 +761,14 @@ Current limitations:
 * Diagnostic log is session-only
 * Diagnostic log has no timestamps
 * Diagnostic log stores plain strings instead of structured event objects
-* No CAN bus simulation yet
+* CAN messages are sample messages only
+* CAN data is not decoded into real signals yet
 * No UDS request/response behavior yet
 * No persistent diagnostic history
 * No real vehicle communication
+* No real SocketCAN integration
+* No CAN arbitration modeling
+* No custom user-entered CAN frames yet
 * Limited input validation
 * ECU communication state is limited to Online and Offline only
 * Diagnostic sessions are limited to Default and Extended only
@@ -593,7 +787,8 @@ Future versions may include:
 * Fault history timestamps
 * File persistence
 * GoogleTest or Catch2 integration
-* CAN bus message simulation
+* Decoded CAN signal modeling
+* Custom CAN frame input through the menu
 * UDS-inspired diagnostic requests
 * Security access simulation
 * ECU state machine behavior
@@ -610,6 +805,6 @@ This simulator is an early step toward larger projects involving CAN bus simulat
 
 ## Repository Status
 
-This project is currently at **v0.7**.
+This project is currently at **v0.8**.
 
-The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, an interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, active fault tracking, cleared fault history, vehicle health checks, diagnostic event logging, a dedicated diagnostic log component, capacity-limited log storage, ECU communication status, diagnostic sessions, result enums for clearer operation outcomes, extracted console input helpers, and basic assert-based unit tests.
+The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, an interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, active fault tracking, cleared fault history, vehicle health checks, diagnostic event logging, a dedicated diagnostic log component, capacity-limited log storage, ECU communication status, diagnostic sessions, result enums for clearer operation outcomes, extracted console input helpers, extracted menu actions, basic CAN frame modeling, vehicle-owned CAN bus traffic simulation, and assert-based tests.
