@@ -429,6 +429,28 @@ void CANDecoderWorks() {
     assert(decoder.decodeFrame(CANFrame(111, "Trasmission", {11, 184})) == "Unknown CAN frame");
 }
 
+void CANBusSnapshotWorks() {
+    CANBus bus;
+
+    assert(bus.getTrafficSnapshot().empty());
+
+    bus.transmit(CANFrame(256, "Engine", {11, 184}));
+
+    assert(!bus.getTrafficSnapshot().empty());
+
+    bus.transmit(CANFrame(400, "Brake", {11, 184}));
+
+    assert(bus.getTrafficSnapshot().size() == 2);
+
+    assert(bus.getTrafficSnapshot()[1].getID() == 400);
+
+    bus.getTrafficSnapshot().clear();
+
+    assert(bus.trafficExists());
+
+    assert(bus.trafficCount() == 2);
+}
+
 void testECU(const string& code, const string& name, const Severity& severity) {
     testECUDefaultsToOnline();
     testECUCanBeSetToOffline();
@@ -484,6 +506,7 @@ void testCAN() {
     capTrafficHistory(message);
     oldestFrameGetsDiscarded();
     CANDecoderWorks();
+    CANBusSnapshotWorks();
 }
 
 int main() {

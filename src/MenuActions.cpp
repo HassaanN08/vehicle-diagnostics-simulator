@@ -41,8 +41,9 @@ void displayMenu() {
     std::cout << "\n11. Set Diagnostic Session";
     std::cout << "\n12. Simulate sample CAN traffic";
     std::cout << "\n13. Add Custom CAN frame";
-    std::cout << "\n14. Display CAN bus traffic";
-    std::cout << "\n15. Exit\n" << '\n';
+    std::cout << "\n14. Display raw CAN bus traffic";
+    std::cout << "\n15. Display decoded CAN bus traffic";
+    std::cout << "\n16. Exit\n" << '\n';
 }
 
 void addFaultsToECU(Vehicle& vehicle) {
@@ -322,9 +323,17 @@ void addCustomCANFrameMenu(Vehicle& vehicle) {
     return;
 }
 
-void displayCANBusTrafficMenu(Vehicle& vehicle) {
+void displayRawCANBusTrafficMenu(Vehicle& vehicle) {
     if (vehicle.CANTrafficExists()) {
         vehicle.displayCANBusTraffic();
+    } else {
+        std::cout << "\nNo CAN Traffic recorded\n";
+    }
+}
+
+void displayDecodedCANBusTrafficMenu(Vehicle& vehicle) {
+    if (vehicle.CANTrafficExists()) {
+        vehicle.displayDecodedCANFrames();
     } else {
         std::cout << "\nNo CAN Traffic recorded\n";
     }

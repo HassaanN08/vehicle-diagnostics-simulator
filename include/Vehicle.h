@@ -57,4 +57,6 @@ class Vehicle {
         bool CANTrafficExists() const;
 
         size_t CANTrafficCount() const;
+
+        void displayDecodedCANFrames() const;
 };

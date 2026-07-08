@@ -22,4 +22,6 @@ void simulateSampleCANTraffic(Vehicle& vehicle);
 
 void addCustomCANFrameMenu(Vehicle& vehicle);
 
-void displayCANBusTrafficMenu(Vehicle& vehicle);
+void displayRawCANBusTrafficMenu(Vehicle& vehicle);
+
+void displayDecodedCANBusTrafficMenu(Vehicle& vehicle);

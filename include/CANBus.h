@@ -1,6 +1,7 @@
 #pragma once
 #include "CANFrame.h"
 #include <deque>
+#include <vector>
 
 class CANBus {
     std::deque<CANFrame> frames;
@@ -16,4 +17,6 @@ class CANBus {
         void display() const;
 
         int getFirstFrameID() const;
+
+        std::vector<CANFrame> getTrafficSnapshot() const;
 };
