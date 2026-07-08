@@ -318,7 +318,7 @@ void addCustomCANFrameMenu(Vehicle& vehicle) {
 
     vehicle.transmitCANFrame(CANFrame(id, ecuName, data));
 
-    cout << "Custom CAN frame transmitted\n";
+    std::cout << "Custom CAN frame transmitted\n";
     return;
 }
 

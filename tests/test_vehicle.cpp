@@ -12,6 +12,7 @@
 #include <deque>
 #include "CANFrame.h"
 #include "CANBus.h"
+#include "CANDecoder.h"
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -420,6 +421,14 @@ void countBecomesTwo() {
     assert(vehicle.CANTrafficCount() == 2);
 }
 
+void CANDecoderWorks() {
+    CANDecoder decoder;
+    assert(decoder.decodeFrame(CANFrame(256, "Engine", {11, 184})) == "Engine CAN frame");
+    assert(decoder.decodeFrame(CANFrame(512, "Brake", {11, 184})) == "Brake CAN frame");
+    assert(decoder.decodeFrame(CANFrame(768, "Battery", {11, 184})) == "Battery CAN frame");
+    assert(decoder.decodeFrame(CANFrame(111, "Trasmission", {11, 184})) == "Unknown CAN frame");
+}
+
 void testECU(const string& code, const string& name, const Severity& severity) {
     testECUDefaultsToOnline();
     testECUCanBeSetToOffline();
@@ -474,6 +483,7 @@ void testCAN() {
     countChangesForMultipleTransmits(message);
     capTrafficHistory(message);
     oldestFrameGetsDiscarded();
+    CANDecoderWorks();
 }
 
 int main() {

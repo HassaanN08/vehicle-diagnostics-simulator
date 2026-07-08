@@ -81,7 +81,7 @@ int main() {
                     simulateSampleCANTraffic(vehicle);
                     break;
                 case 13:
-                    addCustomCANFrame(vehicle);
+                    addCustomCANFrameMenu(vehicle);
                     break;
                 case 14:
                     displayCANBusTrafficMenu(vehicle);
