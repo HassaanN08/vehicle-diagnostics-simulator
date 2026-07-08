@@ -35,8 +35,12 @@ void CANFrame::display() const {
     std::cout << "\nSender: " << sender;
     std::cout << "\nLength: " << dataBytes.size();
     std::cout << "\nData: ";
-    for (const uint8_t& byte : dataBytes) {
-        std::cout << static_cast<int>(byte) << " ";
+    if (dataBytes.size() > 0) {
+        for (const uint8_t& byte : dataBytes) {
+            std::cout << static_cast<int>(byte) << " ";
+        }
+    } else {
+        std::cout << "No data";
     }
     std::cout << '\n';
 }

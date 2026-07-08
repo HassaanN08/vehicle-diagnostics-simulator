@@ -20,4 +20,6 @@ void setDiagnosticSessionMenu(Vehicle& vehicle);
 
 void simulateSampleCANTraffic(Vehicle& vehicle);
 
+void addCustomCANFrameMenu(Vehicle& vehicle);
+
 void displayCANBusTrafficMenu(Vehicle& vehicle);

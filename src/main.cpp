@@ -28,13 +28,13 @@ int main() {
 
     validateInputIsInt(option);
 
-    while (option != 14) {
-        if (option < 1 || option > 14) {
-            cout << "Please type in a number between 1 and 14: ";
+    while (option != 15) {
+        if (option < 1 || option > 15) {
+            cout << "Please type in a number between 1 and 15: ";
             cin >> option;
             validateInputIsInt(option);
         }
-        else if (option > 0 && option < 14) {
+        else if (option > 0 && option < 15) {
             switch (option) {
                 case 1:
                     vehicle.displayAllECUs();
@@ -81,6 +81,9 @@ int main() {
                     simulateSampleCANTraffic(vehicle);
                     break;
                 case 13:
+                    addCustomCANFrame(vehicle);
+                    break;
+                case 14:
                     displayCANBusTrafficMenu(vehicle);
                     break;
             }

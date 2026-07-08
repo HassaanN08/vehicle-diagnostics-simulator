@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <vector>
 #include "Severity.h"
 #include "ECUStatus.h"
 #include "DTC.h"
@@ -10,6 +11,7 @@
 #include "ConsoleInput.h"
 #include "MenuActions.h"
 #include "CANFrame.h"
+#include <cstdint>
 
 bool getValidECUName(std::string& ecuName, Vehicle& vehicle) {
     while (!vehicle.doesECUExist(ecuName)) {
@@ -38,8 +40,9 @@ void displayMenu() {
     std::cout << "\n10. Display Diagnostic Session";
     std::cout << "\n11. Set Diagnostic Session";
     std::cout << "\n12. Simulate sample CAN traffic";
-    std::cout << "\n13. Display CAN bus traffic";
-    std::cout << "\n14. Exit\n" << '\n';
+    std::cout << "\n13. Add Custom CAN frame";
+    std::cout << "\n14. Display CAN bus traffic";
+    std::cout << "\n15. Exit\n" << '\n';
 }
 
 void addFaultsToECU(Vehicle& vehicle) {
@@ -272,6 +275,50 @@ void simulateSampleCANTraffic(Vehicle& vehicle) {
 
     std::cout << "\nSample CAN traffic transmitted.\n";
 
+    return;
+}
+
+void addCustomCANFrameMenu(Vehicle& vehicle) {
+    int id;
+    std::string ecuName;
+    int dataBytesLength;
+    std::vector<uint8_t> data;
+
+    std::cout << "\nCAN Message ID: ";
+    std::cin >> id;
+
+    validateInputIsInt(id);
+
+    std::cout << "Sender ECU Name: ";
+    getFullTextInput(ecuName);
+
+    bool ecuExists = getValidECUName(ecuName, vehicle);
+
+    if (!ecuExists) return;
+
+    std::cout << "Number of data bytes: ";
+    std::cin >> dataBytesLength;
+    bool validated = validateInputIsIntAndWithinRange(dataBytesLength, 0, 8);
+
+    if (!validated) return;
+
+    if (dataBytesLength > 0) {
+        for (int i = 1; i <= dataBytesLength; i++) {
+            int byte;
+            std::cout << "Byte " << i << ": ";
+            std::cin >> byte;
+            bool byteValidated = validateInputIsIntAndWithinRange(byte, 0, 255);
+            if (byteValidated) {
+                data.push_back(static_cast<uint8_t>(byte));
+            } else {
+                return;
+            }
+        }
+    }
+
+    vehicle.transmitCANFrame(CANFrame(id, ecuName, data));
+
+    cout << "Custom CAN frame transmitted\n";
     return;
 }
 
