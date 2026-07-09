@@ -44,3 +44,9 @@ void CANFrame::display() const {
     }
     std::cout << '\n';
 }
+
+std::vector<uint8_t> CANFrame::getDataBytesSnapshot() const {
+    std::vector<uint8_t> copiedBytes = dataBytes;
+
+    return copiedBytes;
+}

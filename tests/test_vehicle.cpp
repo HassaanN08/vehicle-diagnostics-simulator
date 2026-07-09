@@ -451,6 +451,19 @@ void CANBusSnapshotWorks() {
     assert(bus.trafficCount() == 2);
 }
 
+void CANFramePayloadSnapshotWorks() {
+    CANFrame frame1(256, "Engine", {});
+    assert(frame1.getDataBytesSnapshot().empty());
+
+    CANFrame frame2(256, "Engine", {11, 184});
+    assert(frame2.getDataBytesSnapshot().size() == 2);
+    assert(frame2.getDataBytesSnapshot()[0] == 11);
+    assert(frame2.getDataBytesSnapshot()[1] == 184);
+
+    frame2.getDataBytesSnapshot().clear();
+    assert(frame2.hasData() && frame2.getLength() == 2);
+}
+
 void testECU(const string& code, const string& name, const Severity& severity) {
     testECUDefaultsToOnline();
     testECUCanBeSetToOffline();
@@ -507,6 +520,7 @@ void testCAN() {
     oldestFrameGetsDiscarded();
     CANDecoderWorks();
     CANBusSnapshotWorks();
+    CANFramePayloadSnapshotWorks();
 }
 
 int main() {

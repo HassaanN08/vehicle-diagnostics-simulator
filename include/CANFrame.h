@@ -20,4 +20,6 @@ class CANFrame {
         bool hasData() const;
 
         void display() const;
+
+        std::vector<uint8_t> getDataBytesSnapshot() const;
 };
