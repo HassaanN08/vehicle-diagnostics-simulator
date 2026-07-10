@@ -423,7 +423,9 @@ void countBecomesTwo() {
 
 void CANDecoderWorks() {
     CANDecoder decoder;
-    assert(decoder.decodeFrame(CANFrame(256, "Engine", {11, 184})) == "Engine CAN frame");
+    assert(decoder.decodeFrame(CANFrame(256, "Engine", {11, 184})) == "Engine RPM: 3000");
+    assert(decoder.decodeFrame(CANFrame(256, "Engine", {1, 2, 200})) == "Engine RPM: 258");
+    assert(decoder.decodeFrame(CANFrame(256, "Engine", {11})) == "Engine CAN frame: insufficient data");
     assert(decoder.decodeFrame(CANFrame(512, "Brake", {11, 184})) == "Brake CAN frame");
     assert(decoder.decodeFrame(CANFrame(768, "Battery", {11, 184})) == "Battery CAN frame");
     assert(decoder.decodeFrame(CANFrame(111, "Trasmission", {11, 184})) == "Unknown CAN frame");
