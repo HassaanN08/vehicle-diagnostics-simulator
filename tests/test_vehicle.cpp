@@ -13,6 +13,7 @@
 #include "CANFrame.h"
 #include "CANBus.h"
 #include "CANDecoder.h"
+#include "DecodedCANFrame.h"
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -423,17 +424,40 @@ void countBecomesTwo() {
 
 void CANDecoderWorks() {
     CANDecoder decoder;
-    assert(decoder.decodeFrame(CANFrame(256, "Engine", {11, 184})) == "Engine RPM: 3000");
-    assert(decoder.decodeFrame(CANFrame(256, "Engine", {1, 2, 200})) == "Engine RPM: 258");
+    assert(decoder.decodeFrame(CANFrame(256, "Engine", {11, 184})) == "Engine RPM: 3000 RPM");
+    assert(decoder.decodeFrame(CANFrame(256, "Engine", {1, 2, 200})) == "Engine RPM: 258 RPM");
     assert(decoder.decodeFrame(CANFrame(256, "Engine", {11})) == "Engine CAN frame: insufficient data");
-    assert(decoder.decodeFrame(CANFrame(512, "Brake", {0})) == "Brake status: Released");
-    assert(decoder.decodeFrame(CANFrame(512, "Brake", {1})) == "Brake status: Pressed");
-    assert(decoder.decodeFrame(CANFrame(512, "Brake", {1, 200})) == "Brake status: Pressed");
-    assert(decoder.decodeFrame(CANFrame(512, "Brake", {11})) == "Brake status: Unknown");
+    assert(decoder.decodeFrame(CANFrame(512, "Brake", {0})) == "Brake status: Released ");
+    assert(decoder.decodeFrame(CANFrame(512, "Brake", {1})) == "Brake status: Pressed ");
+    assert(decoder.decodeFrame(CANFrame(512, "Brake", {1, 200})) == "Brake status: Pressed ");
+    assert(decoder.decodeFrame(CANFrame(512, "Brake", {11})) == "Brake status: Unknown ");
     assert(decoder.decodeFrame(CANFrame(768, "Battery", {4, 210})) == "Battery voltage: 12.340000 V");
     assert(decoder.decodeFrame(CANFrame(768, "Battery", {4, 210, 200})) == "Battery voltage: 12.340000 V");
     assert(decoder.decodeFrame(CANFrame(768, "Battery", {13})) == "Battery CAN frame: insufficient data");
-    assert(decoder.decodeFrame(CANFrame(111, "Trasmission", {11, 184})) == "Unknown CAN frame");
+    assert(decoder.decodeFrame(CANFrame(111, "Trasmission", {11, 184})) == "unknown CAN frame");
+}
+
+void decodedDisplayWorks() {
+    CANDecoder decoder;
+    DecodedCANFrame frame1 = decoder.decode(CANFrame(256, "Engine", {11, 184}));
+
+    assert(frame1.known && frame1.valid && frame1.source == "Engine" && frame1.signalName == "RPM" && frame1.valueText == "3000" && frame1.unit == "RPM");
+
+    DecodedCANFrame frame2 = decoder.decode(CANFrame(256, "Engine", {11}));
+
+    assert(frame2.known && !frame2.valid && frame2.error == "insufficient data");
+
+    DecodedCANFrame frame3 = decoder.decode(CANFrame(512, "Brake", {1}));
+
+    assert(frame3.known && frame3.valid && frame3.valueText == "Pressed");
+
+    DecodedCANFrame frame4 = decoder.decode(CANFrame(768, "Battery", {4, 210}));
+
+    assert(frame4.source == "Battery" && frame4.signalName == "voltage" && frame4.valueText == "12.340000" && frame4.unit == "V");
+
+    DecodedCANFrame frame5 = decoder.decode(CANFrame(111, "Engine", {11}));
+
+    assert(!frame5.known && !frame5.valid && frame5.error == "unknown CAN frame");
 }
 
 void CANBusSnapshotWorks() {
@@ -528,6 +552,7 @@ void testCAN() {
     CANDecoderWorks();
     CANBusSnapshotWorks();
     CANFramePayloadSnapshotWorks();
+    decodedDisplayWorks();
 }
 
 int main() {
