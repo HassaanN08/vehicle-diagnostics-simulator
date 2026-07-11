@@ -4,9 +4,8 @@
 #include <cstdint>
 #include "CANDecoderHelperFunctions.h"
 
-void decodeEngineFrame(std::string& ecuName, DecodedCANFrame& decodedData, std::vector<uint8_t>& dataBytes) {
-    ecuName = "Engine";
-    decodedData.source = ecuName;
+void decodeEngineFrame(DecodedCANFrame& decodedData, const std::vector<uint8_t>& dataBytes) {
+    decodedData.source = "Engine";
     decodedData.signalName = "RPM";
     decodedData.unit = "RPM";
 
@@ -21,9 +20,8 @@ void decodeEngineFrame(std::string& ecuName, DecodedCANFrame& decodedData, std::
     }
 }
 
-void decodeBrakeFrame(std::string& ecuName, DecodedCANFrame& decodedData, std::vector<uint8_t>& dataBytes) {
-    ecuName = "Brake";
-    decodedData.source = ecuName;
+void decodeBrakeFrame(DecodedCANFrame& decodedData, const std::vector<uint8_t>& dataBytes) {
+    decodedData.source = "Brake";
     decodedData.signalName = "status";
     decodedData.unit = "";
     if (dataBytes.size() >= 1) {
@@ -44,9 +42,8 @@ void decodeBrakeFrame(std::string& ecuName, DecodedCANFrame& decodedData, std::v
     }
 }
 
-void decodeBatteryFrame(std::string& ecuName, DecodedCANFrame& decodedData, std::vector<uint8_t>& dataBytes) {
-    ecuName = "Battery";
-    decodedData.source = ecuName;
+void decodeBatteryFrame(DecodedCANFrame& decodedData, const std::vector<uint8_t>& dataBytes) {
+    decodedData.source = "Battery";
     decodedData.signalName = "voltage";
     decodedData.unit = "V";
 

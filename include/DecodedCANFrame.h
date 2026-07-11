@@ -3,14 +3,14 @@
 
 class DecodedCANFrame {
     public:
-        int id;
-        std::string source;
-        std::string signalName;
-        std::string valueText;
-        std::string unit;
-        bool known;
-        bool valid;
-        std::string error;
+        int id = 0;
+        std::string source = "Unknown";
+        std::string signalName = "Unknown";
+        std::string valueText = "";
+        std::string unit = "";
+        bool known = false;
+        bool valid = false;
+        std::string error = "";
 
         std::string toDisplayString() const;
 };

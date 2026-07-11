@@ -429,10 +429,10 @@ void CANDecoderWorks() {
     assert(decoder.decodeFrame(CANFrame(256, "Engine", {11, 184})) == "Engine RPM: 3000 RPM");
     assert(decoder.decodeFrame(CANFrame(256, "Engine", {1, 2, 200})) == "Engine RPM: 258 RPM");
     assert(decoder.decodeFrame(CANFrame(256, "Engine", {11})) == "Engine CAN frame: insufficient data");
-    assert(decoder.decodeFrame(CANFrame(512, "Brake", {0})) == "Brake status: Released ");
-    assert(decoder.decodeFrame(CANFrame(512, "Brake", {1})) == "Brake status: Pressed ");
-    assert(decoder.decodeFrame(CANFrame(512, "Brake", {1, 200})) == "Brake status: Pressed ");
-    assert(decoder.decodeFrame(CANFrame(512, "Brake", {11})) == "Brake status: Unknown ");
+    assert(decoder.decodeFrame(CANFrame(512, "Brake", {0})) == "Brake status: Released");
+    assert(decoder.decodeFrame(CANFrame(512, "Brake", {1})) == "Brake status: Pressed");
+    assert(decoder.decodeFrame(CANFrame(512, "Brake", {1, 200})) == "Brake status: Pressed");
+    assert(decoder.decodeFrame(CANFrame(512, "Brake", {11})) == "Brake status: Unknown");
     assert(decoder.decodeFrame(CANFrame(768, "Battery", {4, 210})) == "Battery voltage: 12.340000 V");
     assert(decoder.decodeFrame(CANFrame(768, "Battery", {4, 210, 200})) == "Battery voltage: 12.340000 V");
     assert(decoder.decodeFrame(CANFrame(768, "Battery", {13})) == "Battery CAN frame: insufficient data");

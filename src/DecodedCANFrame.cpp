@@ -7,5 +7,5 @@ std::string DecodedCANFrame::toDisplayString() const {
         return source + " CAN frame: " + error;
     }
 
-    return source + " " + signalName + ": " + valueText + " " + unit;
+    return source + " " + signalName + ": " + valueText + ((!unit.empty()) ? (" " + unit) : "");
 }

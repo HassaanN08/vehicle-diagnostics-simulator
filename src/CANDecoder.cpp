@@ -8,30 +8,21 @@
 
 DecodedCANFrame CANDecoder::decode(const CANFrame& frame) const {
     DecodedCANFrame decodedData;
-    int id = frame.getID();
-    std::string ecuName = "Unknown";
+    decodedData.id = frame.getID();
     std::vector<uint8_t> dataBytes = frame.getDataBytesSnapshot();
 
-    decodedData.id = id;
-    decodedData.source = ecuName;
-
-    decodedData.signalName = "Unknown";
-    decodedData.known = false;
-    decodedData.valid = false;
-    decodedData.error = "";
-
-    switch(id) {
+    switch(decodedData.id) {
         case 256:
             decodedData.known = true;
-            decodeEngineFrame(ecuName, decodedData, dataBytes);
+            decodeEngineFrame(decodedData, dataBytes);
             break;
         case 512:
             decodedData.known = true;
-            decodeBrakeFrame(ecuName, decodedData, dataBytes);
+            decodeBrakeFrame(decodedData, dataBytes);
             break;
         case 768:
             decodedData.known = true;
-            decodeBatteryFrame(ecuName, decodedData, dataBytes);
+            decodeBatteryFrame(decodedData, dataBytes);
             break;
         default:
             decodedData.error = "unknown CAN frame";
