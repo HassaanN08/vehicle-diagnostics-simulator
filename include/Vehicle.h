@@ -6,6 +6,7 @@
 #include "DiagnosticLog.h"
 #include "CANBus.h"
 #include "CANFrame.h"
+#include "CANTrafficReport.h"
 
 enum class ECUStatus : int;
 enum class ClearFaultResult : int;
@@ -59,4 +60,6 @@ class Vehicle {
         size_t CANTrafficCount() const;
 
         void displayDecodedCANFrames() const;
+
+        CANTrafficReport analyzeCANBusTraffic() const;
 };

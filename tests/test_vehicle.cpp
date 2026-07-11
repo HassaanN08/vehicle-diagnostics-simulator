@@ -14,6 +14,8 @@
 #include "CANBus.h"
 #include "CANDecoder.h"
 #include "DecodedCANFrame.h"
+#include "CANTrafficAnalyzer.h"
+#include "CANTrafficReport.h"
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -495,6 +497,48 @@ void CANFramePayloadSnapshotWorks() {
     assert(frame2.hasData() && frame2.getLength() == 2);
 }
 
+void CANTrafficAnalyzerWorks() {
+    vector<CANFrame> frames = {CANFrame(256, "Engine", {11, 184}), CANFrame(512, "Brake", {1}), CANFrame(768, "Battery", {4}), CANFrame(999, "Transmission", {1, 2})};
+    CANTrafficAnalyzer analyzer;
+    CANTrafficReport report = analyzer.analyze(frames);
+
+    assert(report.totalFrames == 4);
+    assert(report.knownFrames == 3);
+    assert(report.validFrames == 2);
+    assert(report.malformedFrames == 1);
+    assert(report.unknownFrames == 1);
+    assert(report.decodedFrames.size() == 4);
+    assert(report.decodedFrames[0].source == "Engine");
+    assert(report.decodedFrames[1].source == "Brake");
+    assert(report.decodedFrames[2].source == "Battery");
+    assert(report.decodedFrames[0].id == 256);
+    assert(report.decodedFrames[1].id == 512);
+    assert(report.decodedFrames[3].id == 999);
+}
+
+void CANTrafficReportInVehicleWorks() {
+    Vehicle vehicle("Toyota Subaru");
+    vehicle.transmitCANFrame(CANFrame(256, "Engine", {11, 184}));
+    vehicle.transmitCANFrame(CANFrame(512, "Brake", {1}));
+    vehicle.transmitCANFrame(CANFrame(768, "Battery", {4}));
+    vehicle.transmitCANFrame(CANFrame(999, "Transmission", {1, 2}));
+    
+    CANTrafficReport report = vehicle.analyzeCANBusTraffic();
+
+    assert(report.totalFrames == 4);
+    assert(report.knownFrames == 3);
+    assert(report.validFrames == 2);
+    assert(report.malformedFrames == 1);
+    assert(report.unknownFrames == 1);
+    assert(report.decodedFrames.size() == 4);
+    assert(report.decodedFrames[0].source == "Engine");
+    assert(report.decodedFrames[1].source == "Brake");
+    assert(report.decodedFrames[2].source == "Battery");
+    assert(report.decodedFrames[0].id == 256);
+    assert(report.decodedFrames[1].id == 512);
+    assert(report.decodedFrames[3].id == 999);
+}
+
 void testECU(const string& code, const string& name, const Severity& severity) {
     testECUDefaultsToOnline();
     testECUCanBeSetToOffline();
@@ -553,6 +597,8 @@ void testCAN() {
     CANBusSnapshotWorks();
     CANFramePayloadSnapshotWorks();
     decodedDisplayWorks();
+    CANTrafficAnalyzerWorks();
+    CANTrafficReportInVehicleWorks();
 }
 
 int main() {

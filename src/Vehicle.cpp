@@ -10,6 +10,8 @@
 #include "DiagnosticLog.h"
 #include "CANFrame.h"
 #include "CANDecoder.h"
+#include "CANTrafficAnalyzer.h"
+#include "CANTrafficReport.h"
 
 Vehicle::Vehicle(const std::string& name) : name(name), currentSession(VehicleSession::DefaultSession) {}
 
@@ -192,4 +194,14 @@ void Vehicle::displayDecodedCANFrames() const {
     for (const CANFrame& frame : frames) {
         std::cout << i++ << ". " << decoder.decodeFrame(frame) << '\n';
     }
+}
+
+CANTrafficReport Vehicle::analyzeCANBusTraffic() const {
+    std::vector<CANFrame> frames = bus.getTrafficSnapshot();
+
+    CANTrafficAnalyzer analyzer;
+
+    CANTrafficReport report = analyzer.analyze(frames);
+
+    return report;
 }
