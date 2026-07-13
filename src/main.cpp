@@ -90,7 +90,7 @@ int main() {
                     displayDecodedCANBusTrafficMenu(vehicle);
                     break;
                 case 16:
-                    cout << vehicle.analyzeCANBusTraffic() << '\n';
+                    cout << vehicle.analyzeCANBusTrafficReport() << '\n';
             }
 
             displayMenu();
