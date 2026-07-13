@@ -61,5 +61,5 @@ class Vehicle {
 
         void displayDecodedCANFrames() const;
 
-        CANTrafficReport analyzeCANBusTraffic() const;
+        std::string analyzeCANBusTraffic() const;
 };

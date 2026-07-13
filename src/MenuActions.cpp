@@ -43,7 +43,8 @@ void displayMenu() {
     std::cout << "\n13. Add Custom CAN frame";
     std::cout << "\n14. Display raw CAN bus traffic";
     std::cout << "\n15. Display decoded CAN bus traffic";
-    std::cout << "\n16. Exit\n" << '\n';
+    std::cout << "\n16. Display CAN traffic analysis report";
+    std::cout << "\n17. Exit\n" << '\n';
 }
 
 void addFaultsToECU(Vehicle& vehicle) {

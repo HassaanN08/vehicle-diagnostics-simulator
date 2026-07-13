@@ -522,21 +522,8 @@ void CANTrafficReportInVehicleWorks() {
     vehicle.transmitCANFrame(CANFrame(512, "Brake", {1}));
     vehicle.transmitCANFrame(CANFrame(768, "Battery", {4}));
     vehicle.transmitCANFrame(CANFrame(999, "Transmission", {1, 2}));
-    
-    CANTrafficReport report = vehicle.analyzeCANBusTraffic();
 
-    assert(report.totalFrames == 4);
-    assert(report.knownFrames == 3);
-    assert(report.validFrames == 2);
-    assert(report.malformedFrames == 1);
-    assert(report.unknownFrames == 1);
-    assert(report.decodedFrames.size() == 4);
-    assert(report.decodedFrames[0].source == "Engine");
-    assert(report.decodedFrames[1].source == "Brake");
-    assert(report.decodedFrames[2].source == "Battery");
-    assert(report.decodedFrames[0].id == 256);
-    assert(report.decodedFrames[1].id == 512);
-    assert(report.decodedFrames[3].id == 999);
+    assert(vehicle.analyzeCANBusTraffic() == "\nTotal frames: 4\nKnown frames: 3\nValid frames: 2\nMalformed frames: 1\nUnknown frames: 1\n\n1. Engine RPM: 3000 RPM\n2. Brake status: Pressed\n3. Battery CAN frame: insufficient data\n4. unknown CAN frame");
 }
 
 void testECU(const string& code, const string& name, const Severity& severity) {

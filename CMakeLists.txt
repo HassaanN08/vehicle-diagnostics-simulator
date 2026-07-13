@@ -20,6 +20,7 @@ add_executable(vehicle-diagnostics-simulator
     src/DecodedCANFrame.cpp
     src/CANDecoderHelperFunctions.cpp
     src/CANTrafficAnalyzer.cpp
+    src/CANTrafficReport.cpp
 )
 
 add_executable(vehicle-diagnostics-tests
@@ -34,6 +35,7 @@ add_executable(vehicle-diagnostics-tests
     src/DecodedCANFrame.cpp
     src/CANDecoderHelperFunctions.cpp
     src/CANTrafficAnalyzer.cpp
+    src/CANTrafficReport.cpp
 )
 
 target_include_directories(vehicle-diagnostics-simulator PRIVATE include)
