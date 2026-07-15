@@ -18,6 +18,8 @@
 #include "CANTrafficReport.h"
 #include "DiagnosticRequestParser.h"
 #include "DiagnosticRequest.h"
+#include "DiagnosticResponseBuilder.h"
+#include "DiagnosticResponse.h"
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -525,6 +527,32 @@ void DiagnosticRequestParserWorks() {
     assert(request6.error == "unsupported diagnostic service");
 }
 
+void DiagnosticResponseBuilderWorks() {
+    DiagnosticRequestParser parser;
+    DiagnosticResponseBuilder builder;
+
+    DiagnosticRequest request1 = parser.parse(CANFrame(0x7E0, "Tester", {0x22, 0xF1, 0x90}));
+    DiagnosticResponse response1 = builder.buildResponse(request1);
+    assert(response1.positive && response1.valid && response1.originalServiceId == 0x22 && response1.responseServiceId == 0x62 && response1.payload[0] == 0x62 && response1.payload.size() == 1);
+
+    DiagnosticRequest request2 = parser.parse(CANFrame(0x7E0, "Tester", {0x10, 0x03}));
+    DiagnosticResponse response2 = builder.buildResponse(request2);
+    assert(response2.positive && response2.valid && response2.originalServiceId == 0x10 && response2.responseServiceId == 0x50 && response2.payload[0] == 0x50 && response2.payload.size() == 1);
+
+    DiagnosticRequest request3 = parser.parse(CANFrame(0x7E0, "Tester", {0x99}));
+    DiagnosticResponse response3 = builder.buildResponse(request3);
+    assert(!response3.positive && response3.valid && response3.originalServiceId == 0x99 && response3.responseServiceId == 0x7F && response3.negativeResponseCode == 0x11 && response3.payload[0] == 0x7F && response3.payload[1] == 0x99 && response3.payload[2] == 0x11 && response3.payload.size() == 3);
+
+    DiagnosticRequest request4 = parser.parse(CANFrame(0x7E0, "Tester", {0x22, 0xF1}));
+    DiagnosticResponse response4 = builder.buildResponse(request4);
+    assert(!response4.positive && response4.valid && response4.originalServiceId == 0x22 && response4.responseServiceId == 0x7F && response4.negativeResponseCode == 0x13 && response4.payload[0] == 0x7F && response4.payload[1] == 0x22 && response4.payload[2] == 0x13 && response4.payload.size() == 3);
+    
+    DiagnosticRequest request5 = parser.parse(CANFrame(0x7E0, "Tester", {}));
+    DiagnosticResponse response5 = builder.buildResponse(request5);
+    assert(!response5.positive && response5.valid && response5.originalServiceId == 0 && response5.responseServiceId == 0x7F && response5.negativeResponseCode == 0x13 && response5.payload[0] == 0x7F && response5.payload[1] == 0x00 && response5.payload[2] == 0x13 && response5.payload.size() == 3);
+
+}
+
 void CANTrafficAnalyzerWorks() {
     vector<CANFrame> frames = {CANFrame(256, "Engine", {11, 184}), CANFrame(512, "Brake", {1}), CANFrame(768, "Battery", {4}), CANFrame(999, "Transmission", {1, 2})};
     CANTrafficAnalyzer analyzer;
@@ -614,7 +642,11 @@ void testCAN() {
     decodedDisplayWorks();
     CANTrafficAnalyzerWorks();
     CANTrafficReportInVehicleWorks();
+}
+
+void testUDS() {
     DiagnosticRequestParserWorks();
+    DiagnosticResponseBuilderWorks();
 }
 
 int main() {
@@ -629,6 +661,7 @@ int main() {
     testStatus(ecuName);
     testLogging();
     testCAN();
+    testUDS();
 
     cout << "\nAll Tests Passed!\n";
     return 0;
