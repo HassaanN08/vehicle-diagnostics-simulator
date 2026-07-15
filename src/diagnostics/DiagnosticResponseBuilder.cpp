@@ -1,6 +1,6 @@
-#include "DiagnosticResponseBuilder.h"
-#include "DiagnosticResponse.h"
-#include "DiagnosticRequest.h"
+#include "diagnostics/DiagnosticResponseBuilder.h"
+#include "diagnostics/DiagnosticResponse.h"
+#include "diagnostics/DiagnosticRequest.h"
 
 DiagnosticResponse DiagnosticResponseBuilder::buildResponse(const DiagnosticRequest& request) const {
     DiagnosticResponse response;

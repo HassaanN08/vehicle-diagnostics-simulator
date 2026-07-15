@@ -16,10 +16,11 @@
 #include "DecodedCANFrame.h"
 #include "CANTrafficAnalyzer.h"
 #include "CANTrafficReport.h"
-#include "DiagnosticRequestParser.h"
-#include "DiagnosticRequest.h"
-#include "DiagnosticResponseBuilder.h"
-#include "DiagnosticResponse.h"
+#include "diagnostics/DiagnosticRequestParser.h"
+#include "diagnostics/DiagnosticRequest.h"
+#include "diagnostics/DiagnosticResponseBuilder.h"
+#include "diagnostics/DiagnosticResponse.h"
+#include "diagnostics/DiagnosticMessageProcessor.h"
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -553,6 +554,27 @@ void DiagnosticResponseBuilderWorks() {
 
 }
 
+void DiagnosticMessageProcessorWorks() {
+
+    DiagnosticMessageProcessor processor;
+
+    CANFrame response1 = processor.process(CANFrame(0x7E0, "Tester", {0x22, 0xF1, 0x90}));
+    assert(response1.getID() == 0x7E8 && response1.getSender() == "ECU" && response1.getDataBytesSnapshot()[0] == 0x62);
+
+    CANFrame response2 = processor.process(CANFrame(0x7E0, "Tester", {0x10, 0x03}));
+    assert(response2.getID() == 0x7E8 && response2.getSender() == "ECU" && response2.getDataBytesSnapshot()[0] == 0x50);
+
+    CANFrame response3 = processor.process(CANFrame(0x7E0, "Tester", {0x99}));
+    assert(response3.getID() == 0x7E8 && response3.getSender() == "ECU" && response3.getDataBytesSnapshot()[0] == 0x7F && response3.getDataBytesSnapshot()[1] == 0x99 && response3.getDataBytesSnapshot()[2] == 0x11);
+
+    CANFrame response4 = processor.process(CANFrame(0x7E0, "Tester", {0x22, 0xF1}));
+    assert(response4.getID() == 0x7E8 && response4.getSender() == "ECU" && response4.getDataBytesSnapshot()[0] == 0x7F && response4.getDataBytesSnapshot()[1] == 0x22 && response4.getDataBytesSnapshot()[2] == 0x13);
+
+    CANFrame response5 = processor.process(CANFrame(0x7E0, "Tester", {}));
+    assert(response5.getID() == 0x7E8 && response5.getSender() == "ECU" && response5.getDataBytesSnapshot()[0] == 0x7F && response5.getDataBytesSnapshot()[1] == 0x00 && response5.getDataBytesSnapshot()[2] == 0x13);
+
+}
+
 void CANTrafficAnalyzerWorks() {
     vector<CANFrame> frames = {CANFrame(256, "Engine", {11, 184}), CANFrame(512, "Brake", {1}), CANFrame(768, "Battery", {4}), CANFrame(999, "Transmission", {1, 2})};
     CANTrafficAnalyzer analyzer;
@@ -647,6 +669,7 @@ void testCAN() {
 void testUDS() {
     DiagnosticRequestParserWorks();
     DiagnosticResponseBuilderWorks();
+    DiagnosticMessageProcessorWorks();
 }
 
 int main() {
