@@ -196,7 +196,7 @@ void Vehicle::displayDecodedCANFrames() const {
     }
 }
 
-std::string Vehicle::analyzeCANBusTrafficReport() const {
+std::string Vehicle::getCANBusTrafficReportDisplay() const {
     std::vector<CANFrame> frames = bus.getTrafficSnapshot();
 
     CANTrafficAnalyzer analyzer;

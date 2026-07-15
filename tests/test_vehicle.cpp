@@ -16,6 +16,8 @@
 #include "DecodedCANFrame.h"
 #include "CANTrafficAnalyzer.h"
 #include "CANTrafficReport.h"
+#include "DiagnosticRequestParser.h"
+#include "DiagnosticRequest.h"
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -497,6 +499,32 @@ void CANFramePayloadSnapshotWorks() {
     assert(frame2.hasData() && frame2.getLength() == 2);
 }
 
+void DiagnosticRequestParserWorks() {
+    DiagnosticRequestParser parser;
+
+    DiagnosticRequest request1 = parser.parse(CANFrame(0x7E0, "Tester", {}));
+    assert(!request1.recognized && !request1.valid && request1.error == "empty diagnostic request");
+
+    DiagnosticRequest request2 = parser.parse(CANFrame(0x7E0, "Tester", {0x10, 0x03}));
+    assert(request2.recognized && request2.valid && request2.serviceId == 0x10 && request2.serviceName == "Diagnostic Session Control" && request2.parameters.size() == 1 && request2.parameters[0] == 0x03);
+
+    DiagnosticRequest request3 = parser.parse(CANFrame(0x7E0, "Tester", {0x10}));
+    assert(request3.recognized && !request3.valid && request3.error == "insufficient data");
+
+    DiagnosticRequest request4 = parser.parse(CANFrame(0x7E0, "Tester", {0x22, 0xF1, 0x90}));
+    assert(request4.recognized && request4.valid && request4.serviceId == 0x22 && request4.serviceName == "Read Data By Identifier" && request4.parameters.size() == 2 && request4.parameters[0] == 0xF1 && request4.parameters[1] == 0x90);
+    
+    DiagnosticRequest request5 = parser.parse(CANFrame(0x7E0, "Tester", {0x22, 0xF1}));
+    assert(request5.recognized && !request5.valid && request5.error == "insufficient data");
+
+    DiagnosticRequest request6 = parser.parse(CANFrame(0x7E0, "Tester", {0x99}));
+
+    assert(!request6.recognized);
+    assert(!request6.valid);
+    assert(request6.serviceId == 0x99);
+    assert(request6.error == "unsupported diagnostic service");
+}
+
 void CANTrafficAnalyzerWorks() {
     vector<CANFrame> frames = {CANFrame(256, "Engine", {11, 184}), CANFrame(512, "Brake", {1}), CANFrame(768, "Battery", {4}), CANFrame(999, "Transmission", {1, 2})};
     CANTrafficAnalyzer analyzer;
@@ -523,7 +551,7 @@ void CANTrafficReportInVehicleWorks() {
     vehicle.transmitCANFrame(CANFrame(768, "Battery", {4}));
     vehicle.transmitCANFrame(CANFrame(999, "Transmission", {1, 2}));
 
-    assert(vehicle.analyzeCANBusTrafficReport() == "\nTotal frames: 4\nKnown frames: 3\nValid frames: 2\nMalformed frames: 1\nUnknown frames: 1\n\n1. Engine RPM: 3000 RPM\n2. Brake status: Pressed\n3. Battery CAN frame: insufficient data\n4. unknown CAN frame");
+    assert(vehicle.getCANBusTrafficReportDisplay() == "\nTotal frames: 4\nKnown frames: 3\nValid frames: 2\nMalformed frames: 1\nUnknown frames: 1\n\n1. Engine RPM: 3000 RPM\n2. Brake status: Pressed\n3. Battery CAN frame: insufficient data\n4. unknown CAN frame");
 }
 
 void testECU(const string& code, const string& name, const Severity& severity) {
@@ -586,6 +614,7 @@ void testCAN() {
     decodedDisplayWorks();
     CANTrafficAnalyzerWorks();
     CANTrafficReportInVehicleWorks();
+    DiagnosticRequestParserWorks();
 }
 
 int main() {
