@@ -21,6 +21,7 @@
 #include "diagnostics/DiagnosticResponseBuilder.h"
 #include "diagnostics/DiagnosticResponse.h"
 #include "diagnostics/DiagnosticMessageProcessor.h"
+#include "transport/IsoTpSegmenter.h"
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -558,20 +559,59 @@ void DiagnosticMessageProcessorWorks() {
 
     DiagnosticMessageProcessor processor;
 
-    CANFrame response1 = processor.process(CANFrame(0x7E0, "Tester", {0x22, 0xF1, 0x90}));
-    assert(response1.getID() == 0x7E8 && response1.getSender() == "ECU" && response1.getDataBytesSnapshot()[0] == 0x62);
+    vector<CANFrame> responses1 = processor.process(CANFrame(0x7E0, "Tester", {0x22, 0xF1, 0x90}));
+    assert(responses1[0].getID() == 0x7E8 && responses1[0].getSender() == "ECU" && responses1[0].getDataBytesSnapshot()[0] == 0x01 && responses1[0].getDataBytesSnapshot()[1] == 0x62);
 
-    CANFrame response2 = processor.process(CANFrame(0x7E0, "Tester", {0x10, 0x03}));
-    assert(response2.getID() == 0x7E8 && response2.getSender() == "ECU" && response2.getDataBytesSnapshot()[0] == 0x50);
+    vector<CANFrame> responses2 = processor.process(CANFrame(0x7E0, "Tester", {0x10, 0x03}));
+    assert(responses2[0].getID() == 0x7E8 && responses2[0].getSender() == "ECU" && responses2[0].getDataBytesSnapshot()[0] == 0x01 && responses2[0].getDataBytesSnapshot()[1] == 0x50);
 
-    CANFrame response3 = processor.process(CANFrame(0x7E0, "Tester", {0x99}));
-    assert(response3.getID() == 0x7E8 && response3.getSender() == "ECU" && response3.getDataBytesSnapshot()[0] == 0x7F && response3.getDataBytesSnapshot()[1] == 0x99 && response3.getDataBytesSnapshot()[2] == 0x11);
 
-    CANFrame response4 = processor.process(CANFrame(0x7E0, "Tester", {0x22, 0xF1}));
-    assert(response4.getID() == 0x7E8 && response4.getSender() == "ECU" && response4.getDataBytesSnapshot()[0] == 0x7F && response4.getDataBytesSnapshot()[1] == 0x22 && response4.getDataBytesSnapshot()[2] == 0x13);
+    vector<CANFrame> responses3 = processor.process(CANFrame(0x7E0, "Tester", {0x99}));
+    assert(responses3[0].getID() == 0x7E8 && responses3[0].getSender() == "ECU" && responses3[0].getDataBytesSnapshot()[0] == 0x03 && responses3[0].getDataBytesSnapshot()[1] == 0x7F && responses3[0].getDataBytesSnapshot()[2] == 0x99 && responses3[0].getDataBytesSnapshot()[3] == 0x11);
 
-    CANFrame response5 = processor.process(CANFrame(0x7E0, "Tester", {}));
-    assert(response5.getID() == 0x7E8 && response5.getSender() == "ECU" && response5.getDataBytesSnapshot()[0] == 0x7F && response5.getDataBytesSnapshot()[1] == 0x00 && response5.getDataBytesSnapshot()[2] == 0x13);
+
+    vector<CANFrame> responses4 = processor.process(CANFrame(0x7E0, "Tester", {0x22, 0xF1}));
+    assert(responses4[0].getID() == 0x7E8 && responses4[0].getSender() == "ECU" && responses4[0].getDataBytesSnapshot()[0] == 0x03 && responses4[0].getDataBytesSnapshot()[1] == 0x7F && responses4[0].getDataBytesSnapshot()[2] == 0x22 && responses4[0].getDataBytesSnapshot()[3] == 0x13);
+
+    vector<CANFrame> responses5 = processor.process(CANFrame(0x7E0, "Tester", {}));
+    assert(responses5[0].getID() == 0x7E8 && responses5[0].getSender() == "ECU" && responses5[0].getDataBytesSnapshot()[0] == 0x03 && responses5[0].getDataBytesSnapshot()[1] == 0x7F && responses5[0].getDataBytesSnapshot()[2] == 0x00 && responses5[0].getDataBytesSnapshot()[3] == 0x13);
+}
+
+void IsoTpSegmenterWorks() {
+    IsoTpSegmenter segmenter;
+
+    vector<CANFrame> responses1 = segmenter.segmentFrames(0x7E0, "Tester", {0x22});
+
+    vector<uint8_t> payload = responses1[0].getDataBytesSnapshot();
+
+    assert(payload[0] == 0x01 && payload[1] == 0x22 && responses1.size() == 1);
+
+
+    vector<CANFrame> responses2 = segmenter.segmentFrames(0x7E0, "Tester", {0x22, 0x24, 0x31, 0x1F, 0xEE, 0xFF, 0x11});
+    payload = responses2[0].getDataBytesSnapshot();
+    assert(payload[0] == 0x07 && payload[1] == 0x22 && payload[2] == 0x24 && payload[3] == 0x31 && payload[4] == 0x1F && payload[5] == 0xEE && payload[6] == 0xFF && payload[7] == 0x11 && responses2.size() == 1);
+
+
+    vector<CANFrame> responses3 = segmenter.segmentFrames(0x7E0, "Tester", {0x22, 0x24, 0x31, 0x1F, 0xEE, 0xFF, 0x11, 0xA1});
+    vector<uint8_t> payload1 = responses3[0].getDataBytesSnapshot();
+
+    assert(responses3.size() == 2);
+    assert(payload1[0] == 0x10 && payload1[1] == 0x08 && payload1[2] == 0x22 && payload1[3] == 0x24 && payload1[4] == 0x31 && payload1[5] == 0x1F && payload1[6] == 0xEE && payload1[7] == 0xFF);
+    
+    vector<uint8_t> payload2 = responses3[1].getDataBytesSnapshot();
+    assert(payload2[0] == 0x21 && payload2[1] == 0x11 && payload2[2] == 0xA1);
+
+    vector<CANFrame> responses4 = segmenter.segmentFrames(0x7E0, "Tester", {0x22, 0x24, 0x31, 0x1F, 0xEE, 0xFF, 0x11, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0x08, 0x09, 0x02, 0x03, 0x04});
+    payload1 = responses4[0].getDataBytesSnapshot();
+
+    assert(responses4.size() == 3);
+    assert(payload1[0] == 0x10 && payload1[1] == 0x14 && payload1[2] == 0x22 && payload1[3] == 0x24 && payload1[4] == 0x31 && payload1[5] == 0x1F && payload1[6] == 0xEE && payload1[7] == 0xFF);
+    
+    payload2 = responses4[1].getDataBytesSnapshot();
+    assert(payload2[0] == 0x21 && payload2[1] == 0x11 && payload2[2] == 0xA1 && payload2[3] == 0xA2 && payload2[4] == 0xA3 && payload2[5] == 0xA4 && payload2[6] == 0xA5 && payload2[7] == 0xA6);
+
+    vector<uint8_t> payload3 = responses4[2].getDataBytesSnapshot();
+    assert(payload3[0] == 0x22 && payload3[1] == 0xA7 && payload3[2] == 0xA8 && payload3[3] == 0x08 && payload3[4] == 0x09 && payload3[5] == 0x02 && payload3[6] == 0x03 && payload3[7] == 0x04);
 
 }
 
@@ -670,6 +710,7 @@ void testUDS() {
     DiagnosticRequestParserWorks();
     DiagnosticResponseBuilderWorks();
     DiagnosticMessageProcessorWorks();
+    IsoTpSegmenterWorks();
 }
 
 int main() {

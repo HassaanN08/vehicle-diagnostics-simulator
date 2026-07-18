@@ -7,11 +7,14 @@ DiagnosticResponse DiagnosticResponseBuilder::buildResponse(const DiagnosticRequ
     response.originalServiceId = request.serviceId;
 
     if (request.valid) {
-        response.responseServiceId = 0x40 + response.originalServiceId;
-        response.positive = true;
-        response.valid = true;
-        response.responseName = "Positive response: " + request.serviceName;
-        response.payload.push_back(response.responseServiceId);
+        switch(request.serviceId) {
+            default:
+                response.responseServiceId = 0x40 + response.originalServiceId;
+                response.positive = true;
+                response.valid = true;
+                response.responseName = "Positive response: " + request.serviceName;
+                response.payload.push_back(response.responseServiceId);
+        }
     } else if (!request.recognized && request.serviceId != 0) {
         response.valid = true;
         response.responseServiceId = 0x7F;

@@ -1,7 +1,8 @@
 #pragma once
+#include <vector>
 #include "CANFrame.h"
 
 class DiagnosticMessageProcessor {
     public:
-        CANFrame process(const CANFrame& frame) const;
+        std::vector<CANFrame> process(const CANFrame& frame) const;
 };
