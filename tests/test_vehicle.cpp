@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <cstdint>
 #include "DTC.h"
 #include "ECU.h"
 #include "Vehicle.h"
@@ -22,6 +23,7 @@
 #include "diagnostics/DiagnosticResponse.h"
 #include "diagnostics/DiagnosticMessageProcessor.h"
 #include "transport/IsoTpSegmenter.h"
+#include "diagnostics/DiagnosticDataStore.h"
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -615,6 +617,26 @@ void IsoTpSegmenterWorks() {
 
 }
 
+void diagnosticDataStoreWorks() {
+    DiagnosticDataStore store;
+
+    string vin = "1FTFW1EF0HE123456";
+    vector<uint8_t> vinHex;
+
+    for (const char& character : vin) {
+        vinHex.push_back(static_cast<int>(character));
+    }
+
+    vector<uint8_t> bytes = store.returnBytes({0xF1, 0x90});
+
+    assert(store.dataIdentifierAccepted({0xF1, 0x90}));
+    assert(bytes.size() == 17 && bytes == vinHex);
+
+    bytes = store.returnBytes({0x99, 0xFF});
+
+    assert(bytes.size() == 0);
+}
+
 void CANTrafficAnalyzerWorks() {
     vector<CANFrame> frames = {CANFrame(256, "Engine", {11, 184}), CANFrame(512, "Brake", {1}), CANFrame(768, "Battery", {4}), CANFrame(999, "Transmission", {1, 2})};
     CANTrafficAnalyzer analyzer;
@@ -711,6 +733,7 @@ void testUDS() {
     DiagnosticResponseBuilderWorks();
     DiagnosticMessageProcessorWorks();
     IsoTpSegmenterWorks();
+    diagnosticDataStoreWorks();
 }
 
 int main() {

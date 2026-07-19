@@ -25,6 +25,7 @@ add_executable(vehicle-diagnostics-simulator
     src/diagnostics/DiagnosticResponseBuilder.cpp
     src/diagnostics/DiagnosticMessageProcessor.cpp
     src/transport/IsoTpSegmenter.cpp
+    src/diagnostics/DiagnosticDataStore.cpp
 )
 
 add_executable(vehicle-diagnostics-tests
@@ -44,6 +45,7 @@ add_executable(vehicle-diagnostics-tests
     src/diagnostics/DiagnosticResponseBuilder.cpp
     src/diagnostics/DiagnosticMessageProcessor.cpp
     src/transport/IsoTpSegmenter.cpp
+    src/diagnostics/DiagnosticDataStore.cpp
 )
 
 target_include_directories(vehicle-diagnostics-simulator PRIVATE include)
