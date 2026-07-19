@@ -1,7 +1,7 @@
-#include "diagnostics/DiagnosticResponseBuilder.h"
-#include "diagnostics/DiagnosticResponse.h"
-#include "diagnostics/DiagnosticRequest.h"
-#include "diagnostics/DiagnosticDataStore.h"
+#include "DiagnosticResponseBuilder.h"
+#include "DiagnosticResponse.h"
+#include "DiagnosticRequest.h"
+#include "DiagnosticDataStore.h"
 #include <cstdint>
 #include <vector>
 

@@ -1,6 +1,6 @@
 #include <vector>
 #include <cstdint>
-#include "diagnostics/DiagnosticDataStore.h"
+#include "DiagnosticDataStore.h"
 
 bool DiagnosticDataStore::dataIdentifierAccepted(const int& dataIdentifier) const {
     switch (dataIdentifier) {

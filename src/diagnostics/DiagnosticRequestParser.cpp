@@ -1,6 +1,6 @@
 #include <string>
 #include <vector>
-#include "diagnostics/DiagnosticRequestParser.h"
+#include "DiagnosticRequestParser.h"
 #include "CANFrame.h"
 
 DiagnosticRequest DiagnosticRequestParser::parse(const CANFrame& frame) const {

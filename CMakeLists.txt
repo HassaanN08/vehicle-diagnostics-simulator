@@ -48,6 +48,16 @@ add_executable(vehicle-diagnostics-tests
     src/diagnostics/DiagnosticDataStore.cpp
 )
 
-target_include_directories(vehicle-diagnostics-simulator PRIVATE include)
+target_include_directories(vehicle-diagnostics-simulator 
+    PRIVATE 
+        include
+        include/diagnostics
+        include/transport
+)
 
-target_include_directories(vehicle-diagnostics-tests PRIVATE include)
+target_include_directories(vehicle-diagnostics-tests
+    PRIVATE 
+        include
+        include/diagnostics
+        include/transport
+)

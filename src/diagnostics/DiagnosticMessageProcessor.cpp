@@ -1,10 +1,10 @@
 #include <vector>
-#include "diagnostics/DiagnosticMessageProcessor.h"
-#include "diagnostics/DiagnosticRequestParser.h"
-#include "diagnostics/DiagnosticRequest.h"
-#include "diagnostics/DiagnosticResponseBuilder.h"
-#include "diagnostics/DiagnosticResponse.h"
-#include "transport/IsoTpSegmenter.h"
+#include "DiagnosticMessageProcessor.h"
+#include "DiagnosticRequestParser.h"
+#include "DiagnosticRequest.h"
+#include "DiagnosticResponseBuilder.h"
+#include "DiagnosticResponse.h"
+#include "IsoTpSegmenter.h"
 
 std::vector<CANFrame> DiagnosticMessageProcessor::process(const CANFrame& requestFrame) const {
     DiagnosticRequestParser parser;

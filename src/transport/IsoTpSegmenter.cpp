@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <string>
 #include "CANFrame.h"
-#include "transport/IsoTpSegmenter.h"
+#include "IsoTpSegmenter.h"
 
 std::vector<CANFrame> IsoTpSegmenter::segmentFrames(const int& id, const std::string& sender, const std::vector<uint8_t>& payload) const {
     std::vector<CANFrame> segmentedFrames;

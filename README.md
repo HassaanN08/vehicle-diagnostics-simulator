@@ -1,86 +1,319 @@
 # Vehicle Diagnostics Simulator
 
-A C++ console-based vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, ECU communication status, active faults, cleared fault history, diagnostic sessions, diagnostic event logging, result-based operation handling, and basic CAN bus traffic simulation.
+A Modern C++ vehicle diagnostics simulator that models ECUs, diagnostic trouble codes, diagnostic sessions, CAN traffic, CAN signal decoding, simplified UDS request and response handling, diagnostic data retrieval, and ISO-TP response segmentation.
 
-This project is part of a long-term systems engineering portfolio focused on Modern C++, embedded-style thinking, diagnostics, vehicle platforms, and transferable software architecture skills.
+The project began as a console-based vehicle and fault simulator. It is now being developed into a testable automotive diagnostics and middleware portfolio project with clear separation between domain logic, diagnostic protocol behavior, transport behavior, CAN modeling, and console interaction.
 
 ## Current Version
 
-**Version:** v0.8  
-**Status:** Working release
+**Version:** v0.10.0  
+**Status:** Working development release
 
-This version includes a multi-file C++ project structure, CMake build support, diagnostic trouble code modeling, ECU fault storage, vehicle-level scanning, an interactive console menu, ECU registration through the menu, diagnostic event logging, ECU communication status, result enums for clearer operation outcomes, assert-based tests, cleared fault history per ECU, diagnostic session handling, extracted console input helpers, an extracted `DiagnosticLog` component, a capacity-limited diagnostic log buffer, and basic CAN bus simulation.
-
-## Features
-
-* Create a simulated vehicle with multiple ECUs
-* Store diagnostic trouble codes inside ECUs
-* Add faults to a specific ECU through the menu
-* Display all ECUs
-* Display ECU communication status
-* Scan the full vehicle
-* Display active DTCs for each online ECU
-* Show offline ECUs as not responding during scans
-* Clear active faults from a specific ECU
-* Move cleared faults into ECU fault history
-* Display cleared fault history for a specific ECU
-* Prevent clearing faults from offline ECUs
-* Display overall vehicle health
-* Treat offline ECUs as vehicle health issues
-* Add new ECUs through the menu
-* Reject duplicate ECU names
-* Set ECU communication status to Online or Offline
-* Display the current diagnostic session
-* Switch between Default Session and Extended Session
-* Require Extended Session before clearing faults
-* Display a diagnostic event log
-* Store diagnostic log events in a dedicated `DiagnosticLog` component
-* Limit diagnostic log storage to the most recent 50 events
-* Discard the oldest log entry when log capacity is exceeded
-* Log successful ECU additions
-* Log successful fault additions
-* Log successful fault clearing
-* Log vehicle scan events
-* Log successful ECU status changes
-* Log diagnostic session changes
-* Handle invalid ECU names
-* Convert user severity input into a strongly typed `Severity` enum
-* Use `enum class` result types instead of magic return codes
-* Use value ownership for ECUs, DTCs, CAN frames, logs, and the CAN bus
-* Keep ECU search logic encapsulated inside the `Vehicle` class
-* Extract low-level console input helpers into a separate module
-* Extract menu actions into a separate module
-* Build the project using CMake
-* Build and run a separate assert-based test executable
-* Basic CAN frame model with message ID, sender name, and raw data bytes
-* CAN frame payload capped at 8 bytes to model classic CAN behavior
-* CAN bus traffic history using a capacity-limited buffer
-* Vehicle-owned CAN bus integration
-* Menu option to simulate sample CAN traffic
-* Menu option to display recorded CAN bus traffic
-
-## Menu Options
-
-The current console menu supports:
+The current milestone adds an end-to-end UDS-inspired VIN retrieval flow:
 
 ```text
-Vehicle Diagnostics Simulator
-
-1. Display all ECUs
-2. Scan vehicle
-3. Display vehicle health
-4. Add fault to ECU
-5. Clear faults from ECU
-6. Add ECU
-7. Display diagnostic log
-8. Set ECU communication status
-9. Display ECU fault history
-10. Display Diagnostic Session
-11. Set Diagnostic Session
-12. Simulate sample CAN traffic
-13. Display CAN bus traffic
-14. Exit
+Diagnostic CAN request
+→ UDS request parsing
+→ response construction
+→ DID-backed VIN retrieval
+→ logical 20-byte UDS response
+→ ISO-TP segmentation
+→ multiple response CAN frames
 ```
+
+The project is intentionally simplified and is not presented as full ISO 14229 or ISO 15765 compliance.
+
+---
+
+## Current Capabilities
+
+### Vehicle and ECU Simulation
+
+- Create a simulated vehicle containing multiple ECUs
+- Add ECUs at runtime
+- Reject duplicate ECU names
+- Store active diagnostic trouble codes inside ECUs
+- Store cleared fault history separately from active faults
+- Scan the full vehicle
+- Display ECU communication status
+- Set ECUs to Online or Offline
+- Treat offline ECUs as vehicle health issues
+- Prevent communication-dependent operations on offline ECUs
+- Display overall vehicle health
+- Clear faults from a selected ECU
+- Require Extended Session before clearing faults
+- Return scoped result enums instead of magic integer codes
+
+### Diagnostic Sessions
+
+- Default Session
+- Extended Session
+- Session-dependent fault clearing
+- Structured session-change results
+
+### Diagnostic Event Logging
+
+- Vehicle-owned `DiagnosticLog`
+- Capacity limited to the most recent 50 entries
+- Oldest entry discarded when capacity is exceeded
+- Logs important actions such as:
+  - vehicle scans
+  - ECU additions
+  - fault additions
+  - fault clearing
+  - ECU status changes
+  - diagnostic session changes
+
+### CAN Modeling
+
+- `CANFrame` with:
+  - CAN identifier
+  - sender name
+  - raw byte payload
+- Classical CAN payload limited to 8 bytes
+- Read-only payload snapshots
+- `CANBus` traffic history
+- CAN traffic capacity limited to 100 frames
+- Oldest frame discarded when capacity is exceeded
+- Vehicle-owned CAN bus
+- Sample and custom CAN traffic support
+- CAN traffic reporting and analysis
+
+### CAN Signal Decoding
+
+The simulator currently recognizes these signal-oriented CAN identifiers:
+
+| CAN ID | Source | Decoded Signal |
+|---|---|---|
+| `256` | Engine | RPM |
+| `512` | Brake | Pressed, Released, or Unknown |
+| `768` | Battery | Voltage |
+
+Unknown identifiers remain distinguishable from known but malformed frames.
+
+### CAN Traffic Analysis
+
+`CANTrafficAnalyzer` produces a structured `CANTrafficReport` containing:
+
+- total frame count
+- known frame count
+- valid frame count
+- malformed frame count
+- unknown frame count
+- individual decoded results
+
+### UDS-Inspired Diagnostics
+
+The simulator currently recognizes these service identifiers:
+
+| Service ID | Service |
+|---|---|
+| `0x10` | Diagnostic Session Control |
+| `0x14` | Clear Diagnostic Information |
+| `0x19` | Read DTC Information |
+| `0x22` | Read Data By Identifier |
+
+Current behavior includes:
+
+- structured request parsing
+- recognized, valid, and error states
+- positive response service IDs
+- negative responses
+- service-specific request validation
+- one-DID-per-request simplification for service `0x22`
+
+### Supported Negative Response Codes
+
+| NRC | Meaning |
+|---|---|
+| `0x11` | Service Not Supported |
+| `0x13` | Incorrect Message Length or Invalid Format |
+| `0x31` | Request Out Of Range |
+
+Examples:
+
+```text
+Unsupported service:
+99
+→ 7F 99 11
+```
+
+```text
+Malformed Read Data By Identifier request:
+22 F1
+→ 7F 22 13
+```
+
+```text
+Unsupported but correctly formed DID:
+22 12 34
+→ 7F 22 31
+```
+
+### Diagnostic Data Store
+
+The current `DiagnosticDataStore` supports:
+
+```text
+DID F190 = Vehicle Identification Number
+```
+
+The simulated VIN is:
+
+```text
+1FTFW1EF0HE123456
+```
+
+It contains 17 characters and is returned as 17 byte values.
+
+### End-to-End VIN Retrieval
+
+Request:
+
+```text
+22 F1 90
+```
+
+Logical positive response:
+
+```text
+62 F1 90 [17 VIN bytes]
+```
+
+The complete response is 20 logical bytes:
+
+```text
+1 response service byte
++ 2 DID bytes
++ 17 VIN bytes
+= 20 bytes
+```
+
+Because the response exceeds the Classical CAN 8-byte limit, it is passed to the ISO-TP transport layer.
+
+### Simplified ISO-TP Response Segmentation
+
+The transport layer currently supports outbound segmentation only.
+
+Supported frame types:
+
+- Single Frame
+- First Frame
+- Consecutive Frame
+
+Current behavior:
+
+- empty payload returns no frames
+- payloads from 1 to 7 bytes produce one Single Frame
+- payloads from 8 to 4095 bytes produce one First Frame followed by Consecutive Frames
+- payloads larger than 4095 bytes are rejected
+- no frame exceeds 8 bytes
+- payload order is preserved
+- no padding is added
+- Consecutive Frame sequence numbers begin at 1
+- sequence numbers wrap after 15
+
+Example Single Frame:
+
+```text
+Logical payload:
+50
+
+CAN payload:
+01 50
+```
+
+Example negative response:
+
+```text
+Logical payload:
+7F 99 11
+
+CAN payload:
+03 7F 99 11
+```
+
+Example 20-byte VIN response structure:
+
+```text
+First Frame:
+10 14 62 F1 90 31 46 54
+
+Consecutive Frame 1:
+21 46 57 31 45 46 30 48
+
+Consecutive Frame 2:
+22 45 31 32 33 34 35 36
+```
+
+This implementation pre-generates the complete ordered frame collection. It does not yet wait for a Flow Control frame.
+
+---
+
+## Architecture Overview
+
+The project is divided into distinct responsibilities.
+
+### Signal-Oriented CAN Flow
+
+```text
+CANFrame
+→ CANDecoder
+→ DecodedCANFrame
+→ CANTrafficAnalyzer
+→ CANTrafficReport
+```
+
+### Diagnostic Request and Response Flow
+
+```text
+CANFrame request
+→ DiagnosticRequestParser
+→ DiagnosticRequest
+→ DiagnosticResponseBuilder
+→ DiagnosticDataStore
+→ DiagnosticResponse logical payload
+→ IsoTpSegmenter
+→ vector<CANFrame>
+```
+
+### Responsibility Boundaries
+
+```text
+CANFrame
+Stores one raw CAN message.
+
+CANBus
+Stores and transmits CAN frames inside the simulator.
+
+CANDecoder
+Interprets signal-oriented CAN frames such as RPM, brake status, and voltage.
+
+DiagnosticRequestParser
+Validates and interprets diagnostic request bytes.
+
+DiagnosticResponseBuilder
+Chooses positive or negative diagnostic behavior and builds a logical response.
+
+DiagnosticDataStore
+Provides data associated with supported diagnostic identifiers.
+
+IsoTpSegmenter
+Splits logical payloads into Classical CAN-sized ISO-TP frames.
+
+DiagnosticMessageProcessor
+Coordinates the request-to-response pipeline.
+
+Vehicle
+Owns vehicle state, ECUs, diagnostic sessions, logs, and CAN traffic.
+
+MenuActions
+Handles console workflows only.
+```
+
+No single class owns parsing, response policy, diagnostic data, transport segmentation, CAN storage, and console output.
+
+---
 
 ## Project Structure
 
@@ -88,8 +321,13 @@ Vehicle Diagnostics Simulator
 vehicle-diagnostics-simulator/
 ├── include/
 │   ├── CANBus.h
+│   ├── CANDecoder.h
+│   ├── CANDecoderHelperFunctions.h
 │   ├── CANFrame.h
+│   ├── CANTrafficAnalyzer.h
+│   ├── CANTrafficReport.h
 │   ├── ConsoleInput.h
+│   ├── DecodedCANFrame.h
 │   ├── DiagnosticLog.h
 │   ├── DTC.h
 │   ├── ECU.h
@@ -98,40 +336,171 @@ vehicle-diagnostics-simulator/
 │   ├── Severity.h
 │   ├── Vehicle.h
 │   ├── VehicleResults.h
-│   └── VehicleSession.h
+│   ├── VehicleSession.h
+│   ├── diagnostics/
+│   │   ├── DiagnosticDataStore.h
+│   │   ├── DiagnosticMessageProcessor.h
+│   │   ├── DiagnosticRequest.h
+│   │   ├── DiagnosticRequestParser.h
+│   │   ├── DiagnosticResponse.h
+│   │   └── DiagnosticResponseBuilder.h
+│   └── transport/
+│       └── IsoTpSegmenter.h
 ├── src/
 │   ├── CANBus.cpp
+│   ├── CANDecoder.cpp
+│   ├── CANDecoderHelperFunctions.cpp
 │   ├── CANFrame.cpp
+│   ├── CANTrafficAnalyzer.cpp
+│   ├── CANTrafficReport.cpp
 │   ├── ConsoleInput.cpp
+│   ├── DecodedCANFrame.cpp
 │   ├── DiagnosticLog.cpp
 │   ├── DTC.cpp
 │   ├── ECU.cpp
 │   ├── main.cpp
 │   ├── MenuActions.cpp
-│   └── Vehicle.cpp
+│   ├── Vehicle.cpp
+│   ├── diagnostics/
+│   │   ├── DiagnosticDataStore.cpp
+│   │   ├── DiagnosticMessageProcessor.cpp
+│   │   ├── DiagnosticRequestParser.cpp
+│   │   └── DiagnosticResponseBuilder.cpp
+│   └── transport/
+│       └── IsoTpSegmenter.cpp
 ├── tests/
 │   └── test_vehicle.cpp
 ├── notes/
-│   ├── project-scope.md
-│   └── v0.4-plan.md
 ├── CMakeLists.txt
 ├── .gitignore
 └── README.md
 ```
 
+---
+
+## Module Map
+
+### Core Vehicle Domain
+
+Files related to:
+
+- `Vehicle`
+- `ECU`
+- `DTC`
+- `Severity`
+- `ECUStatus`
+- `VehicleSession`
+- `VehicleResults`
+- `DiagnosticLog`
+
+These components model vehicle state, fault state, communication state, sessions, and vehicle-level operations.
+
+### CAN Model and Signal Decoding
+
+Files related to:
+
+- `CANFrame`
+- `CANBus`
+- `CANDecoder`
+- `CANDecoderHelperFunctions`
+- `DecodedCANFrame`
+- `CANTrafficAnalyzer`
+- `CANTrafficReport`
+
+These components model raw CAN traffic and decode selected signal-oriented frames.
+
+### Diagnostics
+
+Files inside:
+
+```text
+include/diagnostics/
+src/diagnostics/
+```
+
+These components parse diagnostic requests, build logical responses, retrieve DID-backed data, and coordinate diagnostics processing.
+
+### Transport
+
+Files inside:
+
+```text
+include/transport/
+src/transport/
+```
+
+The current transport component handles simplified ISO-TP response segmentation.
+
+### Console Interface
+
+Files related to:
+
+- `ConsoleInput`
+- `MenuActions`
+- `main`
+
+These components handle interactive input and display. Protocol and domain behavior should remain outside this layer.
+
+### Tests
+
+The current assert-based tests are stored in:
+
+```text
+tests/test_vehicle.cpp
+```
+
+The test file currently covers the full project. It may be split into separate vehicle, CAN, diagnostics, and transport test files as the codebase continues to grow.
+
+---
+
 ## Core Components
+
+### Vehicle
+
+Represents the complete simulated vehicle.
+
+Responsibilities include:
+
+- owning ECUs
+- owning the diagnostic session
+- owning the diagnostic log
+- owning the CAN bus
+- adding ECUs
+- preventing duplicate ECU names
+- adding faults
+- scanning ECUs
+- checking vehicle health
+- changing ECU communication status
+- clearing faults
+- enforcing diagnostic-session restrictions
+- exposing CAN traffic information
+- producing traffic-analysis reports
+
+### ECU
+
+Represents one Electronic Control Unit.
+
+Responsibilities include:
+
+- storing ECU name
+- storing active DTCs
+- storing cleared fault history
+- storing communication status
+- adding faults
+- clearing faults
+- moving cleared faults into history
+- reporting active faults
+- reporting fault history
 
 ### DTC
 
 Represents one diagnostic trouble code.
 
-Responsibilities:
+Stores:
 
-* Store fault code
-* Store fault description
-* Store severity
-* Display fault details
-* Convert severity enum values into readable text
+- fault code
+- fault description
+- severity
 
 Example:
 
@@ -139,506 +508,265 @@ Example:
 P0301 - Cylinder 1 Misfire Detected - High
 ```
 
-### Severity
+### DiagnosticLog
 
-A scoped enum used to represent fault severity.
+Stores the most recent 50 simulator events.
 
-Current values:
+When full:
 
-```cpp
-Severity::Low
-Severity::Medium
-Severity::High
+```text
+oldest entry removed
+newest entry added
 ```
 
-Using an enum keeps severity as a controlled internal type instead of relying on random strings.
-
-### ECUStatus
-
-A scoped enum used to represent whether an ECU is currently communicating.
-
-Current values:
-
-```cpp
-ECUStatus::Online
-ECUStatus::Offline
-```
-
-This allows the simulator to model ECUs that are present in the vehicle but not currently responding during a diagnostic scan.
-
-### VehicleSession
-
-A scoped enum used to represent the current diagnostic session for the vehicle.
-
-Current values:
-
-```cpp
-VehicleSession::DefaultSession
-VehicleSession::ExtendedSession
-```
-
-The vehicle starts in Default Session. Certain actions, such as clearing faults, require Extended Session.
-
-### VehicleResults
-
-Contains scoped enum result types used by vehicle-level operations.
-
-Current clear-fault results include:
-
-```cpp
-ClearFaultResult::SessionNotAllowed
-ClearFaultResult::ECUNotFound
-ClearFaultResult::NoFaultsToClear
-ClearFaultResult::FaultsCleared
-ClearFaultResult::ECUOffline
-```
-
-Current ECU status results include:
-
-```cpp
-ECUStatusResult::ECUNotFound
-ECUStatusResult::AlreadyInRequestedState
-ECUStatusResult::StatusChanged
-```
-
-Current diagnostic session results include:
-
-```cpp
-DiagnosticSessionResult::AlreadyInRequestedState
-DiagnosticSessionResult::SessionChanged
-```
-
-These result enums replace unclear integer return codes and make the code easier to read, maintain, and extend.
-
-### ECU
-
-Represents one Electronic Control Unit.
-
-Responsibilities:
-
-* Store ECU name
-* Store active DTCs
-* Store cleared fault history
-* Store communication status
-* Default to Online when created
-* Add diagnostic trouble codes
-* Display active faults
-* Display cleared fault history
-* Move active faults into fault history when faults are cleared
-* Report whether active faults exist
-* Report whether cleared fault history exists
-* Set communication status
-
-Examples of ECUs:
-
-* Engine
-* Brake
-* Battery
-* Transmission
-* Airbag Control Module
+The current log is session-only and does not persist after the program exits.
 
 ### CANFrame
 
-Represents one CAN-style message.
+Represents one raw CAN-style message.
 
-Responsibilities:
+Stores:
 
-* Store a message ID
-* Store the sender name
-* Store raw data bytes
-* Report payload length
-* Report whether the frame has data
-* Display frame contents
-* Cap payload data at 8 bytes to model classic CAN behavior
+- CAN identifier
+- sender name
+- raw byte payload
 
-The frame does not decode its data. It only stores raw message information.
+The payload is capped at 8 bytes to preserve Classical CAN behavior.
 
-Example sample frame:
-
-```text
-ID: 256
-Sender: Engine
-Length: 2
-Data: 11 184
-```
+The frame does not decode itself.
 
 ### CANBus
 
-Represents the simulated vehicle CAN bus traffic history.
+Stores recently transmitted CAN frames.
 
-Responsibilities:
-
-* Store transmitted CAN frames
-* Accept new CAN frames through `transmit`
-* Report whether traffic exists
-* Report traffic count
-* Display recorded traffic
-* Limit stored traffic to a fixed maximum capacity
-* Discard the oldest frame when capacity is exceeded
-
-The current CAN bus stores the most recent 100 frames.
-
-### Vehicle
-
-Represents the full simulated vehicle.
-
-Responsibilities:
-
-* Store multiple ECUs
-* Store the current diagnostic session
-* Own a `DiagnosticLog` component
-* Own a `CANBus` component
-* Add ECUs
-* Prevent duplicate ECU names
-* Add faults to a specific ECU
-* Set ECU communication status
-* Set diagnostic session
-* Scan all ECUs
-* Display all ECUs and their status
-* Check overall vehicle health
-* Treat offline ECUs as health issues
-* Clear faults from a specific ECU
-* Prevent fault clearing when an ECU is offline
-* Prevent fault clearing when the vehicle is in Default Session
-* Display fault history for a specific ECU
-* Record diagnostic events through `DiagnosticLog`
-* Transmit CAN frames into the vehicle-owned CAN bus
-* Display CAN bus traffic
-* Report whether CAN traffic exists
-* Report CAN traffic count
-* Encapsulate ECU search logic
-* Return meaningful operation results using enum classes
-
-### DiagnosticLog
-
-Represents the simulator’s diagnostic event log.
-
-Responsibilities:
-
-* Store diagnostic log messages
-* Add new diagnostic log entries
-* Display stored diagnostic log entries
-* Report whether logs exist
-* Limit stored log entries to a fixed maximum capacity
-* Remove the oldest log entry when capacity is exceeded
-
-The current diagnostic log stores the most recent 50 events. This introduces bounded storage and prevents the log from growing indefinitely.
-
-### ConsoleInput
-
-Contains low-level console input helper functions.
-
-Responsibilities:
-
-* Clear invalid `cin` state
-* Ignore leftover input
-* Validate integer input
-* Read full-line text input
-
-This keeps `main.cpp` more focused on menu flow instead of low-level input handling.
-
-### MenuActions
-
-Contains menu-related user workflow functions.
-
-Responsibilities:
-
-* Display the main menu
-* Add faults through user input
-* Add ECUs through user input
-* Clear faults through user input
-* Set ECU communication status through user input
-* Display ECU fault history through user input
-* Set diagnostic sessions through user input
-* Simulate sample CAN traffic
-* Display CAN bus traffic through the menu
-
-This keeps `main.cpp` smaller and makes menu behavior easier to maintain.
-
-## Current Diagnostic Model
-
-The simulator uses this hierarchy:
+Current maximum:
 
 ```text
-Vehicle
-  ├── DiagnosticLog
-  ├── CANBus
-  │     └── CANFrames
-  └── ECU
-        ├── Active DTCs
-        └── Cleared DTC History
+100 frames
 ```
 
-A vehicle owns multiple ECUs.
-Each ECU owns its active diagnostic trouble codes.
-Each ECU also owns cleared fault history.
-Each ECU owns its own communication status.
-The vehicle owns the current diagnostic session.
-The vehicle owns a diagnostic log component.
-The vehicle owns a CAN bus component.
-The CAN bus stores CAN frames.
+When capacity is exceeded, the oldest frame is discarded.
 
-The menu interacts with the vehicle, and the vehicle coordinates diagnostic and bus-related actions.
+### CANDecoder
 
-## Diagnostic Sessions
+Interprets selected signal-oriented CAN frames.
 
-The simulator supports basic diagnostic sessions.
+It does not process UDS requests.
 
-Current sessions:
+### DiagnosticRequestParser
+
+Converts a diagnostic request `CANFrame` into a structured `DiagnosticRequest`.
+
+It determines:
+
+- source CAN ID
+- service ID
+- service name
+- parameters
+- whether the service is recognized
+- whether the request shape is valid
+- parser error information
+
+It does not retrieve data or execute vehicle behavior.
+
+### DiagnosticResponseBuilder
+
+Converts a `DiagnosticRequest` into a logical `DiagnosticResponse`.
+
+It determines:
+
+- positive or negative response
+- response service ID
+- negative response code
+- response description
+- complete logical payload
+
+It does not build CAN frames.
+
+### DiagnosticDataStore
+
+Stores data that may be retrieved through diagnostic identifiers.
+
+Currently supported:
 
 ```text
-Default Session
-Extended Session
+F190 → VIN
 ```
 
-The vehicle starts in Default Session.
+The data store does not build UDS responses or ISO-TP frames.
 
-Default Session represents a basic diagnostic mode where the user can view information, scan the vehicle, add simulator faults, inspect state, and simulate sample CAN traffic.
+### IsoTpSegmenter
 
-Extended Session represents a deeper diagnostic mode where stronger diagnostic actions are allowed.
+Accepts:
 
-Clearing faults requires Extended Session. If the user attempts to clear faults while the vehicle is still in Default Session, the simulator rejects the operation and returns a session-related result.
+- response CAN ID
+- sender
+- complete logical payload
 
-This makes the simulator more realistic because diagnostic tools do not allow every operation in every mode.
-
-## Active Faults vs Fault History
-
-The simulator separates active faults from cleared fault history.
-
-### Active Faults
-
-Active faults represent issues that currently exist in an ECU.
-
-These appear during a vehicle scan if the ECU is online.
-
-### Cleared Fault History
-
-Cleared fault history stores faults that previously existed but were cleared.
-
-When faults are cleared from an online ECU while the vehicle is in Extended Session:
+Returns:
 
 ```text
-Active faults -> Cleared fault history
-Active faults become empty
+std::vector<CANFrame>
 ```
 
-This allows the simulator to preserve diagnostic history instead of completely forgetting cleared faults.
+It does not know whether the payload contains a VIN, DTC information, session data, or another diagnostic response.
 
-## Offline ECU Behavior
+### DiagnosticMessageProcessor
 
-If an ECU is offline, the simulator treats it as not responding.
-
-During a vehicle scan:
+Coordinates:
 
 ```text
-Airbag Control Module ECU status is Offline
+parse request
+→ build response
+→ segment response
+→ return CAN frames
 ```
 
-The simulator does not display that ECU’s active DTCs during the scan because the diagnostic tool cannot communicate with it.
-
-Fault clearing is also blocked when an ECU is offline. If the user tries to clear faults from an offline ECU, the simulator returns a clear result showing that the ECU is offline and does not move active faults into history.
-
-## Diagnostic Log
-
-The simulator keeps a simple session-level diagnostic log.
-
-The log records successful actions such as:
-
-* Adding a new ECU
-* Adding a fault to an ECU
-* Clearing faults from an ECU
-* Scanning the vehicle
-* Changing ECU communication status
-* Changing diagnostic session
-
-Example:
+Current response rules:
 
 ```text
-Diagnostic Log:
-
-1. Added ECU: Transmission
-2. Added fault P0301 to Engine
-3. Vehicle scan performed
-4. Set Airbag Control Module status to Offline
-5. Diagnostic Session changed to Extended
-6. Cleared faults from Engine
+Response CAN ID = Request CAN ID + 8
+Sender = ECU
 ```
 
-The diagnostic log is stored in a dedicated `DiagnosticLog` component.
+---
 
-The current log has a maximum capacity of 50 entries. When the log is full and a new event is added, the oldest stored event is discarded and the newest event is stored.
+## Console Interface
 
-The log does not currently persist after the program closes.
+The console application currently supports vehicle, ECU, diagnostic session, fault, logging, and CAN traffic workflows.
 
-## CAN Bus Simulation
+Current console capabilities include:
 
-The simulator now includes a basic CAN bus model.
+- displaying ECUs
+- scanning the vehicle
+- displaying vehicle health
+- adding faults
+- clearing faults
+- adding ECUs
+- displaying diagnostic logs
+- changing ECU communication status
+- displaying ECU fault history
+- displaying and changing diagnostic sessions
+- simulating CAN traffic
+- displaying CAN traffic
+- decoding and analyzing CAN traffic
+- entering selected custom CAN data
 
-Current CAN behavior includes:
+The UDS and ISO-TP diagnostic pipeline is currently exercised through the core API and automated tests. It is not yet exposed as a complete interactive menu workflow.
 
-* `CANFrame` represents one CAN-style message
-* `CANBus` stores transmitted CAN frames
-* `Vehicle` owns the `CANBus`
-* The menu can simulate sample CAN traffic
-* The menu can display recorded CAN bus traffic
-* CAN frame data is stored as raw bytes
-* Classic CAN payload length is capped at 8 bytes
-* CAN bus traffic history is capacity-limited
+---
 
-Current sample traffic:
+## Testing
 
-```text
-ID 256, Sender Engine, Data [11, 184]
-ID 512, Sender Brake, Data [1]
-ID 768, Sender Battery, Data [12, 6]
-```
+The project currently uses a separate assert-based test executable.
 
-These are temporary sample messages used to demonstrate bus behavior. They are not decoded into real signals yet.
+Tests cover:
 
-## Unit Tests
+### Vehicle and ECU Behavior
 
-The project includes a separate assert-based test executable.
+- default ECU status
+- online and offline state changes
+- fault storage
+- active-fault reporting
+- cleared fault history
+- duplicate ECU rejection
+- vehicle health
+- diagnostic sessions
+- session-dependent fault clearing
+- offline ECU restrictions
+- result enums
 
-Current tests cover:
+### Diagnostic Logging
 
-* ECU defaults to Online
-* ECU can be set to Offline
-* ECU reports no faults when created
-* ECU reports fault history as empty when created
-* ECU reports faults after adding a DTC
-* ECU reports no active faults after clearing faults
-* Clearing faults moves active faults into cleared fault history
-* Vehicle accepts new ECUs
-* Vehicle rejects duplicate ECU names
-* Vehicle reports healthy when ECUs are online and no faults exist
-* Vehicle reports issues when an ECU is offline
-* Clearing faults returns the correct result enum
-* Clearing faults from an offline ECU returns `ClearFaultResult::ECUOffline`
-* Vehicle starts in Default Session
-* Changing to Extended Session returns `DiagnosticSessionResult::SessionChanged`
-* Changing to the same session returns `DiagnosticSessionResult::AlreadyInRequestedState`
-* Clearing faults in Default Session returns `ClearFaultResult::SessionNotAllowed`
-* Clearing faults in Extended Session returns `ClearFaultResult::FaultsCleared`
-* Setting ECU status returns the correct result enum
-* Diagnostic log capacity remains capped
-* Diagnostic log discards the oldest entry when capacity is exceeded
-* CANFrame stores message ID
-* CANFrame stores sender name
-* CANFrame reports correct data length
-* CANFrame reports whether it has data
-* CANFrame caps payload length at 8 bytes
-* CANBus starts empty
-* CANBus becomes non-empty after transmitting a frame
-* CANBus traffic count changes after transmitting frames
-* CANBus traffic history remains capped at 100 frames
-* CANBus discards the oldest frame when capacity is exceeded
-* Vehicle starts with no CAN traffic
-* Vehicle reports CAN traffic after transmitting a frame
-* Vehicle CAN traffic count updates after transmitting frames
+- adding log entries
+- 50-entry capacity
+- oldest-entry removal
 
-The tests are intentionally simple and use `assert()` instead of a full testing framework. This keeps the focus on testing fundamentals before introducing GoogleTest, Catch2, or other test frameworks.
+### CAN Modeling
 
-## Example Workflow
+- frame ID
+- sender
+- payload length
+- empty payload behavior
+- 8-byte payload cap
+- CAN bus traffic storage
+- traffic count
+- 100-frame capacity
+- oldest-frame removal
+- vehicle-owned CAN traffic
+- payload snapshot behavior
 
-A user can:
+### CAN Decoding and Analysis
 
-1. Start the simulator
-2. Display the current diagnostic session
-3. Display all ECUs
-4. Add a new ECU such as `Transmission`
-5. Add a fault to `Transmission`
-6. Scan the vehicle and see active faults
-7. Try to clear faults in Default Session and receive a clean failure message
-8. Switch to Extended Session
-9. Clear faults from `Transmission`
-10. Display `Transmission` fault history
-11. Add an ECU such as `Airbag Control Module`
-12. Set `Airbag Control Module` to Offline
-13. Scan the vehicle and see it marked as offline
-14. Try to clear faults from an offline ECU and receive a clean failure message
-15. Display vehicle health
-16. Display the diagnostic log
-17. Display CAN bus traffic before simulation and see no recorded traffic
-18. Simulate sample CAN traffic
-19. Display recorded CAN bus traffic
-20. Exit the program
+- Engine RPM decoding
+- Brake status decoding
+- Battery voltage decoding
+- malformed known frames
+- unknown frames
+- structured decoded results
+- traffic report counts
+- vehicle-level report display
 
-## Concepts Practiced
+### Diagnostic Request Parsing
 
-This project strengthens both C++ fundamentals and systems-style thinking.
+- empty requests
+- supported services
+- unsupported services
+- valid request lengths
+- malformed request lengths
+- service parameters
+- one-DID-per-request validation
 
-C++ concepts:
+### Diagnostic Response Building
 
-* Classes and objects
-* Encapsulation
-* Multi-file project structure
-* Header and implementation separation
-* `std::vector`
-* `std::deque`
-* `std::string`
-* `uint8_t`
-* `enum class`
-* Const member functions
-* Passing by reference and const reference
-* Private helper methods
-* Value ownership
-* Return values for operation success/failure
-* Result enums instead of magic numbers
-* Moving data between containers
-* Bounded storage
-* FIFO-style log and bus behavior
-* Console input handling
-* Menu-driven program flow
-* `assert()`-based unit testing
-* CMake build configuration
-* Multiple CMake executables
+- positive response service IDs
+- NRC `0x11`
+- NRC `0x13`
+- NRC `0x31`
+- positive VIN response
+- 20-byte logical VIN payload
+- malformed requests
+- unsupported DIDs
 
-Systems concepts:
+### Diagnostic Data Store
 
-* Component hierarchy
-* Fault modeling
-* Diagnostic scanning
-* Health checks
-* Module-level responsibility
-* Simple system state inspection
-* Safe object ownership
-* Event logging
-* Communication status modeling
-* State-dependent behavior
-* Session-dependent behavior
-* Permission-gated operations
-* Fault history tracking
-* Bounded log storage
-* Capacity-limited buffers
-* Message modeling
-* Traffic history modeling
-* Automated behavior verification
-* Build tooling
+- supported DID recognition
+- VIN byte retrieval
+- 17-byte VIN length
+- byte order
+- unsupported DID behavior
 
-Automotive concepts:
+### ISO-TP
 
-* ECUs
-* Diagnostic trouble codes
-* Active faults
-* Cleared fault history
-* Fault severity
-* Vehicle scanning
-* Fault clearing
-* ECU communication status
-* Offline / not responding ECU behavior
-* Diagnostic sessions
-* Basic diagnostic workflow
-* Diagnostic event history
-* CAN-style message modeling
-* CAN bus traffic history
-* Raw CAN payload bytes
-* Classic CAN 8-byte payload limit
+- one-byte Single Frame
+- seven-byte Single Frame boundary
+- eight-byte multi-frame boundary
+- First Frame length information
+- Consecutive Frame sequence numbers
+- 20-byte payload segmentation
+- frame counts
+- byte ordering
 
-## How to Run
+### End-to-End Diagnostics
 
-This project uses CMake.
+- `22 F1 90` VIN request
+- positive `62 F1 90` logical response
+- three ISO-TP response frames
+- response CAN ID
+- ECU sender
+- VIN bytes distributed across frames
+- unsupported DID response
+- malformed DID request response
 
-### Build
+The project intentionally uses `assert()` while the focus remains on testing fundamentals. A professional testing framework may be introduced later.
+
+---
+
+## Build and Run
+
+The project uses CMake and requires a C++17-compatible compiler.
+
+### Configure and Build
 
 ```bash
 cmake -S . -B build
@@ -647,164 +775,339 @@ cmake --build build
 
 ### Run the Simulator
 
-#### Linux / macOS
+Linux or macOS:
 
 ```bash
 ./build/vehicle-diagnostics-simulator
 ```
 
-#### Windows
+Windows with a multi-configuration generator:
 
-```bash
+```text
 build\Debug\vehicle-diagnostics-simulator.exe
 ```
 
 ### Run the Tests
 
-#### Linux / macOS
+Linux or macOS:
 
 ```bash
 ./build/vehicle-diagnostics-tests
 ```
 
-#### Windows
+Windows with a multi-configuration generator:
 
-```bash
+```text
 build\Debug\vehicle-diagnostics-tests.exe
 ```
 
-## Manual Build Alternative
+Expected result:
 
-You can also compile manually with `g++`.
-
-### Simulator
-
-```bash
-g++ -std=c++17 src/main.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp src/ConsoleInput.cpp src/DiagnosticLog.cpp src/MenuActions.cpp src/CANFrame.cpp src/CANBus.cpp -Iinclude -o vehicle-diagnostics-simulator
-./vehicle-diagnostics-simulator
+```text
+All Tests Passed!
 ```
 
-### Tests
-
-```bash
-g++ -std=c++17 tests/test_vehicle.cpp src/Vehicle.cpp src/ECU.cpp src/DTC.cpp src/DiagnosticLog.cpp src/CANFrame.cpp src/CANBus.cpp -Iinclude -o vehicle-diagnostics-tests
-./vehicle-diagnostics-tests
-```
+---
 
 ## Version History
 
+### v0.10.0 - UDS VIN Retrieval and ISO-TP Response Segmentation
+
+- Added `DiagnosticRequest`
+- Added `DiagnosticRequestParser`
+- Added recognized, valid, parameter, and error request states
+- Added support for services `0x10`, `0x14`, `0x19`, and `0x22`
+- Added `DiagnosticResponse`
+- Added `DiagnosticResponseBuilder`
+- Added positive UDS-style response service IDs
+- Added negative responses using NRC `0x11`, `0x13`, and `0x31`
+- Added `DiagnosticMessageProcessor`
+- Added diagnostics module folders
+- Added `DiagnosticDataStore`
+- Added DID `0xF190`
+- Added simulated 17-character VIN retrieval
+- Added logical 20-byte VIN response
+- Added transport module
+- Added simplified `IsoTpSegmenter`
+- Added Single Frame generation
+- Added First Frame generation
+- Added Consecutive Frame generation
+- Added sequence numbering
+- Updated diagnostic processing to return multiple CAN frames
+- Added end-to-end VIN request and response tests
+- Documented current UDS and ISO-TP simplifications
+
+### v0.9 - Structured CAN Decoding and Traffic Analysis
+
+- Added structured `DecodedCANFrame`
+- Added `CANDecoder`
+- Added Engine RPM decoding
+- Added Brake status decoding
+- Added Battery voltage decoding
+- Added malformed and unknown frame handling
+- Added `CANTrafficAnalyzer`
+- Added `CANTrafficReport`
+- Added decoded traffic counts
+- Added vehicle-level CAN traffic analysis
+- Improved CAN payload snapshot behavior
+- Expanded CAN and analysis tests
+
 ### v0.8 - Basic CAN Bus Simulation
 
-* Added `CANFrame` to represent a single CAN-style message
-* Added `CANBus` to store recent CAN traffic
-* Integrated `CANBus` into `Vehicle`
-* Added sample CAN traffic simulation from Engine, Brake, and Battery ECUs
-* Added menu support for displaying CAN bus traffic
-* Added tests for CANFrame, CANBus, and Vehicle-level CAN traffic behavior
-* Updated menu flow to include CAN traffic actions
+- Added `CANFrame`
+- Added `CANBus`
+- Integrated CAN traffic into `Vehicle`
+- Limited Classical CAN payloads to 8 bytes
+- Added capacity-limited CAN traffic history
+- Added sample CAN traffic
+- Added menu support for CAN traffic
+- Added CAN frame and bus tests
 
-### v0.7 - Diagnostic Log Component and Capacity-Limited Logging
+### v0.7 - Capacity-Limited Diagnostic Logging
 
-* Extracted diagnostic log behavior into a dedicated `DiagnosticLog` component
-* Added capacity-limited diagnostic log storage
-* Limited diagnostic logs to the most recent 50 events
-* Added FIFO-style behavior that discards the oldest log when full
-* Expanded tests for diagnostic log behavior
+- Extracted `DiagnosticLog`
+- Limited logs to 50 entries
+- Added oldest-entry removal
+- Expanded diagnostic log tests
 
 ### v0.6 - Diagnostic Sessions
 
-* Added Default Session and Extended Session
-* Required Extended Session before clearing faults
-* Added diagnostic session result enums
-* Added session-related tests
+- Added Default Session
+- Added Extended Session
+- Required Extended Session before clearing faults
+- Added diagnostic-session result enums
+- Added session tests
 
-### v0.5 - Fault History and Offline Clear Protection
+### v0.5 - Fault History and Offline Protection
 
-* Added cleared fault history per ECU
-* Moved cleared active faults into fault history
-* Prevented clearing faults from offline ECUs
-* Added tests for fault history and offline clearing behavior
+- Added cleared fault history
+- Moved cleared faults into history
+- Prevented fault clearing from offline ECUs
+- Added fault-history tests
 
-### v0.4 - Basic Tests
+### v0.4 - Basic Automated Tests
 
-* Added assert-based tests for ECU and Vehicle behavior
-* Added separate test executable through CMake
+- Added assert-based tests
+- Added separate CMake test executable
 
 ### v0.3 - ECU Communication Status and Result Enums
 
-* Added Online and Offline ECU status
-* Added result enums for vehicle operations
-* Treated offline ECUs as vehicle health issues
+- Added Online and Offline ECU states
+- Added scoped result enums
+- Treated offline ECUs as vehicle health issues
 
-### v0.2 - Menu Cleanup, ECU Registration, and Diagnostic Logging
+### v0.2 - Menu, ECU Registration, and Logging
 
-* Added ECU registration through the menu
-* Added duplicate ECU rejection
-* Added basic diagnostic event logging
-* Improved menu flow
+- Added runtime ECU registration
+- Added duplicate ECU rejection
+- Added diagnostic event logging
+- Improved menu workflows
 
 ### v0.1 - Initial Simulator
 
-* Added basic Vehicle, ECU, and DTC models
-* Added active fault storage
-* Added vehicle scanning
-* Added basic menu-driven workflow
+- Added Vehicle
+- Added ECU
+- Added DTC
+- Added active fault storage
+- Added vehicle scanning
+- Added basic console interface
+
+---
 
 ## Current Limitations
 
-This is still an early simulator and intentionally keeps the model simple.
+The simulator intentionally remains incomplete.
 
-Current limitations:
+Current limitations include:
 
-* Default startup ECUs are still hardcoded
-* No file saving or loading
-* Diagnostic log is session-only
-* Diagnostic log has no timestamps
-* Diagnostic log stores plain strings instead of structured event objects
-* CAN messages are sample messages only
-* CAN data is not decoded into real signals yet
-* No UDS request/response behavior yet
-* No persistent diagnostic history
-* No real vehicle communication
-* No real SocketCAN integration
-* No CAN arbitration modeling
-* No custom user-entered CAN frames yet
-* Limited input validation
-* ECU communication state is limited to Online and Offline only
-* Diagnostic sessions are limited to Default and Extended only
-* Cleared fault history has no timestamps
-* Tests use basic `assert()` instead of a full testing framework
+- no persistent storage
+- no file loading or saving
+- no log timestamps
+- no structured log event objects
+- no cleared-fault timestamps
+- no real vehicle connection
+- no SocketCAN
+- no `vcan0`
+- no real CAN arbitration
+- no CAN FD
+- no extended CAN addressing model
+- no receive-side ISO-TP reassembly
+- no ISO-TP Flow Control state machine
+- no block-size handling
+- no STmin timing
+- no ISO-TP timeouts
+- no ISO-TP padding
+- no extended ISO-TP addressing
+- no multi-DID `0x22` requests
+- no real diagnostic execution against multiple ECU types
+- no real session-control behavior through UDS
+- no DTC retrieval through UDS
+- no security access
+- no service dispatcher
+- no queues or threaded runtime
+- no fixed-size diagnostic buffers
+- no `std::array` or `std::span` migration yet
+- no professional unit-test framework
+- no CI pipeline
+- no sanitizers or static-analysis integration
+- UDS and ISO-TP behavior is simplified and not standards-complete
 
-## Planned Improvements
+---
 
-Future versions may include:
+## Planned Direction
 
-* Cleaner reusable input helpers
-* More ECU communication states
-* ECU readiness states
-* Diagnostic log timestamps
-* Structured diagnostic log events
-* Fault history timestamps
-* File persistence
-* GoogleTest or Catch2 integration
-* Decoded CAN signal modeling
-* Custom CAN frame input through the menu
-* UDS-inspired diagnostic requests
-* Security access simulation
-* ECU state machine behavior
-* Ring buffer implementation
-* Improved Linux-first development workflow
+The long-term project direction is:
+
+```text
+Vehicle Diagnostics Simulator
+→ Architecture Isolation
+→ UDS
+→ ISO-TP
+→ Fixed and Bounded Buffers
+→ SocketCAN and Linux
+→ Middleware Runtime
+→ Portfolio and Interview Readiness
+```
+
+Likely future milestones include:
+
+- splitting the large test file into focused test modules
+- stronger architecture documentation
+- additional diagnostic identifiers
+- service-specific diagnostic execution
+- receive-side ISO-TP reassembly
+- Flow Control modeling
+- fixed-size and bounded buffer design
+- `std::array`
+- `std::span`
+- ring buffers
+- SocketCAN
+- `vcan0`
+- Linux adapters
+- request and response queues
+- diagnostic dispatching
+- telemetry services
+- middleware runtime behavior
+- sanitizers
+- `clang-tidy`
+- continuous integration
+- improved portfolio documentation
+- architecture diagrams
+
+---
+
+## Concepts Practiced
+
+### Modern C++
+
+- classes and objects
+- encapsulation
+- header and implementation separation
+- composition
+- value ownership
+- scoped enums
+- const member functions
+- const references
+- return-by-value result objects
+- `std::vector`
+- `std::deque`
+- `std::string`
+- `uint8_t`
+- snapshots instead of mutable internal exposure
+- multi-file projects
+- modular source folders
+- CMake
+- multiple executables
+- assert-based testing
+
+### Data and Protocol Handling
+
+- raw byte payloads
+- ASCII character-to-byte conversion
+- high-byte and low-byte reconstruction
+- bit shifting
+- masks
+- nibbles
+- service identifiers
+- Data Identifiers
+- positive responses
+- negative response codes
+- logical message length
+- frame segmentation
+- sequence numbers
+- payload-order preservation
+
+### Architecture
+
+- parser versus executor
+- syntax validation versus semantic validation
+- logical response versus transport framing
+- domain ownership
+- coordinator classes
+- stateless service objects
+- UI boundaries
+- application protocol versus transport protocol
+- module-level responsibility
+- capacity-limited storage
+
+### Automotive and Systems Concepts
+
+- ECUs
+- DTCs
+- diagnostic sessions
+- vehicle health
+- offline ECU behavior
+- CAN frames
+- CAN traffic
+- CAN signal decoding
+- UDS-inspired services
+- Data Identifiers
+- VIN retrieval
+- ISO-TP segmentation
+- Classical CAN payload limitations
+- bounded traffic history
+- middleware-style processing pipelines
+
+---
 
 ## Why This Project Exists
 
-This project is designed to move beyond generic beginner C++ projects and start modeling real systems-style software.
+This project is intended to move beyond generic beginner C++ applications.
 
-The goal is to build toward a Modern C++ Systems Engineering profile with relevance to automotive, embedded systems, diagnostics, vehicle platforms, cyber-physical systems, and other engineering-heavy industries.
+The goal is to build practical experience relevant to:
 
-This simulator is an early step toward larger projects involving CAN bus simulation, ECU state machines, diagnostics tooling, low-level logging, and automotive middleware-style architecture.
+- Modern C++ systems engineering
+- automotive middleware
+- vehicle diagnostics
+- embedded-style design
+- Linux vehicle platforms
+- protocol processing
+- bounded-memory systems
+- testable software architecture
+
+The project is being developed as a learning system and portfolio project. Each stage introduces a real architectural or protocol problem while keeping the implementation small enough to understand, test, and improve.
+
+---
 
 ## Repository Status
 
-This project is currently at **v0.8**.
+The repository is currently at **v0.10.0**.
 
-The current release contains a working diagnostic simulator with a multi-file C++ structure, CMake build support, an interactive menu, ECU modeling, DTC storage, ECU registration, fault scanning, fault clearing, active fault tracking, cleared fault history, vehicle health checks, diagnostic event logging, a dedicated diagnostic log component, capacity-limited log storage, ECU communication status, diagnostic sessions, result enums for clearer operation outcomes, extracted console input helpers, extracted menu actions, basic CAN frame modeling, vehicle-owned CAN bus traffic simulation, and assert-based tests.
+The current release includes:
+
+- vehicle and ECU modeling
+- active and cleared faults
+- diagnostic sessions
+- capacity-limited logging
+- CAN frame and bus simulation
+- structured CAN signal decoding
+- CAN traffic analysis
+- UDS-inspired request parsing
+- positive and negative diagnostic responses
+- DID-backed VIN retrieval
+- simplified ISO-TP response segmentation
+- end-to-end multi-frame VIN response generation
+- CMake build support
+- assert-based automated tests
+
+The next development stages will continue moving the simulator toward Linux-based automotive middleware and diagnostics architecture.
