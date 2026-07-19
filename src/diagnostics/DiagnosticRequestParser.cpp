@@ -25,7 +25,7 @@ DiagnosticRequest DiagnosticRequestParser::parse(const CANFrame& frame) const {
             request.serviceName = "Diagnostic Session Control";
 
             if (bytes.size() < 2) {
-                request.error = "insufficient data";
+                request.error = "invalid request length";
             } else {
                 request.valid = true;
             }
@@ -36,7 +36,7 @@ DiagnosticRequest DiagnosticRequestParser::parse(const CANFrame& frame) const {
             request.serviceName = "Clear Diagnostic Information";
 
             if (bytes.size() < 4) {
-                request.error = "insufficient data";
+                request.error = "invalid request length";
             } else {
                 request.valid = true;
             }
@@ -47,7 +47,7 @@ DiagnosticRequest DiagnosticRequestParser::parse(const CANFrame& frame) const {
             request.serviceName = "Read DTC Information";
 
             if (bytes.size() < 2) {
-                request.error = "insufficient data";
+                request.error = "invalid request length";
             } else {
                 request.valid = true;
             }
@@ -57,8 +57,8 @@ DiagnosticRequest DiagnosticRequestParser::parse(const CANFrame& frame) const {
             request.recognized = true;
             request.serviceName = "Read Data By Identifier";
 
-            if (bytes.size() < 3) {
-                request.error = "insufficient data";
+            if (bytes.size() != 3) {
+                request.error = "invalid request length";
             } else {
                 request.valid = true;
             }

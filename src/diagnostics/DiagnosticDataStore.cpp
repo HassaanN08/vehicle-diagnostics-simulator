@@ -2,15 +2,7 @@
 #include <cstdint>
 #include "diagnostics/DiagnosticDataStore.h"
 
-bool DiagnosticDataStore::dataIdentifierAccepted(const std::vector<uint8_t>& parameters) const {
-    if (parameters.size() != 2) return false;
-
-    int dataIdentifier = 0;
-
-    for (const uint8_t parameter : parameters) {
-        dataIdentifier = (dataIdentifier << 8) + parameter;
-    }
-
+bool DiagnosticDataStore::dataIdentifierAccepted(const int& dataIdentifier) const {
     switch (dataIdentifier) {
         case 0xF190:
             return true;
@@ -19,15 +11,8 @@ bool DiagnosticDataStore::dataIdentifierAccepted(const std::vector<uint8_t>& par
     }
 }
 
-std::vector<uint8_t> DiagnosticDataStore::returnBytes(const std::vector<uint8_t>& parameters) const {
+std::vector<uint8_t> DiagnosticDataStore::returnBytes(const int& dataIdentifier) const {
     std::vector<uint8_t> bytes;
-    if (parameters.size() > 2) return bytes;
-
-    int dataIdentifier = 0;
-
-    for (const uint8_t& parameter : parameters) {
-        dataIdentifier = (dataIdentifier << 8) + parameter;
-    }
 
     switch (dataIdentifier) {
         case 0xF190:

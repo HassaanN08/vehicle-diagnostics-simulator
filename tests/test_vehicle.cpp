@@ -515,13 +515,13 @@ void DiagnosticRequestParserWorks() {
     assert(request2.recognized && request2.valid && request2.serviceId == 0x10 && request2.serviceName == "Diagnostic Session Control" && request2.parameters.size() == 1 && request2.parameters[0] == 0x03);
 
     DiagnosticRequest request3 = parser.parse(CANFrame(0x7E0, "Tester", {0x10}));
-    assert(request3.recognized && !request3.valid && request3.error == "insufficient data");
+    assert(request3.recognized && !request3.valid && request3.error == "invalid request length");
 
     DiagnosticRequest request4 = parser.parse(CANFrame(0x7E0, "Tester", {0x22, 0xF1, 0x90}));
     assert(request4.recognized && request4.valid && request4.serviceId == 0x22 && request4.serviceName == "Read Data By Identifier" && request4.parameters.size() == 2 && request4.parameters[0] == 0xF1 && request4.parameters[1] == 0x90);
     
     DiagnosticRequest request5 = parser.parse(CANFrame(0x7E0, "Tester", {0x22, 0xF1}));
-    assert(request5.recognized && !request5.valid && request5.error == "insufficient data");
+    assert(request5.recognized && !request5.valid && request5.error == "invalid request length");
 
     DiagnosticRequest request6 = parser.parse(CANFrame(0x7E0, "Tester", {0x99}));
 
@@ -537,7 +537,7 @@ void DiagnosticResponseBuilderWorks() {
 
     DiagnosticRequest request1 = parser.parse(CANFrame(0x7E0, "Tester", {0x22, 0xF1, 0x90}));
     DiagnosticResponse response1 = builder.buildResponse(request1);
-    assert(response1.positive && response1.valid && response1.originalServiceId == 0x22 && response1.responseServiceId == 0x62 && response1.payload[0] == 0x62 && response1.payload.size() == 1);
+    assert(response1.positive && response1.valid && response1.originalServiceId == 0x22 && response1.responseServiceId == 0x62 && response1.payload[0] == 0x62 && response1.payload.size() == 20);
 
     DiagnosticRequest request2 = parser.parse(CANFrame(0x7E0, "Tester", {0x10, 0x03}));
     DiagnosticResponse response2 = builder.buildResponse(request2);
@@ -561,8 +561,26 @@ void DiagnosticMessageProcessorWorks() {
 
     DiagnosticMessageProcessor processor;
 
+    string vin = "1FTFW1EF0HE123456";
+    vector<uint8_t> vinHex;
+
+    for (const char& character : vin) {
+        vinHex.push_back(static_cast<int>(character));
+    }
+
     vector<CANFrame> responses1 = processor.process(CANFrame(0x7E0, "Tester", {0x22, 0xF1, 0x90}));
-    assert(responses1[0].getID() == 0x7E8 && responses1[0].getSender() == "ECU" && responses1[0].getDataBytesSnapshot()[0] == 0x01 && responses1[0].getDataBytesSnapshot()[1] == 0x62);
+    assert(responses1[0].getID() == 0x7E8 && responses1[0].getSender() == "ECU" && responses1[0].getDataBytesSnapshot()[0] == 0x10 && responses1[0].getDataBytesSnapshot()[1] == 0x14 && responses1[0].getDataBytesSnapshot()[2] == 0x62 && responses1[0].getDataBytesSnapshot()[3] == 0xF1 && responses1[0].getDataBytesSnapshot()[4] == 0x90);
+    assert(responses1[1].getDataBytesSnapshot()[0] == 0x21);
+    assert(responses1[2].getDataBytesSnapshot()[0] == 0x22);
+
+    for (int i = 0; i < 3; i++) {
+        assert(responses1[0].getDataBytesSnapshot()[i + 5] == vinHex[i]);
+    }
+
+    for (int i = 0; i < 7; i++) {
+        assert(responses1[1].getDataBytesSnapshot()[i + 1] == vinHex[i + 3]);
+        assert(responses1[2].getDataBytesSnapshot()[i + 1] == vinHex[i + 10]);
+    }
 
     vector<CANFrame> responses2 = processor.process(CANFrame(0x7E0, "Tester", {0x10, 0x03}));
     assert(responses2[0].getID() == 0x7E8 && responses2[0].getSender() == "ECU" && responses2[0].getDataBytesSnapshot()[0] == 0x01 && responses2[0].getDataBytesSnapshot()[1] == 0x50);
@@ -577,6 +595,12 @@ void DiagnosticMessageProcessorWorks() {
 
     vector<CANFrame> responses5 = processor.process(CANFrame(0x7E0, "Tester", {}));
     assert(responses5[0].getID() == 0x7E8 && responses5[0].getSender() == "ECU" && responses5[0].getDataBytesSnapshot()[0] == 0x03 && responses5[0].getDataBytesSnapshot()[1] == 0x7F && responses5[0].getDataBytesSnapshot()[2] == 0x00 && responses5[0].getDataBytesSnapshot()[3] == 0x13);
+
+    vector<CANFrame> responses6 = processor.process(CANFrame(0x7E0, "Tester", {0x22, 0xF1, 0x11}));
+    assert(responses6[0].getID() == 0x7E8 && responses6[0].getSender() == "ECU" && responses6[0].getDataBytesSnapshot()[0] == 0x03 && responses6[0].getDataBytesSnapshot()[1] == 0x7F && responses6[0].getDataBytesSnapshot()[2] == 0x22 && responses6[0].getDataBytesSnapshot()[3] == 0x31);
+
+    vector<CANFrame> responses7 = processor.process(CANFrame(0x7E0, "Tester", {0x22, 0x00, 0xF1, 0x90}));
+    assert(responses7[0].getID() == 0x7E8 && responses7[0].getSender() == "ECU" && responses7[0].getDataBytesSnapshot()[0] == 0x03 && responses7[0].getDataBytesSnapshot()[1] == 0x7F && responses7[0].getDataBytesSnapshot()[2] == 0x22 && responses7[0].getDataBytesSnapshot()[3] == 0x13);
 }
 
 void IsoTpSegmenterWorks() {
@@ -627,12 +651,12 @@ void diagnosticDataStoreWorks() {
         vinHex.push_back(static_cast<int>(character));
     }
 
-    vector<uint8_t> bytes = store.returnBytes({0xF1, 0x90});
+    vector<uint8_t> bytes = store.returnBytes(0xF190);
 
-    assert(store.dataIdentifierAccepted({0xF1, 0x90}));
+    assert(store.dataIdentifierAccepted(0xF190));
     assert(bytes.size() == 17 && bytes == vinHex);
 
-    bytes = store.returnBytes({0x99, 0xFF});
+    bytes = store.returnBytes(0x99FF);
 
     assert(bytes.size() == 0);
 }
