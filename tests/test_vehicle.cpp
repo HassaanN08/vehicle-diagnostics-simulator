@@ -24,6 +24,7 @@
 #include "DiagnosticMessageProcessor.h"
 #include "IsoTpSegmenter.h"
 #include "DiagnosticDataStore.h"
+#include "RingBuffer.h"
 using namespace std;
 
 void testECUDefaultsToOnline() {
@@ -397,7 +398,7 @@ void oldestFrameGetsDiscarded() {
         CANFrame message(i, "Engine", {12, 8});
         bus.transmit(message);
     }
-
+    
     assert(bus.getFirstFrameID() == 1);
 }
 
@@ -690,6 +691,15 @@ void CANTrafficReportInVehicleWorks() {
     assert(vehicle.getCANBusTrafficReportDisplay() == "\nTotal frames: 4\nKnown frames: 3\nValid frames: 2\nMalformed frames: 1\nUnknown frames: 1\n\n1. Engine RPM: 3000 RPM\n2. Brake status: Pressed\n3. Battery CAN frame: insufficient data\n4. unknown CAN frame");
 }
 
+void RingBufferWorks() {
+    RingBuffer<int, 4> buffer1;
+    for (size_t i = 0; i <= buffer1.size(); i++) {
+        buffer1.push(i);
+    }
+
+    assert(buffer1.at(0) == 1);
+}
+
 void testECU(const string& code, const string& name, const Severity& severity) {
     testECUDefaultsToOnline();
     testECUCanBeSetToOffline();
@@ -773,6 +783,7 @@ int main() {
     testLogging();
     testCAN();
     testUDS();
+    RingBufferWorks();
 
     cout << "\nAll Tests Passed!\n";
     return 0;

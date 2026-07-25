@@ -1,13 +1,10 @@
 #include "DiagnosticLog.h"
+#include "RingBuffer.h"
 #include <iostream>
 #include <string>
 
 void DiagnosticLog::addLog(const std::string& log) {
-    if (logs.size() == 50) {
-        logs.pop_front();
-    }
-
-    logs.push_back(log);
+    logs.push(log);
 }
 
 void DiagnosticLog::displayLogs() const {
@@ -16,11 +13,8 @@ void DiagnosticLog::displayLogs() const {
         return;
     }
 
-    int i = 0;
-
-    for(const std::string& log : logs) {
-        i++;
-        std::cout << i << ". " << log << '\n';
+    for(size_t i = 0; i < logs.size(); i++) {
+        std::cout << i + 1 << ". " << logs.at(i) << '\n';
     }
 }
 
@@ -30,7 +24,7 @@ bool DiagnosticLog::logsExist() const {
 
 std::string DiagnosticLog::getFirstLog() const{
     if (!logs.empty()) {
-        return logs[0];
+        return logs.at(0);
     }
 
     return "No Logs Found";

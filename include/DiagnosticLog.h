@@ -1,9 +1,9 @@
 #pragma once
-#include <deque>
+#include "RingBuffer.h"
 #include <string>
 
 class DiagnosticLog {
-    std::deque<std::string> logs;
+    RingBuffer<std::string, 50> logs;
 
     public:
         void addLog(const std::string& log);

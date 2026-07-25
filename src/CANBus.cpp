@@ -1,15 +1,11 @@
 #include <iostream>
 #include "CANFrame.h"
-#include <deque>
 #include "CANBus.h"
 #include <vector>
+#include "RingBuffer.h"
 
 void CANBus::transmit(const CANFrame& frame) {
-    if (frames.size() >= limit) {
-        frames.pop_front();
-    }
-
-    frames.push_back(frame);
+    frames.push(frame);
 }
 
 bool CANBus::trafficExists() const {
@@ -21,21 +17,24 @@ size_t CANBus::trafficCount() const {
 }
 
 void CANBus::display() const {
-    int i = 1;
-
-    for (const CANFrame& frame : frames) {
-        std::cout << "\nFrame " << i;
-        frame.display();
-        i++;
+    for (size_t i = 0; i < frames.size(); i++) {
+        std::cout << "\nFrame " << i + 1;
+        frames.at(i).display();
     }
 }
 
 int CANBus::getFirstFrameID() const {
-    return frames[0].getID();
+    return frames.at(0).getID();
 }
 
 std::vector<CANFrame> CANBus::getTrafficSnapshot() const {
-    std::vector<CANFrame> copiedFrames(frames.begin(), frames.end());
+    std::vector<CANFrame> copiedFrames;
+    size_t length = frames.size();
+    copiedFrames.reserve(length);
+
+    for (size_t i = 0; i < length; i++) {
+        copiedFrames.push_back(frames.at(i));
+    }
 
     return copiedFrames;
 }

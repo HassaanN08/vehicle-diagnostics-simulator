@@ -53,6 +53,7 @@ target_include_directories(vehicle-diagnostics-simulator
         include
         include/diagnostics
         include/transport
+        include/CustomTemplates
 )
 
 target_include_directories(vehicle-diagnostics-tests
@@ -60,4 +61,5 @@ target_include_directories(vehicle-diagnostics-tests
         include
         include/diagnostics
         include/transport
+        include/CustomTemplates
 )

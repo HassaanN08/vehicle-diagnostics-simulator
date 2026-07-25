@@ -1,11 +1,10 @@
 #pragma once
 #include "CANFrame.h"
-#include <deque>
+#include "RingBuffer.h"
 #include <vector>
 
 class CANBus {
-    std::deque<CANFrame> frames;
-    int limit = 100;
+    RingBuffer<CANFrame, 100> frames;
     
     public:
         void transmit(const CANFrame& frame);
