@@ -16,6 +16,12 @@ inline void ecuTests() {
 
     assert(ecu.getResponseCANId() == 0x7E8);
 
+    assert(brakeEcu.getEcuName() == "Brake");
+    
+    assert(brakeEcu.getRequestCANId() == 0x1F1);
+
+    assert(brakeEcu.getResponseCANId() == 0x1F9);
+
     assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Default);
 
     assert(ecu.setCurrentDiagnosticSession(DiagnosticSession::Default) == DiagnosticSessionResult::alreadyInSession);

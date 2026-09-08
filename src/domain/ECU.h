@@ -3,12 +3,12 @@
 #include <string_view>
 #include <cstdint>
 
-enum class DiagnosticSession : int {
+enum class DiagnosticSession {
     Default,
     Extended,
 };
 
-enum class DiagnosticSessionResult : int {
+enum class DiagnosticSessionResult {
     sessionChanged,
     alreadyInSession
 };
