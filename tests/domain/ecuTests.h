@@ -2,8 +2,8 @@
 
 #include <cassert>
 #include <iostream>
-#include "domain/ECU.h"
 #include <string>
+#include "domain/ECU.h"
 
 inline void ecuTests() {
     ECU ecu {"Engine", 0x7E0, 0x7E8};
