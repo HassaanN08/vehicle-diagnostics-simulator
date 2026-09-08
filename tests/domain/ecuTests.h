@@ -6,13 +6,15 @@
 #include <string>
 
 inline void ecuTests() {
-    ECU ecu {"Engine", 0x11, 0x22};
+    ECU ecu {"Engine", 0x7E0, 0x7E8};
+
+    ECU brakeEcu {"Brake", 0x1F1, 0x1F9};
 
     assert(ecu.getEcuName() == "Engine");
     
-    assert(ecu.getRequestCANId() == 0x11);
+    assert(ecu.getRequestCANId() == 0x7E0);
 
-    assert(ecu.getResponseCANId() == 0x22);
+    assert(ecu.getResponseCANId() == 0x7E8);
 
     assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Default);
 
@@ -21,6 +23,8 @@ inline void ecuTests() {
     assert(ecu.setCurrentDiagnosticSession(DiagnosticSession::Extended) == DiagnosticSessionResult::sessionChanged);
 
     assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Extended);
+
+    assert(brakeEcu.getCurrentDiagnosticSession() == DiagnosticSession::Default);
 
     assert(ecu.setCurrentDiagnosticSession(DiagnosticSession::Extended) == DiagnosticSessionResult::alreadyInSession);
 

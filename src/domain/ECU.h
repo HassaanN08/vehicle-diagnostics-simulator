@@ -15,18 +15,18 @@ enum class DiagnosticSessionResult : int {
 
 class ECU {
     std::string m_ecuName {};
-    std::uint8_t m_diagnosticRequestCANId {};
-    std::uint8_t m_diagnosticResponseCANId {};
+    std::uint16_t m_diagnosticRequestCANId {};
+    std::uint16_t m_diagnosticResponseCANId {};
     DiagnosticSession m_currentDiagnosticSession { DiagnosticSession::Default } ;
 
     public:
-        ECU(std::string_view ecuName, std::uint8_t diagnosticRequestCANId, std::uint8_t diagnosticResponseCANId);
+        ECU(std::string_view ecuName, std::uint16_t diagnosticRequestCANId, std::uint16_t diagnosticResponseCANId);
 
         std::string getEcuName() const { return  m_ecuName; }
 
-        std::uint8_t getRequestCANId() const { return m_diagnosticRequestCANId; }
+        std::uint16_t getRequestCANId() const { return m_diagnosticRequestCANId; }
 
-        std::uint8_t getResponseCANId() const { return m_diagnosticResponseCANId; }
+        std::uint16_t getResponseCANId() const { return m_diagnosticResponseCANId; }
 
         DiagnosticSession getCurrentDiagnosticSession() const { return m_currentDiagnosticSession; }
 
