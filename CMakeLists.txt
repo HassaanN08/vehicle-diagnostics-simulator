@@ -7,57 +7,22 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(vehicle-diagnostics-simulator
-    src/DTC.cpp
-    src/ECU.cpp
     src/main.cpp
-    src/Vehicle.cpp
-    src/ConsoleInput.cpp
-    src/DiagnosticLog.cpp
-    src/MenuActions.cpp
-    src/CANFrame.cpp
-    src/CANBus.cpp
-    src/CANDecoder.cpp
-    src/DecodedCANFrame.cpp
-    src/CANDecoderHelperFunctions.cpp
-    src/CANTrafficAnalyzer.cpp
-    src/CANTrafficReport.cpp
-    src/diagnostics/DiagnosticRequestParser.cpp
-    src/diagnostics/DiagnosticResponseBuilder.cpp
-    src/diagnostics/DiagnosticMessageProcessor.cpp
-    src/transport/IsoTpSegmenter.cpp
-    src/diagnostics/DiagnosticDataStore.cpp
+    src/domain/ECU.cpp
 )
 
 add_executable(vehicle-diagnostics-tests
-    tests/test_vehicle.cpp
-    src/DTC.cpp
-    src/ECU.cpp
-    src/Vehicle.cpp
-    src/DiagnosticLog.cpp
-    src/CANFrame.cpp
-    src/CANBus.cpp
-    src/CANDecoder.cpp
-    src/DecodedCANFrame.cpp
-    src/CANDecoderHelperFunctions.cpp
-    src/CANTrafficAnalyzer.cpp
-    src/CANTrafficReport.cpp
-    src/diagnostics/DiagnosticRequestParser.cpp
-    src/diagnostics/DiagnosticResponseBuilder.cpp
-    src/diagnostics/DiagnosticMessageProcessor.cpp
-    src/transport/IsoTpSegmenter.cpp
-    src/diagnostics/DiagnosticDataStore.cpp
+    tests/tests.cpp
+    src/domain/ECU.cpp
 )
 
 target_include_directories(vehicle-diagnostics-simulator 
     PRIVATE 
-        include
-        include/diagnostics
-        include/transport
+        src
 )
 
 target_include_directories(vehicle-diagnostics-tests
     PRIVATE 
-        include
-        include/diagnostics
-        include/transport
+        src
+        tests
 )
