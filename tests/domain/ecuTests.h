@@ -8,7 +8,7 @@
 inline void ecuTests() {
     ECU ecu {"Engine", 0x7E0, 0x7E8};
 
-    ECU brakeEcu {"Brake", 0x1F1, 0x1F9};
+    const ECU brakeEcu {"Brake", 0x1F1, 0x1F9};
 
     assert(ecu.getEcuName() == "Engine");
     
