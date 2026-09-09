@@ -7,8 +7,8 @@
 #include "uds/UDSRequestProcessor.h"
 
 namespace NegativeResponses {
-    inline constexpr std::uint8_t unSupportedFunctionNRC { 0x11 };      //Requested Subfunction isn't supported
-    inline constexpr std::uint8_t unSupportedServiceNRC { 0x12 };       //Requested Service isn't supported
+    inline constexpr std::uint8_t unSupportedServiceNRC { 0x11 };       //Requested Subfunction isn't supported
+    inline constexpr std::uint8_t unSupportedFunctionNRC { 0x12 };      //Requested Service isn't supported
     inline constexpr std::uint8_t incorrectLengthNRC { 0x13 };          //Incorrect Payload Length
 }
 

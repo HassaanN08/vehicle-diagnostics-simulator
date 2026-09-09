@@ -41,11 +41,11 @@ void udsRequestParserTests() {
 
     responsePayload = UDSRequestParser::parser(engine, {0x17, 0x22});
 
-    assert(responsePayload[0] == 0x7F && responsePayload[1] == 0x17 && responsePayload[2] == 0x12);
+    assert(responsePayload[0] == 0x7F && responsePayload[1] == 0x17 && responsePayload[2] == 0x11);
 
     responsePayload = UDSRequestParser::parser(brake, {0x10, 0x22});
 
-    assert(responsePayload[0] == 0x7F && responsePayload[1] == 0x10 && responsePayload[2] == 0x11);
+    assert(responsePayload[0] == 0x7F && responsePayload[1] == 0x10 && responsePayload[2] == 0x12);
 
     assert(brake.getCurrentDiagnosticSession() == DiagnosticSession::Default);
 
