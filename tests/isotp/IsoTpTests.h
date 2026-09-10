@@ -33,5 +33,6 @@ void isoTpTests() {
     assert(!IsoTp::decode({0x03, 0x10, 0x03}).has_value());
     assert(!IsoTp::decode(invalidOneByteEncodedPayload).has_value());
     assert(!IsoTp::decode(invalidTwoByteEncodedPayload).has_value());
+    assert(!IsoTp::decode({0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}).has_value());
     assert(IsoTp::decode(IsoTp::encode(validSevenBytePayload)) == validSevenBytePayload);
 }
