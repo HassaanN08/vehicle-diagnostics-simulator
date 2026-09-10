@@ -1,26 +1,33 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 
 #include "domain/ECU.h"
+#include "uds/UDSTypes.h"
 
 namespace UDSRequestProcessor {
-    
-        inline bool setDiagnosticSessionControl(ECU& ecu, std::uint8_t requestByte) {
-            DiagnosticSessionResult result {};
 
-            switch(requestByte) {
-                case 0x03:
-                    result = ecu.setCurrentDiagnosticSession(DiagnosticSession::Extended);
-                    break;
-                case 0x01:
-                    result = ecu.setCurrentDiagnosticSession(DiagnosticSession::Default);
-                    break;
-                default:
-                    return false;
-            }
+    inline ECUResponse setDiagnosticSessionControl(ECU& ecu, const std::vector<std::uint8_t>& payload, std::vector<std::uint8_t>& responseData) {
+        DiagnosticSessionResult result {};
 
-            return true;
+        const size_t payloadLength { payload.size() };
+
+        const std::uint8_t requestSID { payload[0] };
+
+        if (payloadLength != 2) return ECUResponse::incorrectLength;
+
+        switch(payload[1]) {
+            case 0x03:
+                result = ecu.setCurrentDiagnosticSession(DiagnosticSession::Extended);
+                break;
+            case 0x01:
+                result = ecu.setCurrentDiagnosticSession(DiagnosticSession::Default);
+                break;
+            default:
+                return ECUResponse::unSupportedFunction;
         }
+
+        responseData.push_back(payload[1]);
+        return ECUResponse::success;
+    }
 };
