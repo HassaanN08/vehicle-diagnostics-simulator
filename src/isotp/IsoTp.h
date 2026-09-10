@@ -26,16 +26,20 @@ namespace IsoTp {
     inline std::optional<std::vector<std::uint8_t>> decode(const std::vector<std::uint8_t>& encodedPayload) {
         if (encodedPayload.empty()) return std::nullopt;
 
-        std::size_t actualPayloadLength = encodedPayload[0];
+        if (((encodedPayload[0] >> 4) & 0x0F) == 0x00) {
+            std::size_t actualPayloadLength = encodedPayload.size();
 
-        std::vector<std::uint8_t> decodedPayload;
+            std::vector<std::uint8_t> decodedPayload;
 
-        decodedPayload.reserve(actualPayloadLength);
+            decodedPayload.reserve(actualPayloadLength - 1);
 
-        for (std::size_t i { 1 }; i < actualPayloadLength + 1; ++i) {
-            decodedPayload.push_back(encodedPayload[i]);
+            for (std::size_t i { 1 }; i < actualPayloadLength; ++i) {
+                decodedPayload.push_back(encodedPayload[i]);
+            }
+
+            return decodedPayload;
         }
 
-        return decodedPayload;
+        return std::nullopt;
     }
 };
