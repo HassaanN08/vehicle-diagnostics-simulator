@@ -24,17 +24,23 @@ namespace IsoTp {
     }
 
     inline std::optional<std::vector<std::uint8_t>> decode(const std::vector<std::uint8_t>& encodedPayload) {
-        std::size_t actualPayloadLength = encodedPayload.size();
+        std::size_t encodedPayloadLength = encodedPayload.size();
 
-        if (encodedPayload.empty() || actualPayloadLength == 1) return std::nullopt;
+        if (encodedPayload.empty() || encodedPayloadLength == 1) return std::nullopt;
 
-        if ((((encodedPayload[0] >> 4) & 0x0F) == 0x00) && ((encodedPayload[0] & 0x0F) == (actualPayloadLength - 1)) && (actualPayloadLength > 1) && (actualPayloadLength <= 8)) {
+        std::uint8_t upperNibble { static_cast<std::uint8_t>((encodedPayload[0] >> 4) & 0x0F) };        //For checking whether it's Single-Frame or Multi-Frame
+        std::uint8_t lowerNibble { static_cast<std::uint8_t>(encodedPayload[0] & 0x0F) };
+
+        if ((upperNibble == 0x00) &&
+            (lowerNibble == (encodedPayloadLength - 1)) &&
+            (encodedPayloadLength > 1) &&
+            (encodedPayloadLength <= 8)) {
 
             std::vector<std::uint8_t> decodedPayload;
 
-            decodedPayload.reserve(actualPayloadLength - 1);
+            decodedPayload.reserve(encodedPayloadLength - 1);
 
-            for (std::size_t i { 1 }; i < actualPayloadLength; ++i) {
+            for (std::size_t i { 1 }; i < encodedPayloadLength; ++i) {
                 decodedPayload.push_back(encodedPayload[i]);
             }
 
