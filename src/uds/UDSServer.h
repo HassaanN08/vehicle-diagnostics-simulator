@@ -17,23 +17,23 @@ namespace UDSServer {
 
         std::vector<std::uint8_t> responsePayload;
 
-        ECUResponse response;
+        UDSProcessingOutcome response;
 
         std::vector<std::uint8_t> ecuResponseData;
 
-        std::uint8_t requestSID { payload[0] };
-        UDSService parsedService { UDSRequestParser::parser(payload) };
+        const std::uint8_t requestSID { payload[0] };
+        UDSService parsedService { UDSRequestParser::parser(requestSID) };
 
         switch(parsedService) {
             case UDSService::diagnosticSessionControl:
                 response = UDSRequestProcessor::setDiagnosticSessionControl(ecu, payload, ecuResponseData);
                 break;
             case UDSService::noService:
-                response = ECUResponse::unSupportedService;
+                response = UDSProcessingOutcome::unSupportedService;
                 break;
         }
 
-        responsePayload = UDSResponseBuilder::builder(response, payload, ecuResponseData);
+        responsePayload = UDSResponseBuilder::builder(response, requestSID, ecuResponseData);
 
         return responsePayload;
     }

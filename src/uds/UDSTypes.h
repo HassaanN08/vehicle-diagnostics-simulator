@@ -2,11 +2,11 @@
 
 #include <cstdint>
 
-enum class ECUResponse {
+enum class UDSProcessingOutcome {
     success,
-    unSupportedService,       //Requested Subfunction isn't supported
-    unSupportedFunction,      //Requested Service isn't supported
-    incorrectLength,          //Incorrect Payload Length
+    unSupportedService,         //Requested Service isn't supported
+    unSupportedSubFunction,     //Requested Subfunction isn't supported
+    incorrectLength,            //Incorrect Payload Length
 };
 
 enum class UDSService {
@@ -15,7 +15,7 @@ enum class UDSService {
 };
 
 namespace UDSNegativeResponse {
-    inline constexpr std::uint8_t unSupportedServiceNRC { 0x11 };       //Requested Subfunction isn't supported
-    inline constexpr std::uint8_t unSupportedFunctionNRC { 0x12 };      //Requested Service isn't supported
-    inline constexpr std::uint8_t incorrectLengthNRC { 0x13 };          //Incorrect Payload Length
+    inline constexpr std::uint8_t unSupportedServiceNRC { 0x11 };           //Requested Service isn't supported
+    inline constexpr std::uint8_t unSupportedSubFunctionNRC { 0x12 };       //Requested Subfunction isn't supported
+    inline constexpr std::uint8_t incorrectLengthNRC { 0x13 };              //Incorrect Payload Length
 };

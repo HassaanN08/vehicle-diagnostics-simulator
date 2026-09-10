@@ -7,9 +7,7 @@
 
 namespace UDSRequestParser {
 
-    inline UDSService parser(const std::vector<std::uint8_t>& payload) {
-
-        const std::uint8_t requestSID { payload[0] };
+    inline UDSService parser(const std::uint8_t requestSID) {
 
         switch(requestSID) {
             case 0x10:
