@@ -28,7 +28,7 @@ namespace IsoTp {
 
         if (encodedPayload.empty() || actualPayloadLength == 1) return std::nullopt;
 
-        if ((((encodedPayload[0] >> 4) & 0x0F) == 0x00) && ((encodedPayload[0] & 0x0F) == (actualPayloadLength - 1))) {
+        if ((((encodedPayload[0] >> 4) & 0x0F) == 0x00) && ((encodedPayload[0] & 0x0F) == (actualPayloadLength - 1)) && (actualPayloadLength > 1) && (actualPayloadLength <= 8)) {
 
             std::vector<std::uint8_t> decodedPayload;
 

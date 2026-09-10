@@ -22,7 +22,7 @@ void isoTpTests() {
     assert(IsoTp::encode(validTwoBytePayload) == validTwoByteEncodedPayload);
     assert(IsoTp::encode(validSevenBytePayload) == validSevenByteEncodedPayload);
     assert(IsoTp::encode({}) == validEmptyEncodedPayload);
-    assert(IsoTp::encode({0x07, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}) == validEmptyEncodedPayload);
+    assert(IsoTp::encode({0x07, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}) == validEmptyEncodedPayload);
     
 
     assert(IsoTp::decode(validOneByteEncodedPayload) == validOneBytePayload);
