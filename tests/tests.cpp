@@ -2,11 +2,11 @@
 #include <cassert>
 
 #include "domain/ecuTests.h"
-#include "uds/UDSRequestParserTests.h"
+#include "uds/UDSServerTests.h"
 
 int main() {
     ecuTests();
-    udsRequestParserTests();
+    udsServerTests();
 
     std::cout << "\nAll Tests  Passed!\n";
     return 0;

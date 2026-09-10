@@ -17,7 +17,7 @@ namespace UDSServer {
 
         std::vector<std::uint8_t> responsePayload;
 
-        UDSProcessingOutcome response;
+        UDSProcessingOutcome response {};
 
         std::vector<std::uint8_t> ecuResponseData;
 
