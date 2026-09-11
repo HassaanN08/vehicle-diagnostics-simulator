@@ -8,28 +8,28 @@
 
 void canFrameTests() {
     {
-        CANFrame frame {0x000, {}};
+        CANFrame frame { CANFrame::createCANFrame(0x000, {}) };
         assert(frame.getValidity());
     }
 
     {
-        CANFrame frame {0x7FF, {}};
+        CANFrame frame { CANFrame::createCANFrame(0x7FF, {}) };
         assert(frame.getValidity());
     }
 
     {
-        CANFrame frame {0x800, {}};
+        CANFrame frame { CANFrame::createCANFrame(0x800, {}) };
         assert(!frame.getValidity());
     }
 
     {
-        CANFrame frame {0x000, {0}};
+        CANFrame frame { CANFrame::createCANFrame(0x000, {0}) };
         assert(frame.getValidity());
     }
 
     {
         const std::vector<std::uint8_t> eightBytePayload = {0, 1, 2, 3, 4, 5, 6, 7};
-        CANFrame frame {0x000, eightBytePayload};
+        CANFrame frame { CANFrame::createCANFrame(0x000, eightBytePayload) };
         assert(frame.getValidity());
 
         const uint16_t frameId { frame.getFrameId() };
@@ -40,7 +40,7 @@ void canFrameTests() {
     }
 
     {
-        CANFrame frame {0x000, {0, 1, 2, 3, 4, 5, 6, 7, 8}};
+        CANFrame frame { CANFrame::createCANFrame(0x000, {0, 1, 2, 3, 4, 5, 6, 7, 8}) };
         assert(!frame.getValidity());
     }
 }
