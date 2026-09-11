@@ -5,8 +5,8 @@
 #include <optional>
 
 namespace IsoTp {
-    inline std::vector<std::uint8_t> encode (const std::vector<std::uint8_t>& payload) {
-        if (payload.empty()) return {};
+    inline std::optional<std::vector<std::uint8_t>> encode (const std::vector<std::uint8_t>& payload) {
+        if (payload.empty()) return std::nullopt;
 
         std::size_t payloadLength = payload.size();
 
@@ -18,9 +18,11 @@ namespace IsoTp {
             encodedPayload.push_back(static_cast<uint8_t>(payloadLength));
 
             encodedPayload.insert(encodedPayload.end(), payload.begin(), payload.end());
+
+            return encodedPayload;
         }
         
-        return encodedPayload;
+        return std::nullopt;
     }
 
     inline std::optional<std::vector<std::uint8_t>> decode(const std::vector<std::uint8_t>& encodedPayload) {

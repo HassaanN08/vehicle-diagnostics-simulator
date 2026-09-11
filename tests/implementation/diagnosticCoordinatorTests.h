@@ -4,26 +4,27 @@
 #include <vector>
 #include <cstdint>
 
-#include "app/TransportCoordinator.h"
+#include "app/DiagnosticCoordinator.h"
 #include "can/CANFrame.h"
 #include "domain/ECU.h"
 
-void transportCoordinatorTests() {
+void diagnosticCoordinatorTests() {
     {
-        const auto frame { CANFrame::createCANFrame(0x000, {0x02, 0x10, 0x03}) };
+        const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x10, 0x03}) };
         ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { TransportCoordinator::coordinator(*frame, ecu) };
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
 
         std::vector<std::uint8_t> response {0x02, 0x50, 0x03};
 
         assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Extended);
         assert(returnedFrame->getFramePayload() == response);
+        assert(returnedFrame->getFrameId() == 0x7E8);
     }
 
     {
         const auto frame { CANFrame::createCANFrame(0x000, {0x03, 0x10, 0x03}) };
         ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { TransportCoordinator::coordinator(*frame, ecu) };
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
 
         assert(!returnedFrame.has_value());
     }
@@ -31,7 +32,7 @@ void transportCoordinatorTests() {
     {
         const auto frame { CANFrame::createCANFrame(0x000, {0x12, 0x10, 0x03}) };
         ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { TransportCoordinator::coordinator(*frame, ecu) };
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
 
         assert(!returnedFrame.has_value());
     }
@@ -39,7 +40,7 @@ void transportCoordinatorTests() {
     {
         const auto frame { CANFrame::createCANFrame(0x000, {0x02, 0x11, 0x03}) };
         ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { TransportCoordinator::coordinator(*frame, ecu) };
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
 
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x11, 0x11};
 
@@ -51,7 +52,7 @@ void transportCoordinatorTests() {
     {
         const auto frame { CANFrame::createCANFrame(0x000, {0x02, 0x10, 0x04}) };
         ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { TransportCoordinator::coordinator(*frame, ecu) };
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
 
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x10, 0x12};
 
@@ -63,7 +64,7 @@ void transportCoordinatorTests() {
     {
         const auto frame { CANFrame::createCANFrame(0x000, {0x01, 0x10}) };
         ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { TransportCoordinator::coordinator(*frame, ecu) };
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
 
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x10, 0x13};
 

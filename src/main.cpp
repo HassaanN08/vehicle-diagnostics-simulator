@@ -2,7 +2,7 @@
 
 #include "domain/ECU.h"
 #include "uds/UDSServer.h"
-#include "app/TransportCoordinator.h"
+#include "app/DiagnosticCoordinator.h"
 
 int main() {
     return 0;

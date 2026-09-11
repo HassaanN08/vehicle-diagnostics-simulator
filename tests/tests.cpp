@@ -5,14 +5,14 @@
 #include "uds/UDSServerTests.h"
 #include "isotp/isoTpTests.h"
 #include "can/canFrameTests.h"
-#include "implementation/transportCoordinatorTests.h"
+#include "implementation/diagnosticCoordinatorTests.h"
 
 int main() {
     ecuTests();
     udsServerTests();
     isoTpTests();
     canFrameTests();
-    transportCoordinatorTests();
+    diagnosticCoordinatorTests();
 
     std::cout << "\nAll Tests  Passed!\n";
     return 0;

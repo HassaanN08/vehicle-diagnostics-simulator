@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <optional>
 
-namespace TransportCoordinator {
+namespace DiagnosticCoordinator {
     inline std::optional<CANFrame> coordinator (const CANFrame& frame, ECU& ecu) {
         const std::uint16_t frameId { frame.getFrameId() };
         auto decodedPayload { IsoTp::decode(frame.getFramePayload()) };
@@ -18,9 +18,11 @@ namespace TransportCoordinator {
 
         std::vector<std::uint8_t> responsePayload { UDSServer::server(ecu, *decodedPayload) };
 
-        std::vector<std::uint8_t> encodedResponsePayload { IsoTp::encode(responsePayload) };
+        auto encodedResponsePayload { IsoTp::encode(responsePayload) };
 
-        auto responseFrame { CANFrame::createCANFrame(frameId, encodedResponsePayload) };
+        if (!encodedResponsePayload.has_value()) return std::nullopt;
+
+        auto responseFrame { CANFrame::createCANFrame(ecu.getResponseCANId(), *encodedResponsePayload) };
 
         if (!responseFrame.has_value()) return std::nullopt;
 
