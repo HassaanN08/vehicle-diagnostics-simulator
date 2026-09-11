@@ -9,12 +9,13 @@
 void canFrameTests() {
     {
         auto frame { CANFrame::createCANFrame(0x000, {}) };
-        assert(frame->getValidity());
+        assert(frame.has_value());
     }
 
     {
         auto frame { CANFrame::createCANFrame(0x7FF, {}) };
-        assert(frame->getValidity());
+        assert(frame.has_value());
+        assert(frame->getFrameId() == 0x7FF);
     }
 
     {
@@ -29,13 +30,13 @@ void canFrameTests() {
 
     {
         auto frame { CANFrame::createCANFrame(0x000, {0}) };
-        assert(frame->getValidity());
+        assert(frame.has_value());
     }
 
     {
         const std::vector<std::uint8_t> eightBytePayload = {0, 1, 2, 3, 4, 5, 6, 7};
         const auto frame { CANFrame::createCANFrame(0x000, eightBytePayload) };
-        assert(frame->getValidity());
+        assert(frame.has_value());
 
         const uint16_t frameId { frame->getFrameId() };
         assert(frameId == 0x000);
