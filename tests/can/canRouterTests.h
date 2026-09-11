@@ -22,11 +22,11 @@ void canRouterTests() {
 
         assert(frame.has_value());
 
-        ECU* ecu = CANRouter::router(*frame, ecuList);
+        ECU* ecu = CANRouter::route(*frame, ecuList);
 
         assert(ecu);
 
-        assert(ecu->getEcuName() == engine.getEcuName() && ecu->getRequestCANId() == engine.getRequestCANId() && ecu->getResponseCANId() == engine.getResponseCANId());
+        assert(ecu == &engine);
     }
 
     {
@@ -40,11 +40,11 @@ void canRouterTests() {
 
         assert(frame.has_value());
 
-        ECU* ecu = CANRouter::router(*frame, ecuList);
+        ECU* ecu = CANRouter::route(*frame, ecuList);
 
         assert(ecu);
 
-        assert(ecu->getEcuName() == brake.getEcuName() && ecu->getRequestCANId() == brake.getRequestCANId() && ecu->getResponseCANId() == brake.getResponseCANId());
+        assert(ecu == &brake);
     }
 
     {
@@ -58,11 +58,11 @@ void canRouterTests() {
 
         assert(frame.has_value());
 
-        ECU* ecu = CANRouter::router(*frame, ecuList);
+        ECU* ecu = CANRouter::route(*frame, ecuList);
 
         assert(ecu);
 
-        assert(ecu->getEcuName() == battery.getEcuName() && ecu->getRequestCANId() == battery.getRequestCANId() && ecu->getResponseCANId() == battery.getResponseCANId());
+        assert(ecu == &battery);
     }
 
     {
@@ -76,7 +76,7 @@ void canRouterTests() {
 
         assert(frame.has_value());
 
-        ECU* ecu = CANRouter::router(*frame, ecuList);
+        ECU* ecu = CANRouter::route(*frame, ecuList);
 
         assert(!ecu);
     }
@@ -92,10 +92,10 @@ void canRouterTests() {
 
         assert(frame.has_value());
 
-        ECU* ecu = CANRouter::router(*frame, ecuList);
+        ECU* ecu = CANRouter::route(*frame, ecuList);
 
         assert(ecu);
-        assert(ecu->getEcuName() == battery.getEcuName() && ecu->getRequestCANId() == battery.getRequestCANId() && ecu->getResponseCANId() == battery.getResponseCANId());
+        assert(ecu == &battery);
         
         auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, *ecu) };
 
