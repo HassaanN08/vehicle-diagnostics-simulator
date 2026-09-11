@@ -14,6 +14,8 @@ void diagnosticCoordinatorTests() {
         ECU ecu {"Engine", 0x7E0, 0x7E8};
         auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
 
+        assert(returnedFrame.has_value());
+
         std::vector<std::uint8_t> response {0x02, 0x50, 0x03};
 
         assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Extended);
@@ -25,6 +27,8 @@ void diagnosticCoordinatorTests() {
         const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x10, 0x01}) };
         ECU ecu {"Engine", 0x7E0, 0x7E8};
         auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
+
+        assert(returnedFrame.has_value());
 
         std::vector<std::uint8_t> response {0x02, 0x50, 0x01};
 
@@ -38,6 +42,7 @@ void diagnosticCoordinatorTests() {
         ECU ecu {"Engine", 0x7E0, 0x7E8};
         auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
 
+        assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Default);
         assert(!returnedFrame.has_value());
     }
 
@@ -54,6 +59,8 @@ void diagnosticCoordinatorTests() {
         ECU ecu {"Engine", 0x7E0, 0x7E8};
         auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
 
+        assert(returnedFrame.has_value());
+
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x11, 0x11};
 
         std::vector<std::uint8_t> payload { returnedFrame->getFramePayload() };
@@ -66,6 +73,8 @@ void diagnosticCoordinatorTests() {
         ECU ecu {"Engine", 0x7E0, 0x7E8};
         auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
 
+        assert(returnedFrame.has_value());
+
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x10, 0x12};
 
         std::vector<std::uint8_t> payload { returnedFrame->getFramePayload() };
@@ -77,6 +86,8 @@ void diagnosticCoordinatorTests() {
         const auto frame { CANFrame::createCANFrame(0x000, {0x01, 0x10}) };
         ECU ecu {"Engine", 0x7E0, 0x7E8};
         auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
+
+        assert(returnedFrame.has_value());
 
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x10, 0x13};
 
