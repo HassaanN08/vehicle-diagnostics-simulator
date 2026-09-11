@@ -16,6 +16,7 @@ void transportCoordinatorTests() {
 
         std::vector<std::uint8_t> response {0x02, 0x50, 0x03};
 
+        assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Extended);
         assert(returnedFrame->getFramePayload() == response);
     }
 
