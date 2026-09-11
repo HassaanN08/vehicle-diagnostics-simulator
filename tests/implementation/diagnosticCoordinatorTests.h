@@ -26,6 +26,7 @@ void diagnosticCoordinatorTests() {
     {
         const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x10, 0x01}) };
         ECU ecu {"Engine", 0x7E0, 0x7E8};
+        ecu.setCurrentDiagnosticSession(DiagnosticSession::Extended);
         auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
 
         assert(returnedFrame.has_value());
