@@ -64,8 +64,6 @@ void diagnosticCoordinatorTests() {
 
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x11, 0x11};
 
-        std::vector<std::uint8_t> payload { returnedFrame->getFramePayload() };
-
         assert(returnedFrame->getFramePayload() == response);
     }
 
@@ -78,8 +76,6 @@ void diagnosticCoordinatorTests() {
 
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x10, 0x12};
 
-        std::vector<std::uint8_t> payload { returnedFrame->getFramePayload() };
-
         assert(returnedFrame->getFramePayload() == response);
     }
 
@@ -91,8 +87,6 @@ void diagnosticCoordinatorTests() {
         assert(returnedFrame.has_value());
 
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x10, 0x13};
-
-        std::vector<std::uint8_t> payload { returnedFrame->getFramePayload() };
 
         assert(returnedFrame->getFramePayload() == response);
     }

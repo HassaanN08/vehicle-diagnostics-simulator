@@ -5,6 +5,7 @@
 #include "uds/UDSServerTests.h"
 #include "isotp/isoTpTests.h"
 #include "can/canFrameTests.h"
+#include "can/canRouterTests.h"
 #include "implementation/diagnosticCoordinatorTests.h"
 
 int main() {
@@ -13,6 +14,7 @@ int main() {
     isoTpTests();
     canFrameTests();
     diagnosticCoordinatorTests();
+    canRouterTests();
 
     std::cout << "\nAll Tests  Passed!\n";
     return 0;
