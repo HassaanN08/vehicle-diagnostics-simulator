@@ -49,10 +49,9 @@ void canRouterTests() {
 
     {
         ECU engine {"Engine", 0x7E0, 0x7E8};
-        ECU brake {"Brake", 0x7E1, 0x7E9};
         ECU battery {"Battery", 0x7E2, 0x7EA};
 
-        std::vector<ECU*> ecuList {&engine, &brake, &battery};
+        std::vector<ECU*> ecuList {&engine, nullptr, &battery};
 
         auto frame { CANFrame::createCANFrame(0x7E2, {}) };
 
