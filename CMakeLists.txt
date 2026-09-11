@@ -14,6 +14,7 @@ add_executable(vehicle-diagnostics-simulator
 add_executable(vehicle-diagnostics-tests
     tests/tests.cpp
     src/domain/ECU.cpp
+    src/can/CANFrame.cpp
 )
 
 target_include_directories(vehicle-diagnostics-simulator 
