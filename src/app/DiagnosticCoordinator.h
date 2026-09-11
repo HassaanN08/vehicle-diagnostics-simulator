@@ -11,7 +11,6 @@
 
 namespace DiagnosticCoordinator {
     inline std::optional<CANFrame> coordinator (const CANFrame& frame, ECU& ecu) {
-        const std::uint16_t frameId { frame.getFrameId() };
         auto decodedPayload { IsoTp::decode(frame.getFramePayload()) };
 
         if (!decodedPayload.has_value()) return std::nullopt;
