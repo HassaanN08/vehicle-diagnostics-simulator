@@ -7,12 +7,11 @@
 #include "can/CANFrame.h"
 
 namespace CANRouter {
-    inline ECU* route (const std::uint16_t frameId, const std::vector<ECU*>& ecuList) {
+    inline ECU* route (const std::uint16_t frameId, std::vector<ECU>& ecuList) {
         if (ecuList.empty()) return nullptr;
 
-        for (ECU* ecu : ecuList) {
-            if (!ecu) continue;
-            if (ecu->getRequestCANId() == frameId) return ecu;
+        for (ECU& ecu : ecuList) {
+            if (ecu.getRequestCANId() == frameId) return &ecu;
         }
 
         return nullptr;

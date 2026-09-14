@@ -7,6 +7,7 @@
 #include "can/canFrameTests.h"
 #include "can/canRouterTests.h"
 #include "implementation/diagnosticCoordinatorTests.h"
+#include "domain/vehicleTests.h"
 
 int main() {
     ecuTests();
@@ -15,6 +16,7 @@ int main() {
     canFrameTests();
     diagnosticCoordinatorTests();
     canRouterTests();
+    vehicleTests();
 
     std::cout << "\nAll Tests  Passed!\n";
     return 0;

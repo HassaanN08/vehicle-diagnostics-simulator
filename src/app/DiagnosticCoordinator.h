@@ -11,7 +11,7 @@
 #include <optional>
 
 namespace DiagnosticCoordinator {
-    inline std::optional<CANFrame> coordinator (const CANFrame& frame, const std::vector<ECU*>& ecuList) {
+    inline std::optional<CANFrame> coordinator (const CANFrame& frame, std::vector<ECU>& ecuList) {
         auto ecu = CANRouter::route(frame.getFrameId(), ecuList);
         if (!ecu) return std::nullopt;
 
