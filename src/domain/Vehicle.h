@@ -14,10 +14,13 @@ class Vehicle {
     ECU brake {"Brake", 0x7E1, 0x7E9};
     ECU battery {"Battery", 0x7E2, 0x7EA};
 
-    std::vector<ECU> m_ecuList {engine, brake, battery};
+    std::vector<ECU> m_ecuList;
 
     public:
-        Vehicle(const std::string_view name) : m_name { name } {}
+        Vehicle(const std::string_view name) : m_name { name } {
+            m_ecuList.reserve(100);
+            m_ecuList.assign({engine, brake, battery});
+        }
 
         bool addECU(const ECU);
 
