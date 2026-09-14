@@ -22,7 +22,7 @@ void canRouterTests() {
 
         assert(frame.has_value());
 
-        ECU* ecu = CANRouter::route(*frame, ecuList);
+        ECU* ecu { CANRouter::route(frame->getFrameId(), ecuList) };
 
         assert(ecu);
 
@@ -40,7 +40,7 @@ void canRouterTests() {
 
         assert(frame.has_value());
 
-        ECU* ecu = CANRouter::route(*frame, ecuList);
+        ECU* ecu { CANRouter::route(frame->getFrameId(), ecuList) };
 
         assert(ecu);
 
@@ -57,7 +57,7 @@ void canRouterTests() {
 
         assert(frame.has_value());
 
-        ECU* ecu = CANRouter::route(*frame, ecuList);
+        ECU* ecu { CANRouter::route(frame->getFrameId(), ecuList) };
 
         assert(ecu);
 
@@ -75,7 +75,7 @@ void canRouterTests() {
 
         assert(frame.has_value());
 
-        ECU* ecu = CANRouter::route(*frame, ecuList);
+        ECU* ecu { CANRouter::route(frame->getFrameId(), ecuList) };
 
         assert(!ecu);
     }
@@ -91,22 +91,9 @@ void canRouterTests() {
 
         assert(frame.has_value());
 
-        ECU* ecu = CANRouter::route(*frame, ecuList);
+        ECU* ecu { CANRouter::route(frame->getFrameId(), ecuList) };
 
         assert(ecu);
         assert(ecu == &battery);
-        
-        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, *ecu) };
-
-        assert(returnedFrame.has_value());
-
-        std::vector<std::uint8_t> response {0x02, 0x50, 0x03};
-
-        assert(returnedFrame->getFramePayload() == response);
-        assert(returnedFrame->getFrameId() == ecu->getResponseCANId());
-
-        assert(battery.getCurrentDiagnosticSession() == DiagnosticSession::Extended);
-        assert(engine.getCurrentDiagnosticSession() == DiagnosticSession::Default);
-        assert(brake.getCurrentDiagnosticSession() == DiagnosticSession::Default);
     }
 }

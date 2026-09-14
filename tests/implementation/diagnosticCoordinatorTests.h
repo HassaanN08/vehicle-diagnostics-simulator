@@ -10,55 +10,109 @@
 
 void diagnosticCoordinatorTests() {
     {
+        ECU engine {"Engine", 0x7E0, 0x7E8};
+        ECU brake {"Brake", 0x7E1, 0x7E9};
+        ECU battery {"Battery", 0x7E2, 0x7EA};
+
+        std::vector<ECU*> ecuList {&engine, &brake, &battery};
+
         const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x10, 0x03}) };
-        ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
+
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecuList) };
 
         assert(returnedFrame.has_value());
 
         std::vector<std::uint8_t> response {0x02, 0x50, 0x03};
 
-        assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Extended);
+        assert(engine.getCurrentDiagnosticSession() == DiagnosticSession::Extended);
+        assert(brake.getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(battery.getCurrentDiagnosticSession() == DiagnosticSession::Default);
         assert(returnedFrame->getFramePayload() == response);
         assert(returnedFrame->getFrameId() == 0x7E8);
     }
 
     {
+        ECU engine {"Engine", 0x7E0, 0x7E8};
+        ECU brake {"Brake", 0x7E1, 0x7E9};
+        ECU battery {"Battery", 0x7E2, 0x7EA};
+
+        std::vector<ECU*> ecuList {&engine, &brake, &battery};
+
+        const auto frame { CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x03}) };
+
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecuList) };
+
+        assert(returnedFrame.has_value());
+
+        std::vector<std::uint8_t> response {0x02, 0x50, 0x03};
+
+        assert(battery.getCurrentDiagnosticSession() == DiagnosticSession::Extended);
+        assert(engine.getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(brake.getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(returnedFrame->getFramePayload() == response);
+        assert(returnedFrame->getFrameId() == 0x7EA);
+    }
+
+    {
+        ECU engine {"Engine", 0x7E0, 0x7E8};
+        ECU brake {"Brake", 0x7E1, 0x7E9};
+        ECU battery {"Battery", 0x7E2, 0x7EA};
+
+        std::vector<ECU*> ecuList {&engine, &brake, &battery};
+
         const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x10, 0x01}) };
-        ECU ecu {"Engine", 0x7E0, 0x7E8};
-        ecu.setCurrentDiagnosticSession(DiagnosticSession::Extended);
-        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
+        
+        engine.setCurrentDiagnosticSession(DiagnosticSession::Extended);
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecuList) };
 
         assert(returnedFrame.has_value());
 
         std::vector<std::uint8_t> response {0x02, 0x50, 0x01};
 
-        assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(engine.getCurrentDiagnosticSession() == DiagnosticSession::Default);
         assert(returnedFrame->getFramePayload() == response);
         assert(returnedFrame->getFrameId() == 0x7E8);
     }
 
     {
+        ECU engine {"Engine", 0x7E0, 0x7E8};
+        ECU brake {"Brake", 0x7E1, 0x7E9};
+        ECU battery {"Battery", 0x7E2, 0x7EA};
+
+        std::vector<ECU*> ecuList {&engine, &brake, &battery};
+
         const auto frame { CANFrame::createCANFrame(0x000, {0x03, 0x10, 0x03}) };
-        ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
+    
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecuList) };
 
-        assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(engine.getCurrentDiagnosticSession() == DiagnosticSession::Default);
         assert(!returnedFrame.has_value());
     }
 
     {
+        ECU engine {"Engine", 0x7E0, 0x7E8};
+        ECU brake {"Brake", 0x7E1, 0x7E9};
+        ECU battery {"Battery", 0x7E2, 0x7EA};
+
+        std::vector<ECU*> ecuList {&engine, &brake, &battery};
+
         const auto frame { CANFrame::createCANFrame(0x000, {0x12, 0x10, 0x03}) };
-        ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
+
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecuList) };
 
         assert(!returnedFrame.has_value());
     }
 
     {
-        const auto frame { CANFrame::createCANFrame(0x000, {0x02, 0x11, 0x03}) };
-        ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
+        ECU engine {"Engine", 0x7E0, 0x7E8};
+        ECU brake {"Brake", 0x7E1, 0x7E9};
+        ECU battery {"Battery", 0x7E2, 0x7EA};
+
+        std::vector<ECU*> ecuList {&engine, &brake, &battery};
+
+        const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x11, 0x03}) };
+
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecuList) };
 
         assert(returnedFrame.has_value());
 
@@ -68,9 +122,15 @@ void diagnosticCoordinatorTests() {
     }
 
     {
-        const auto frame { CANFrame::createCANFrame(0x000, {0x02, 0x10, 0x04}) };
-        ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
+        ECU engine {"Engine", 0x7E0, 0x7E8};
+        ECU brake {"Brake", 0x7E1, 0x7E9};
+        ECU battery {"Battery", 0x7E2, 0x7EA};
+
+        std::vector<ECU*> ecuList {&engine, &brake, &battery};
+
+        const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x10, 0x04}) };
+
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecuList) };
 
         assert(returnedFrame.has_value());
 
@@ -80,9 +140,14 @@ void diagnosticCoordinatorTests() {
     }
 
     {
-        const auto frame { CANFrame::createCANFrame(0x000, {0x01, 0x10}) };
-        ECU ecu {"Engine", 0x7E0, 0x7E8};
-        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecu) };
+        ECU engine {"Engine", 0x7E0, 0x7E8};
+        ECU brake {"Brake", 0x7E1, 0x7E9};
+        ECU battery {"Battery", 0x7E2, 0x7EA};
+
+        std::vector<ECU*> ecuList {&engine, &brake, &battery};
+
+        const auto frame { CANFrame::createCANFrame(0x7E0, {0x01, 0x10}) };
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecuList) };
 
         assert(returnedFrame.has_value());
 
