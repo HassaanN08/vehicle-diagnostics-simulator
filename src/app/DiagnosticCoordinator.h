@@ -5,14 +5,15 @@
 #include "uds/UDSServer.h"
 #include "domain/ECU.h"
 #include "can/CANRouter.h"
+#include "domain/Vehicle.h"
 
 #include <vector>
 #include <cstdint>
 #include <optional>
 
 namespace DiagnosticCoordinator {
-    inline std::optional<CANFrame> coordinator (const CANFrame& frame, std::vector<ECU>& ecuList) {
-        auto ecu = CANRouter::route(frame.getFrameId(), ecuList);
+    inline std::optional<CANFrame> coordinator (const CANFrame& frame, Vehicle<>& vehicle) {
+        auto ecu = CANRouter::route(frame.getFrameId(), vehicle);
         if (!ecu) return std::nullopt;
 
         auto decodedPayload { IsoTp::decode(frame.getFramePayload()) };

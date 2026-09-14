@@ -12,88 +12,94 @@
 void canRouterTests() {
 
     {
-        ECU engine {"Engine", 0x7E0, 0x7E8};
-        ECU brake {"Brake", 0x7E1, 0x7E9};
-        ECU battery {"Battery", 0x7E2, 0x7EA};
+        Vehicle<100> vehicle {"Mercedez Benz"};
+        ECU* engine {vehicle.getEcu(0x7E0)};
+        ECU* brake {vehicle.getEcu(0x7E1)};
+        ECU* battery {vehicle.getEcu(0x7E2)};
 
-        std::vector<ECU> ecuList {engine, brake, battery};
+        assert(engine && brake && battery);
 
         auto frame { CANFrame::createCANFrame(0x7E0, {}) };
 
         assert(frame.has_value());
 
-        auto ecu { CANRouter::route(frame->getFrameId(), ecuList) };
+        auto ecu { CANRouter::route(frame->getFrameId(), vehicle) };
 
         assert(ecu);
 
-        assert(ecu == &ecuList[0]);
+        assert(ecu == engine);
     }
 
     {
-        ECU engine {"Engine", 0x7E0, 0x7E8};
-        ECU brake {"Brake", 0x7E1, 0x7E9};
-        ECU battery {"Battery", 0x7E2, 0x7EA};
+        Vehicle<100> vehicle {"Mercedez Benz"};
+        ECU* engine {vehicle.getEcu(0x7E0)};
+        ECU* brake {vehicle.getEcu(0x7E1)};
+        ECU* battery {vehicle.getEcu(0x7E2)};
 
-        std::vector<ECU> ecuList {engine, brake, battery};
+        assert(engine && brake && battery);
 
         auto frame { CANFrame::createCANFrame(0x7E1, {}) };
 
         assert(frame.has_value());
 
-        auto ecu { CANRouter::route(frame->getFrameId(), ecuList) };
+        auto ecu { CANRouter::route(frame->getFrameId(), vehicle) };
 
         assert(ecu);
 
-        assert(ecu == &ecuList[1]);
+        assert(ecu == brake);
     }
 
     {
-        ECU engine {"Engine", 0x7E0, 0x7E8};
-        ECU battery {"Battery", 0x7E2, 0x7EA};
+        Vehicle<100> vehicle {"Mercedez Benz"};
+        ECU* engine {vehicle.getEcu(0x7E0)};
+        ECU* brake {vehicle.getEcu(0x7E1)};
+        ECU* battery {vehicle.getEcu(0x7E2)};
 
-        std::vector<ECU> ecuList {engine, battery};
+        assert(engine && brake && battery);
 
         auto frame { CANFrame::createCANFrame(0x7E2, {}) };
 
         assert(frame.has_value());
 
-        auto ecu { CANRouter::route(frame->getFrameId(), ecuList) };
+        auto ecu { CANRouter::route(frame->getFrameId(), vehicle) };
 
         assert(ecu);
 
-        assert(ecu == &ecuList[1]);
+        assert(ecu == battery);
     }
 
     {
-        ECU engine {"Engine", 0x7E0, 0x7E8};
-        ECU brake {"Brake", 0x7E1, 0x7E9};
-        ECU battery {"Battery", 0x7E2, 0x7EA};
+        Vehicle<100> vehicle {"Mercedez Benz"};
+        ECU* engine {vehicle.getEcu(0x7E0)};
+        ECU* brake {vehicle.getEcu(0x7E1)};
+        ECU* battery {vehicle.getEcu(0x7E2)};
 
-        std::vector<ECU> ecuList {engine, brake, battery};
+        assert(engine && brake && battery);
 
         auto frame { CANFrame::createCANFrame(0x7E7, {}) };
 
         assert(frame.has_value());
 
-        auto ecu { CANRouter::route(frame->getFrameId(), ecuList) };
+        auto ecu { CANRouter::route(frame->getFrameId(), vehicle) };
 
         assert(!ecu);
     }
 
     {
-        ECU engine {"Engine", 0x7E0, 0x7E8};
-        ECU brake {"Brake", 0x7E1, 0x7E9};
-        ECU battery {"Battery", 0x7E2, 0x7EA};
+        Vehicle<100> vehicle {"Mercedez Benz"};
+        ECU* engine {vehicle.getEcu(0x7E0)};
+        ECU* brake {vehicle.getEcu(0x7E1)};
+        ECU* battery {vehicle.getEcu(0x7E2)};
 
-        std::vector<ECU> ecuList {engine, brake, battery};
+        assert(engine && brake && battery);
 
         auto frame { CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x03}) };
 
         assert(frame.has_value());
 
-        auto ecu { CANRouter::route(frame->getFrameId(), ecuList) };
+        auto ecu { CANRouter::route(frame->getFrameId(), vehicle) };
 
         assert(ecu);
-        assert(ecu == &ecuList[2]);
+        assert(ecu == battery);
     }
 }

@@ -16,18 +16,18 @@ void vehicleTests() {
 
     assert(!nonExistantEcu);
 
-    bool addEcu { vehicle.addECU(ECU ("Engine2", 0x7E0, 0x7E8)) };
+    AddEcuResult addEcu { vehicle.addECU(ECU ("Engine2", 0x7E0, 0x7E8)) };
 
-    assert(!addEcu);
+    assert(addEcu == AddEcuResult::ecuAlreadyExists);
 
     addEcu = vehicle.addECU(ECU ("Gearbox", 0x7E4, 0x7EB));
-    assert(addEcu);
+    assert(addEcu == AddEcuResult::success);
 
     const ECU* gearbox {vehicle.getEcu(0x7E4)};
 
     assert(engine && brake && battery && gearbox);
 
-    std::vector<ECU>& ecuList { vehicle.getEcuList() };
+    const std::vector<ECU>& ecuList { vehicle.getEcuList() };
 
     assert(vehicle.getName() == "Mercedez Benz");
     assert(ecuList[0].getEcuName() == engine->getEcuName() && ecuList[0].getRequestCANId() == engine->getRequestCANId());
