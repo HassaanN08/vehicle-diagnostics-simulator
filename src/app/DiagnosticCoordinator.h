@@ -12,13 +12,11 @@
 
 namespace DiagnosticCoordinator {
     inline std::optional<CANFrame> coordinator (const CANFrame& frame, const std::vector<ECU*>& ecuList) {
-        auto decodedPayload { IsoTp::decode(frame.getFramePayload()) };
-
-        if (!decodedPayload.has_value()) return std::nullopt;
-
         auto ecu = CANRouter::route(frame.getFrameId(), ecuList);
-
         if (!ecu) return std::nullopt;
+
+        auto decodedPayload { IsoTp::decode(frame.getFramePayload()) };
+        if (!decodedPayload.has_value()) return std::nullopt;
 
         std::vector<std::uint8_t> responsePayload { UDSServer::server(*ecu, *decodedPayload) };
         auto encodedResponsePayload { IsoTp::encode(responsePayload) };
@@ -26,7 +24,6 @@ namespace DiagnosticCoordinator {
         if (!encodedResponsePayload.has_value()) return std::nullopt;
 
         auto responseFrame { CANFrame::createCANFrame(ecu->getResponseCANId(), *encodedResponsePayload) };
-
         if (!responseFrame.has_value()) return std::nullopt;
 
         return responseFrame;

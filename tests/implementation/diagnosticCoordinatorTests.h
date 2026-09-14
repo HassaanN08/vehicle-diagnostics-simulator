@@ -118,6 +118,7 @@ void diagnosticCoordinatorTests() {
 
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x11, 0x11};
 
+        assert(engine.getCurrentDiagnosticSession() == DiagnosticSession::Default);
         assert(returnedFrame->getFramePayload() == response);
     }
 
@@ -136,6 +137,7 @@ void diagnosticCoordinatorTests() {
 
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x10, 0x12};
 
+        assert(engine.getCurrentDiagnosticSession() == DiagnosticSession::Default);
         assert(returnedFrame->getFramePayload() == response);
     }
 
@@ -153,6 +155,7 @@ void diagnosticCoordinatorTests() {
 
         std::vector<std::uint8_t> response {0x03, 0x7F, 0x10, 0x13};
 
+        assert(engine.getCurrentDiagnosticSession() == DiagnosticSession::Default);
         assert(returnedFrame->getFramePayload() == response);
     }
 }
