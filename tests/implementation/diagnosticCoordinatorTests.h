@@ -158,4 +158,19 @@ void diagnosticCoordinatorTests() {
         assert(engine.getCurrentDiagnosticSession() == DiagnosticSession::Default);
         assert(returnedFrame->getFramePayload() == response);
     }
+
+    {
+        ECU engine {"Engine", 0x7E0, 0x7E8};
+        ECU brake {"Brake", 0x7E1, 0x7E9};
+        ECU battery {"Battery", 0x7E2, 0x7EA};
+
+        std::vector<ECU*> ecuList {&engine, &brake, &battery};
+
+        const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x10}) };
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, ecuList) };
+
+        assert(!returnedFrame.has_value());
+
+        assert(engine.getCurrentDiagnosticSession() == DiagnosticSession::Default);
+    }
 }
