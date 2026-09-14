@@ -16,7 +16,7 @@ AddEcuResult Vehicle::addECU(const ECU& ecu) {
     return AddEcuResult::success;
 }
 
-ECU* Vehicle::getEcu(const std::uint16_t ecuRequestId) & {
+ECU* Vehicle::findEcuByRequestCanId(const std::uint16_t ecuRequestId) & {
     for (ECU& m_ecu : m_ecuList) {
         if (m_ecu.getRequestCANId() == ecuRequestId) return &m_ecu;
     }

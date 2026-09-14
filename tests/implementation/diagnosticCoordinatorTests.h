@@ -13,9 +13,9 @@
 void diagnosticCoordinatorTests() {
     {   
         Vehicle vehicle {"Mercedez Benz"};
-        auto engine {vehicle.getEcu(0x7E0)};
-        auto brake {vehicle.getEcu(0x7E1)};
-        auto battery {vehicle.getEcu(0x7E2)};
+        auto engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        auto brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        auto battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
         assert(engine && brake && battery);
 
@@ -36,9 +36,9 @@ void diagnosticCoordinatorTests() {
 
     {
         Vehicle vehicle {"Mercedez Benz"};
-        auto engine {vehicle.getEcu(0x7E0)};
-        auto brake {vehicle.getEcu(0x7E1)};
-        auto battery {vehicle.getEcu(0x7E2)};
+        auto engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        auto brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        auto battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
         const auto frame { CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x03}) };
 
@@ -57,9 +57,9 @@ void diagnosticCoordinatorTests() {
 
     {
         Vehicle vehicle {"Mercedez Benz"};
-        auto engine {vehicle.getEcu(0x7E0)};
-        auto brake {vehicle.getEcu(0x7E1)};
-        auto battery {vehicle.getEcu(0x7E2)};
+        auto engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        auto brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        auto battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
         const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x10, 0x03}) };
         
@@ -84,9 +84,9 @@ void diagnosticCoordinatorTests() {
 
     {
         Vehicle vehicle {"Mercedez Benz"};
-        auto engine {vehicle.getEcu(0x7E0)};
-        auto brake {vehicle.getEcu(0x7E1)};
-        auto battery {vehicle.getEcu(0x7E2)};
+        auto engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        auto brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        auto battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
         const auto frame { CANFrame::createCANFrame(0x000, {0x03, 0x10, 0x03}) };
     
@@ -98,9 +98,9 @@ void diagnosticCoordinatorTests() {
 
     {
         Vehicle vehicle {"Mercedez Benz"};
-        auto engine {vehicle.getEcu(0x7E0)};
-        auto brake {vehicle.getEcu(0x7E1)};
-        auto battery {vehicle.getEcu(0x7E2)};
+        auto engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        auto brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        auto battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
         const auto frame { CANFrame::createCANFrame(0x000, {0x12, 0x10, 0x03}) };
 
@@ -111,9 +111,9 @@ void diagnosticCoordinatorTests() {
 
     {
         Vehicle vehicle {"Mercedez Benz"};
-        auto engine {vehicle.getEcu(0x7E0)};
-        auto brake {vehicle.getEcu(0x7E1)};
-        auto battery {vehicle.getEcu(0x7E2)};
+        auto engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        auto brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        auto battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
         const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x11, 0x03}) };
 
@@ -129,9 +129,9 @@ void diagnosticCoordinatorTests() {
 
     {
         Vehicle vehicle {"Mercedez Benz"};
-        auto engine {vehicle.getEcu(0x7E0)};
-        auto brake {vehicle.getEcu(0x7E1)};
-        auto battery {vehicle.getEcu(0x7E2)};
+        auto engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        auto brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        auto battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
         const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x10, 0x04}) };
 
@@ -147,9 +147,9 @@ void diagnosticCoordinatorTests() {
 
     {
         Vehicle vehicle {"Mercedez Benz"};
-        auto engine {vehicle.getEcu(0x7E0)};
-        auto brake {vehicle.getEcu(0x7E1)};
-        auto battery {vehicle.getEcu(0x7E2)};
+        auto engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        auto brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        auto battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
         const auto frame { CANFrame::createCANFrame(0x7E0, {0x01, 0x10}) };
         auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, vehicle) };
@@ -164,9 +164,9 @@ void diagnosticCoordinatorTests() {
 
     {
         Vehicle vehicle {"Mercedez Benz"};
-        auto engine {vehicle.getEcu(0x7E0)};
-        auto brake {vehicle.getEcu(0x7E1)};
-        auto battery {vehicle.getEcu(0x7E2)};
+        auto engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        auto brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        auto battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
         const auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x10}) };
         auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, vehicle) };

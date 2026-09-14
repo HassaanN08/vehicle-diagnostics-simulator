@@ -8,11 +8,11 @@
 
 void vehicleTests() {
     Vehicle vehicle {"Mercedez Benz"};
-    const ECU* engine {vehicle.getEcu(0x7E0)};
-    const ECU* brake {vehicle.getEcu(0x7E1)};
-    const ECU* battery {vehicle.getEcu(0x7E2)};
+    const ECU* engine {vehicle.findEcuByRequestCanId(0x7E0)};
+    const ECU* brake {vehicle.findEcuByRequestCanId(0x7E1)};
+    const ECU* battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
-    const ECU* nonExistantEcu {vehicle.getEcu(0x7E3)};
+    const ECU* nonExistantEcu {vehicle.findEcuByRequestCanId(0x7E3)};
 
     assert(!nonExistantEcu);
 
@@ -23,7 +23,7 @@ void vehicleTests() {
     addEcu = vehicle.addECU(ECU ("Gearbox", 0x7E4, 0x7EB));
     assert(addEcu == AddEcuResult::success);
 
-    const ECU* gearbox {vehicle.getEcu(0x7E4)};
+    const ECU* gearbox {vehicle.findEcuByRequestCanId(0x7E4)};
 
     assert(engine && brake && battery && gearbox);
 

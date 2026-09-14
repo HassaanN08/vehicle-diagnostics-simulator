@@ -27,8 +27,8 @@ class Vehicle {
 
         AddEcuResult addECU(const ECU&);
 
-        ECU* getEcu(const std::uint16_t ecuRequestId) &;
-        ECU getEcu(const std::uint16_t ecuRequestId) && = delete;
+        ECU* findEcuByRequestCanId(const std::uint16_t ecuRequestId) &;
+        ECU findEcuByRequestCanId(const std::uint16_t ecuRequestId) && = delete;
 
         const std::vector<ECU>& getEcuList() const & { return m_ecuList; }
         std::vector<ECU> getEcuList() && = delete;

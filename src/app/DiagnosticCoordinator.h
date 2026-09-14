@@ -4,7 +4,6 @@
 #include "isotp/IsoTp.h"
 #include "uds/UDSServer.h"
 #include "domain/ECU.h"
-#include "can/CANRouter.h"
 #include "domain/Vehicle.h"
 
 #include <vector>
@@ -13,7 +12,7 @@
 
 namespace DiagnosticCoordinator {
     inline std::optional<CANFrame> coordinator (const CANFrame& frame, Vehicle& vehicle) {
-        auto ecu = CANRouter::route(frame.getFrameId(), vehicle);
+        ECU* ecu = vehicle.findEcuByRequestCanId(frame.getFrameId());
         if (!ecu) return std::nullopt;
 
         auto decodedPayload { IsoTp::decode(frame.getFramePayload()) };
