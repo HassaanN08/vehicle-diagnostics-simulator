@@ -12,7 +12,7 @@
 #include <optional>
 
 namespace DiagnosticCoordinator {
-    inline std::optional<CANFrame> coordinator (const CANFrame& frame, Vehicle<>& vehicle) {
+    inline std::optional<CANFrame> coordinator (const CANFrame& frame, Vehicle& vehicle) {
         auto ecu = CANRouter::route(frame.getFrameId(), vehicle);
         if (!ecu) return std::nullopt;
 

@@ -12,7 +12,7 @@
 void canRouterTests() {
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         ECU* engine {vehicle.getEcu(0x7E0)};
         ECU* brake {vehicle.getEcu(0x7E1)};
         ECU* battery {vehicle.getEcu(0x7E2)};
@@ -31,7 +31,7 @@ void canRouterTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         ECU* engine {vehicle.getEcu(0x7E0)};
         ECU* brake {vehicle.getEcu(0x7E1)};
         ECU* battery {vehicle.getEcu(0x7E2)};
@@ -50,7 +50,7 @@ void canRouterTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         ECU* engine {vehicle.getEcu(0x7E0)};
         ECU* brake {vehicle.getEcu(0x7E1)};
         ECU* battery {vehicle.getEcu(0x7E2)};
@@ -69,7 +69,7 @@ void canRouterTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         ECU* engine {vehicle.getEcu(0x7E0)};
         ECU* brake {vehicle.getEcu(0x7E1)};
         ECU* battery {vehicle.getEcu(0x7E2)};
@@ -86,7 +86,7 @@ void canRouterTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         ECU* engine {vehicle.getEcu(0x7E0)};
         ECU* brake {vehicle.getEcu(0x7E1)};
         ECU* battery {vehicle.getEcu(0x7E2)};

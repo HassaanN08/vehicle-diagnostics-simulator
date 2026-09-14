@@ -12,7 +12,7 @@
 
 void diagnosticCoordinatorTests() {
     {   
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         auto engine {vehicle.getEcu(0x7E0)};
         auto brake {vehicle.getEcu(0x7E1)};
         auto battery {vehicle.getEcu(0x7E2)};
@@ -35,7 +35,7 @@ void diagnosticCoordinatorTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         auto engine {vehicle.getEcu(0x7E0)};
         auto brake {vehicle.getEcu(0x7E1)};
         auto battery {vehicle.getEcu(0x7E2)};
@@ -56,7 +56,7 @@ void diagnosticCoordinatorTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         auto engine {vehicle.getEcu(0x7E0)};
         auto brake {vehicle.getEcu(0x7E1)};
         auto battery {vehicle.getEcu(0x7E2)};
@@ -83,7 +83,7 @@ void diagnosticCoordinatorTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         auto engine {vehicle.getEcu(0x7E0)};
         auto brake {vehicle.getEcu(0x7E1)};
         auto battery {vehicle.getEcu(0x7E2)};
@@ -97,7 +97,7 @@ void diagnosticCoordinatorTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         auto engine {vehicle.getEcu(0x7E0)};
         auto brake {vehicle.getEcu(0x7E1)};
         auto battery {vehicle.getEcu(0x7E2)};
@@ -110,7 +110,7 @@ void diagnosticCoordinatorTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         auto engine {vehicle.getEcu(0x7E0)};
         auto brake {vehicle.getEcu(0x7E1)};
         auto battery {vehicle.getEcu(0x7E2)};
@@ -128,7 +128,7 @@ void diagnosticCoordinatorTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         auto engine {vehicle.getEcu(0x7E0)};
         auto brake {vehicle.getEcu(0x7E1)};
         auto battery {vehicle.getEcu(0x7E2)};
@@ -146,7 +146,7 @@ void diagnosticCoordinatorTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         auto engine {vehicle.getEcu(0x7E0)};
         auto brake {vehicle.getEcu(0x7E1)};
         auto battery {vehicle.getEcu(0x7E2)};
@@ -163,7 +163,7 @@ void diagnosticCoordinatorTests() {
     }
 
     {
-        Vehicle<100> vehicle {"Mercedez Benz"};
+        Vehicle vehicle {"Mercedez Benz"};
         auto engine {vehicle.getEcu(0x7E0)};
         auto brake {vehicle.getEcu(0x7E1)};
         auto battery {vehicle.getEcu(0x7E2)};
