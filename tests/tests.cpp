@@ -7,7 +7,7 @@
 #include "can/canFrameTests.h"
 #include "implementation/diagnosticCoordinatorTests.h"
 #include "domain/vehicleTests.h"
-#include "uds/UDSServerTests.h"
+#include "uds/readDataByIdentifierTests.h"
 
 int main() {
     ecuTests();
@@ -16,7 +16,7 @@ int main() {
     canFrameTests();
     diagnosticCoordinatorTests();
     vehicleTests();
-    udsServerTests();
+    readDataByIdentifierTests();
 
     std::cout << "\nAll Tests  Passed!\n";
     return 0;
