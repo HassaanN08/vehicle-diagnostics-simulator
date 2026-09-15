@@ -11,6 +11,8 @@ namespace UDSRequestParser {
         switch(requestSID) {
             case 0x10:
                 return UDSService::diagnosticSessionControl;
+            case 0x22:
+                return UDSService::readDataByIdentifier;
 
             default:
                 return UDSService::noService;

@@ -20,13 +20,17 @@ namespace UDSServer {
         UDSProcessingOutcome response {};
 
         std::vector<std::uint8_t> ecuResponseData;
+        ecuResponseData.reserve(payload.size() - 1);
 
         const std::uint8_t requestSID { payload[0] };
         UDSService parsedService { UDSRequestParser::parser(requestSID) };
 
         switch(parsedService) {
             case UDSService::diagnosticSessionControl:
-                response = UDSRequestProcessor::setDiagnosticSessionControl(ecu, payload, ecuResponseData);
+                response = UDSRequestProcessor::processDiagnosticSessionControl(ecu, payload, ecuResponseData);
+                break;
+            case UDSService::readDataByIdentifier:
+                response = UDSRequestProcessor::processReadDataByIdentifier(ecu, payload, ecuResponseData);
                 break;
             case UDSService::noService:
                 response = UDSProcessingOutcome::unSupportedService;

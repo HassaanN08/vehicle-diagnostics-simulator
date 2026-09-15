@@ -26,6 +26,8 @@ namespace UDSResponseBuilder {
                 return {0x7F, requestSID, UDSNegativeResponse::unSupportedSubFunctionNRC};
             case UDSProcessingOutcome::incorrectLength:
                 return {0x7F, requestSID, UDSNegativeResponse::incorrectLengthNRC};
+            case UDSProcessingOutcome::requestOutOfRange:
+                return {0x7F, requestSID, UDSNegativeResponse::requestOutOfRangeNRC};
         }
 
         return {};
