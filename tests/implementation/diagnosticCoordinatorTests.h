@@ -175,4 +175,81 @@ void diagnosticCoordinatorTests() {
 
         assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Default);
     }
+
+    {
+        Vehicle vehicle {"Mercedez Benz"};
+        ECU* engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        ECU* brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        ECU* battery {vehicle.findEcuByRequestCanId(0x7E2)};
+
+        const auto frame { CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x03}) };
+
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, vehicle) };
+
+        assert(returnedFrame.has_value());
+
+        std::vector<std::uint8_t> response {0x02, 0x50, 0x03};
+
+        assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
+        assert(brake->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(returnedFrame->getFramePayload() == response);
+        assert(returnedFrame->getFrameId() == 0x7EA);
+
+        const auto frame1 { CANFrame::createCANFrame(0x7E2, {0x03, 0x22, 0xF1, 0x86}) };
+
+        auto returnedFrame1 { DiagnosticCoordinator::coordinator(*frame1, vehicle) };
+
+        assert(returnedFrame1.has_value());
+
+        std::vector<std::uint8_t> response1 {0x04, 0x62, 0xF1, 0x86, 0x03};
+
+        assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
+        assert(brake->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(returnedFrame1->getFramePayload() == response1);
+        assert(returnedFrame1->getFrameId() == 0x7EA);
+    }
+
+    {
+        Vehicle vehicle {"Mercedez Benz"};
+        ECU* engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        ECU* brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        ECU* battery {vehicle.findEcuByRequestCanId(0x7E2)};
+
+        const auto frame { CANFrame::createCANFrame(0x7E2, {0x02, 0x22, 0xF1}) };
+
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, vehicle) };
+
+        assert(returnedFrame.has_value());
+
+        std::vector<std::uint8_t> response {0x03, 0x7F, 0x22, 0x13};
+
+        assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(brake->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(returnedFrame->getFramePayload() == response);
+        assert(returnedFrame->getFrameId() == 0x7EA);
+    }
+
+    {
+        Vehicle vehicle {"Mercedez Benz"};
+        ECU* engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        ECU* brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        ECU* battery {vehicle.findEcuByRequestCanId(0x7E2)};
+
+        const auto frame { CANFrame::createCANFrame(0x7E2, {0x03, 0x22, 0xF1, 0x11}) };
+
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, vehicle) };
+
+        assert(returnedFrame.has_value());
+
+        std::vector<std::uint8_t> response {0x03, 0x7F, 0x22, 0x31};
+
+        assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(brake->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(returnedFrame->getFramePayload() == response);
+        assert(returnedFrame->getFrameId() == 0x7EA);
+    }
 }
