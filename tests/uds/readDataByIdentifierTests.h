@@ -7,6 +7,7 @@
 
 #include "uds/UDSServer.h"
 #include "domain/ECU.h"
+#include "domain/Vehicle.h"
 
 void readDataByIdentifierTests() {
     Vehicle vehicle {"Mercedez Benz"};
