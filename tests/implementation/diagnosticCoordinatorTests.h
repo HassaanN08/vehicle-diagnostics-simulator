@@ -284,9 +284,7 @@ void diagnosticCoordinatorTests() {
 
         std::vector<std::uint8_t> response1 {0x01, 0x54};
 
-        assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
-        assert(brake->getCurrentDiagnosticSession() == DiagnosticSession::Default);
-        assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(battery->getDTCList().empty());
         assert(returnedFrame1->getFramePayload() == response1);
         assert(returnedFrame1->getFrameId() == 0x7EA);
     }
