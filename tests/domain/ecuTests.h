@@ -30,19 +30,31 @@ inline void ecuTests() {
     assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Default);
 
     ecu.setCurrentDiagnosticSession(DiagnosticSession::Extended);
-    AddDtcResult result { ecu.addDtc(DTC { 0x0300 }) };
-    batteryEcu.addDtc(DTC { 0x2234 });
+    AddDtcResult result { ecu.addDtc(*DTC::createDTC(0x0300)) };
+    batteryEcu.addDtc(*DTC::createDTC(0x2234));
     assert(result == AddDtcResult::dtcAdded);
 
-    result = ecu.addDtc(DTC { 0x0300 });
+    result = ecu.addDtc(*DTC::createDTC(0x0300));
     assert(result == AddDtcResult::dtcAlreadyExists);
 
-    ecu.addDtc(DTC { 0x0171 });
+    ecu.addDtc(*DTC::createDTC(0x0171));
 
-    ecu.addDtc(DTC { 0x0300 });
+    ecu.addDtc(*DTC::createDTC(0x0300));
     ClearDtcResult clearResult { ecu.clearAllDTCs() };
 
     assert(clearResult == ClearDtcResult::dtcCleared);
     assert(ecu.getDTCList().empty());
     assert(!batteryEcu.getDTCList().empty());
+
+    ecu.addDtc(*DTC::createDTC(0x0171));
+    ecu.addDtc(*DTC::createDTC(0x0300));
+
+    DTC* dtc { ecu.getDTC(0x0300) };
+    assert(dtc);
+    dtc->setStatus(0x0D);
+    std::vector<DTC> dtcs { ecu.readDTCStatus(0x09) };
+    assert(dtcs.size() == 1 && dtcs[0].getDiagnosticId() == 0x0300);
+
+    dtcs = ecu.readDTCStatus(0x10);
+    assert(dtcs.empty());
 }

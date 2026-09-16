@@ -22,8 +22,8 @@ void clearDiagnosticInformationTests() {
     assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
     assert(brake->getCurrentDiagnosticSession() == DiagnosticSession::Default);
 
-    engine->addDtc(DTC { 0x0300 });
-    engine->addDtc(DTC { 0x0171 });
+    engine->addDtc(*DTC::createDTC(0x0300));
+    engine->addDtc(*DTC::createDTC(0x0171));
 
     responsePayload = UDSServer::server(*engine, {0x14, 0xFF, 0xFF, 0xFF});
 

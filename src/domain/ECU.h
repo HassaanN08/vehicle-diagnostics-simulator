@@ -25,7 +25,7 @@ enum class ClearDtcResult {
 enum class AddDtcResult {
     dtcAlreadyExists,
     dtcLimitReached,
-    invalidDtcDiagnosticId,
+    dtcStatusNotSupported,
     dtcAdded,
 };
 
@@ -48,7 +48,7 @@ class ECU {
 
         DiagnosticSessionResult setCurrentDiagnosticSession(DiagnosticSession session);
 
-        const DTC* getDTC(const std::uint32_t diagnosticCode) const &;
+        DTC* getDTC(const std::uint32_t diagnosticCode) &;
         DTC getDTC(const std::uint32_t diagnosticCode) && = delete;
 
         const std::vector<DTC>& getDTCList() const & { return dtcList; }
@@ -58,5 +58,5 @@ class ECU {
         ClearDtcResult clearAllDTCs();
 
         std::uint8_t getSupportedStatus() const { return m_supportedStatus; }
-        std::vector<DTC> readDTCStatus(const std::uint8_t statusMask);
+        std::vector<DTC> readDTCStatus(const std::uint8_t statusMask) const;
 };

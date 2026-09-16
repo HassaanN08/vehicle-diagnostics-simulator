@@ -27,9 +27,9 @@ DiagnosticSessionResult ECU::setCurrentDiagnosticSession(DiagnosticSession sessi
 AddDtcResult ECU::addDtc(const DTC& dtc) {
     if (dtcList.size() >= m_dtcLimit) return AddDtcResult::dtcLimitReached;
 
-    const uint32_t newCode = dtc.getDiagnosticId();
+    if ((dtc.getStatus() | m_supportedStatus) != m_supportedStatus) return AddDtcResult::dtcStatusNotSupported;
 
-    if (newCode > 0xFFFFFF) return AddDtcResult::invalidDtcDiagnosticId;
+    const uint32_t newCode = dtc.getDiagnosticId();
 
     for (DTC& existingDtc : dtcList) {
         if (existingDtc.getDiagnosticId() == newCode) return AddDtcResult::dtcAlreadyExists;
@@ -39,8 +39,8 @@ AddDtcResult ECU::addDtc(const DTC& dtc) {
     return AddDtcResult::dtcAdded;
 }
 
-const DTC* ECU::getDTC(const std::uint32_t diagnosticCode) const & {
-    for (const DTC& existingDtc : dtcList) {
+DTC* ECU::getDTC(const std::uint32_t diagnosticCode) & {
+    for (DTC& existingDtc : dtcList) {
         if (existingDtc.getDiagnosticId() == diagnosticCode) return &existingDtc;
     }
 
@@ -54,13 +54,13 @@ ClearDtcResult ECU::clearAllDTCs() {
     return ClearDtcResult::dtcCleared;
 }
 
-std::vector<DTC> ECU::readDTCStatus(const std::uint8_t statusMask)  {
+std::vector<DTC> ECU::readDTCStatus(const std::uint8_t statusMask) const {
     const std::uint8_t allowedStatusMask { static_cast<std::uint8_t>(statusMask & m_supportedStatus)};
 
     std::vector<DTC> qualifiedDTCList;
     qualifiedDTCList.reserve(dtcList.size());
 
-    for (DTC& dtc : dtcList) {
+    for (const DTC& dtc : dtcList) {
         if ((dtc.getStatus() & allowedStatusMask) != 0) qualifiedDTCList.push_back(dtc);
     }    
 
