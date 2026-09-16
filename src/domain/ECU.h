@@ -17,7 +17,6 @@ enum class DiagnosticSessionResult {
 };
 
 enum class ClearDtcResult {
-    dtcDoesNotExist,
     dtcCleared,
     ecuInDefaultSession,
 };
