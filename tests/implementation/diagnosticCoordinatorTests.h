@@ -287,5 +287,17 @@ void diagnosticCoordinatorTests() {
         assert(battery->getDTCList().empty());
         assert(returnedFrame1->getFramePayload() == response1);
         assert(returnedFrame1->getFrameId() == 0x7EA);
+
+        const auto frame2 { CANFrame::createCANFrame(0x7E2, {0x04, 0x14, 0xFF, 0xFF, 0xFF}) };
+
+        auto returnedFrame2 { DiagnosticCoordinator::coordinator(*frame2, vehicle) };
+
+        assert(returnedFrame2.has_value());
+
+        std::vector<std::uint8_t> response2 {0x01, 0x54};
+
+        assert(battery->getDTCList().empty());
+        assert(returnedFrame2->getFramePayload() == response2);
+        assert(returnedFrame2->getFrameId() == 0x7EA);
     }
 }
