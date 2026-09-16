@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <string_view>
 #include <cstdint>
@@ -24,6 +25,7 @@ enum class ClearDtcResult {
 enum class AddDtcResult {
     dtcAlreadyExists,
     dtcLimitReached,
+    invalidDtcDiagnosticId,
     dtcAdded,
 };
 
@@ -31,12 +33,13 @@ class ECU {
     std::string m_ecuName {};
     std::uint16_t m_diagnosticRequestCANId {};
     std::uint16_t m_diagnosticResponseCANId {};
+    std::uint8_t m_supportedStatus {};
     DiagnosticSession m_currentDiagnosticSession { DiagnosticSession::Default } ;
     std::vector<DTC> dtcList;
     std::size_t m_dtcLimit {30};
 
     public:
-        ECU(const std::string_view ecuName, const std::uint16_t diagnosticRequestCANId, const std::uint16_t diagnosticResponseCANId);
+        ECU(const std::string_view ecuName, const std::uint16_t diagnosticRequestCANId, const std::uint16_t diagnosticResponseCANId, const std::uint8_t supportedStatus);
 
         std::string getEcuName() const { return  m_ecuName; }
         std::uint16_t getRequestCANId() const { return m_diagnosticRequestCANId; }
@@ -53,4 +56,7 @@ class ECU {
 
         AddDtcResult addDtc(const DTC&);
         ClearDtcResult clearAllDTCs();
+
+        std::uint8_t getSupportedStatus() const { return m_supportedStatus; }
+        std::vector<DTC> readDTCStatus(const std::uint8_t statusMask);
 };

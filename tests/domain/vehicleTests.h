@@ -16,11 +16,11 @@ void vehicleTests() {
 
     assert(!nonExistantEcu);
 
-    AddEcuResult addEcu { vehicle.addECU(ECU ("Engine2", 0x7E0, 0x7E8)) };
+    AddEcuResult addEcu { vehicle.addECU(ECU ("Engine2", 0x7E0, 0x7E8, 0x0F)) };
 
     assert(addEcu == AddEcuResult::ecuAlreadyExists);
 
-    addEcu = vehicle.addECU(ECU ("Gearbox", 0x7E4, 0x7EB));
+    addEcu = vehicle.addECU(ECU ("Gearbox", 0x7E4, 0x7EB, 0x1F));
     assert(addEcu == AddEcuResult::success);
 
     const ECU* gearbox {vehicle.findEcuByRequestCanId(0x7E4)};

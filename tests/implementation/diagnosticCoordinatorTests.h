@@ -273,8 +273,8 @@ void diagnosticCoordinatorTests() {
         assert(returnedFrame->getFramePayload() == response);
         assert(returnedFrame->getFrameId() == 0x7EA);
 
-        battery->addDtc(DTC ("Random/Multiple Cylinder Misfire Detected", 0x0300));
-        battery->addDtc(DTC ("System Too Lean", 0x0171));
+        battery->addDtc(DTC { 0x0300 });
+        battery->addDtc(DTC { 0x0171 });
 
         const auto frame1 { CANFrame::createCANFrame(0x7E2, {0x04, 0x14, 0xFF, 0xFF, 0xFF}) };
 

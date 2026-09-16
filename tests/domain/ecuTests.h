@@ -6,9 +6,9 @@
 #include "domain/ECU.h"
 
 inline void ecuTests() {
-    ECU ecu {"Engine", 0x7E0, 0x7E8};
-    ECU batteryEcu {"Battery", 0x7E2, 0x7EA};
-    const ECU brakeEcu {"Brake", 0x1F1, 0x1F9};
+    ECU ecu {"Engine", 0x7E0, 0x7E8, 0x09};
+    ECU batteryEcu {"Battery", 0x7E2, 0x7EA, 0x0D};
+    const ECU brakeEcu {"Brake", 0x1F1, 0x1F9, 0x0F};
 
     assert(ecu.getEcuName() == "Engine");
     assert(ecu.getRequestCANId() == 0x7E0);
@@ -30,16 +30,16 @@ inline void ecuTests() {
     assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Default);
 
     ecu.setCurrentDiagnosticSession(DiagnosticSession::Extended);
-    AddDtcResult result { ecu.addDtc(DTC ("Random/Multiple Cylinder Misfire Detected", 0x0300)) };
-    batteryEcu.addDtc(DTC ("Brake DTC", 0x2234));
+    AddDtcResult result { ecu.addDtc(DTC { 0x0300 }) };
+    batteryEcu.addDtc(DTC { 0x2234 });
     assert(result == AddDtcResult::dtcAdded);
 
-    result = ecu.addDtc(DTC ("Random/Multiple Cylinder Misfire Detected", 0x0300));
+    result = ecu.addDtc(DTC { 0x0300 });
     assert(result == AddDtcResult::dtcAlreadyExists);
 
-    ecu.addDtc(DTC ("System Too Lean", 0x0171));
+    ecu.addDtc(DTC { 0x0171 });
 
-    ecu.addDtc(DTC ("Random/Multiple Cylinder Misfire Detected", 0x0300));
+    ecu.addDtc(DTC { 0x0300 });
     ClearDtcResult clearResult { ecu.clearAllDTCs() };
 
     assert(clearResult == ClearDtcResult::dtcCleared);

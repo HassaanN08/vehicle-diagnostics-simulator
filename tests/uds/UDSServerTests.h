@@ -9,8 +9,8 @@
 #include "domain/ECU.h"
 
 void udsServerTests() {
-    ECU engine {"Engine", 0x7E0, 0x7E8};
-    ECU brake {"Brake", 0x1F1, 0x1F9};
+    ECU engine {"Engine", 0x7E0, 0x7E8, 0x09};
+    ECU brake {"Brake", 0x1F1, 0x1F9, 0x0D};
 
     std::vector<std::uint8_t> responsePayload = UDSServer::server(engine, {0x10, 0x03});
 
