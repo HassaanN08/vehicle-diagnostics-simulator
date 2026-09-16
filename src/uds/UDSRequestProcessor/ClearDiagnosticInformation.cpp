@@ -11,15 +11,11 @@ UDSProcessingOutcome UDSRequestProcessor::processClearDiagnosticInformation(ECU&
 
     if (payloadLength != 4) return UDSProcessingOutcome::incorrectLength;
 
-    const std::uint32_t diagnosticCode { (static_cast<std::uint32_t>(payload[1]) << 16) |  (static_cast<std::uint32_t>(payload[2]) << 8) | (static_cast<std::uint32_t>(payload[2]))};
-
-    DiagnosticSession currentDiagnosticSession { ecu.getCurrentDiagnosticSession() };
-
-    if (currentDiagnosticSession == DiagnosticSession::Default) return UDSProcessingOutcome::ecuInDefaultSession;
+    const std::uint32_t diagnosticCode { (static_cast<std::uint32_t>(payload[1]) << 16) |  (static_cast<std::uint32_t>(payload[2]) << 8) | (static_cast<std::uint32_t>(payload[3]))};
 
     switch(diagnosticCode) {
         case 0x00FFFFFF:
-            ecu.clearAllDTCs();
+            if (ecu.clearAllDTCs() == ClearDtcResult::ecuInDefaultSession) return UDSProcessingOutcome::ecuInDefaultSession;
             break;
         default:
             return UDSProcessingOutcome::requestOutOfRange;
