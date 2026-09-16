@@ -5,7 +5,7 @@
 
 #include "domain/ECU.h"
 #include "uds/UDSRequestParser.h"
-#include "uds/UDSRequestProcessor.h"
+#include "uds/UDSRequestProcessor/UDSRequestProcessor.h"
 #include "uds/UDSResponseBuilder.h"
 #include "uds/UDSTypes.h"
 
@@ -31,6 +31,9 @@ namespace UDSServer {
                 break;
             case UDSService::readDataByIdentifier:
                 response = UDSRequestProcessor::processReadDataByIdentifier(ecu, payload, ecuResponseData);
+                break;
+            case UDSService::clearDiagnosticInformation:
+                response = UDSRequestProcessor::processClearDiagnosticInformation(ecu, payload, ecuResponseData);
                 break;
             case UDSService::noService:
                 response = UDSProcessingOutcome::unSupportedService;

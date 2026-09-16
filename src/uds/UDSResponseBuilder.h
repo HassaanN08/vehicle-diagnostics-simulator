@@ -17,7 +17,8 @@ namespace UDSResponseBuilder {
                     std::vector<std::uint8_t> responsePayload;
                     responsePayload.reserve(1 + responseData.size());
                     responsePayload.push_back(positiveSID);
-                    responsePayload.insert(responsePayload.end(), responseData.begin(), responseData.end());
+                    if (!responseData.empty())
+                        responsePayload.insert(responsePayload.end(), responseData.begin(), responseData.end());
                     return responsePayload;
                 }
             case UDSProcessingOutcome::unSupportedService:
@@ -28,6 +29,8 @@ namespace UDSResponseBuilder {
                 return {0x7F, requestSID, UDSNegativeResponse::incorrectLengthNRC};
             case UDSProcessingOutcome::requestOutOfRange:
                 return {0x7F, requestSID, UDSNegativeResponse::requestOutOfRangeNRC};
+            case UDSProcessingOutcome::ecuInDefaultSession:
+                return {0x7F, requestSID, UDSNegativeResponse::ecuInDefaultSessionNRC};
         }
 
         return {};

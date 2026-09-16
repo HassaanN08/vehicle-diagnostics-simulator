@@ -8,11 +8,13 @@ enum class UDSProcessingOutcome {
     unSupportedSubFunction,     //Requested Subfunction isn't supported
     incorrectLength,            //Incorrect Payload Length
     requestOutOfRange,          //Request Out Of Range
+    ecuInDefaultSession,
 };
 
 enum class UDSService {
     diagnosticSessionControl,
     readDataByIdentifier,
+    clearDiagnosticInformation,
     noService,
 };
 
@@ -21,4 +23,5 @@ namespace UDSNegativeResponse {
     inline constexpr std::uint8_t unSupportedSubFunctionNRC { 0x12 };       //Requested Subfunction isn't supported
     inline constexpr std::uint8_t incorrectLengthNRC { 0x13 };              //Incorrect Payload Length
     inline constexpr std::uint8_t requestOutOfRangeNRC { 0x31 };            //Request Out Of Range
+    inline constexpr std::uint8_t ecuInDefaultSessionNRC { 0x7F };
 };

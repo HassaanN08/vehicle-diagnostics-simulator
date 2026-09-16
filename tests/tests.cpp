@@ -8,6 +8,7 @@
 #include "implementation/diagnosticCoordinatorTests.h"
 #include "domain/vehicleTests.h"
 #include "uds/readDataByIdentifierTests.h"
+#include "uds/clearDiagnosticInformationTests.h"
 
 int main() {
     ecuTests();
@@ -17,6 +18,7 @@ int main() {
     diagnosticCoordinatorTests();
     vehicleTests();
     readDataByIdentifierTests();
+    clearDiagnosticInformationTests();
 
     std::cout << "\nAll Tests  Passed!\n";
     return 0;

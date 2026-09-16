@@ -252,4 +252,42 @@ void diagnosticCoordinatorTests() {
         assert(returnedFrame->getFramePayload() == response);
         assert(returnedFrame->getFrameId() == 0x7EA);
     }
+
+    {
+        Vehicle vehicle {"Mercedez Benz"};
+        ECU* engine {vehicle.findEcuByRequestCanId(0x7E0)};
+        ECU* brake {vehicle.findEcuByRequestCanId(0x7E1)};
+        ECU* battery {vehicle.findEcuByRequestCanId(0x7E2)};
+
+        const auto frame { CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x03}) };
+
+        auto returnedFrame { DiagnosticCoordinator::coordinator(*frame, vehicle) };
+
+        assert(returnedFrame.has_value());
+
+        std::vector<std::uint8_t> response {0x02, 0x50, 0x03};
+
+        assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
+        assert(brake->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(returnedFrame->getFramePayload() == response);
+        assert(returnedFrame->getFrameId() == 0x7EA);
+
+        battery->addDtc(DTC ("Random/Multiple Cylinder Misfire Detected", 0x0300));
+        battery->addDtc(DTC ("System Too Lean", 0x0171));
+
+        const auto frame1 { CANFrame::createCANFrame(0x7E2, {0x04, 0x14, 0xFF, 0xFF, 0xFF}) };
+
+        auto returnedFrame1 { DiagnosticCoordinator::coordinator(*frame1, vehicle) };
+
+        assert(returnedFrame1.has_value());
+
+        std::vector<std::uint8_t> response1 {0x01, 0x54};
+
+        assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
+        assert(brake->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Default);
+        assert(returnedFrame1->getFramePayload() == response1);
+        assert(returnedFrame1->getFrameId() == 0x7EA);
+    }
 }
