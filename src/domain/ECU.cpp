@@ -42,15 +42,6 @@ const DTC* ECU::getDTC(const std::uint32_t diagnosticCode) const & {
     return nullptr;
 }
 
-/*ClearDtcResult ECU::clearDTC(const std::uint32_t diagnosticCode) {
-    if (this->m_currentDiagnosticSession == DiagnosticSession::Default) return ClearDtcResult::ecuInDefaultSession;
-
-    const DTC* dtc { this->getDTC(diagnosticCode) };
-
-    if (dtc) return ClearDtcResult::dtcCleared;
-    else return ClearDtcResult::dtcDoesNotExist;
-}*/
-
 ClearDtcResult ECU::clearAllDTCs() {
     if (this->m_currentDiagnosticSession == DiagnosticSession::Default) return ClearDtcResult::ecuInDefaultSession;
 

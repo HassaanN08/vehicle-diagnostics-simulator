@@ -53,6 +53,5 @@ class ECU {
         std::vector<DTC> getDTCList() && = delete;
 
         AddDtcResult addDtc(const DTC&);
-        ClearDtcResult clearDTC(const std::uint32_t diagnosticCode);
         ClearDtcResult clearAllDTCs();
 };
