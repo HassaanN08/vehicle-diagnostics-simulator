@@ -17,15 +17,14 @@ enum class DiagnosticSessionResult {
     alreadyInSession,
 };
 
-enum class ClearDtcResult {
+enum class DtcResult {
     dtcCleared,
     ecuInDefaultSession,
-};
-
-enum class AddDtcResult {
     dtcAlreadyExists,
+    dtcDoesNotExist,
     dtcLimitReached,
     dtcStatusNotSupported,
+    dtcStatusSet,
     dtcAdded,
 };
 
@@ -38,6 +37,9 @@ class ECU {
     std::vector<DTC> dtcList;
     std::size_t m_dtcLimit {30};
 
+    DTC* getDTC(const std::uint32_t diagnosticCode) &;
+    DTC getDTC(const std::uint32_t diagnosticCode) && = delete;
+
     public:
         ECU(const std::string_view ecuName, const std::uint16_t diagnosticRequestCANId, const std::uint16_t diagnosticResponseCANId, const std::uint8_t supportedStatus);
 
@@ -48,15 +50,13 @@ class ECU {
 
         DiagnosticSessionResult setCurrentDiagnosticSession(DiagnosticSession session);
 
-        DTC* getDTC(const std::uint32_t diagnosticCode) &;
-        DTC getDTC(const std::uint32_t diagnosticCode) && = delete;
-
         const std::vector<DTC>& getDTCList() const & { return dtcList; }
         std::vector<DTC> getDTCList() && = delete;
 
-        AddDtcResult addDtc(const DTC&);
-        ClearDtcResult clearAllDTCs();
+        DtcResult addDtc(const DTC&);
+        DtcResult clearAllDTCs();
 
         std::uint8_t getSupportedStatus() const { return m_supportedStatus; }
+        DtcResult setDTCStatus(std::uint32_t diagnosticId, std::uint8_t statusCode);
         std::vector<DTC> readDTCStatus(const std::uint8_t statusMask) const;
 };

@@ -15,7 +15,7 @@ UDSProcessingOutcome UDSRequestProcessor::processClearDiagnosticInformation(ECU&
 
     switch(diagnosticCode) {
         case 0x00FFFFFF:
-            if (ecu.clearAllDTCs() == ClearDtcResult::ecuInDefaultSession) return UDSProcessingOutcome::ecuInDefaultSession;
+            if (ecu.clearAllDTCs() == DtcResult::ecuInDefaultSession) return UDSProcessingOutcome::ecuInDefaultSession;
             break;
         default:
             return UDSProcessingOutcome::requestOutOfRange;
