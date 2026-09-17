@@ -13,6 +13,7 @@ add_executable(vehicle-diagnostics-simulator
     src/uds/UDSRequestProcessor/ClearDiagnosticInformation.cpp
     src/uds/UDSRequestProcessor/DiagnosticSessionControl.cpp
     src/uds/UDSRequestProcessor/ReadDataByIdentifier.cpp
+    src/isotp/Receiver.cpp
 )
 
 add_executable(vehicle-diagnostics-tests
@@ -23,6 +24,7 @@ add_executable(vehicle-diagnostics-tests
     src/uds/UDSRequestProcessor/ClearDiagnosticInformation.cpp
     src/uds/UDSRequestProcessor/DiagnosticSessionControl.cpp
     src/uds/UDSRequestProcessor/ReadDataByIdentifier.cpp
+    src/isotp/Receiver.cpp
 )
 
 target_include_directories(vehicle-diagnostics-simulator 
