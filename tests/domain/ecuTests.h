@@ -30,11 +30,11 @@ inline void ecuTests() {
     assert(ecu.getCurrentDiagnosticSession() == DiagnosticSession::Default);
 
     ecu.setCurrentDiagnosticSession(DiagnosticSession::Extended);
-    DtcResult result { ecu.addDtc(*DTC::createDTC(0x0300)) };
+    DtcResult result { ecu.addDtc(*DTC::createDTC(0xFFFFFF)) };
     batteryEcu.addDtc(*DTC::createDTC(0x2234));
     assert(result == DtcResult::dtcAdded);
 
-    result = ecu.addDtc(*DTC::createDTC(0x0300));
+    result = ecu.addDtc(*DTC::createDTC(0xFFFFFF));
     assert(result == DtcResult::dtcAlreadyExists);
 
     ecu.addDtc(*DTC::createDTC(0x0171));
@@ -45,6 +45,9 @@ inline void ecuTests() {
     assert(clearResult == DtcResult::dtcCleared);
     assert(ecu.getDTCList().empty());
     assert(!batteryEcu.getDTCList().empty());
+
+    auto Dtc {DTC::createDTC(0x1000000)};
+    assert(!Dtc);
 
     ecu.addDtc(*DTC::createDTC(0x0171));
     ecu.addDtc(*DTC::createDTC(0x0300));
@@ -59,4 +62,10 @@ inline void ecuTests() {
 
     dtcResult = ecu.setDTCStatus(0x0FFF, 0x09);
     assert(dtcResult == DtcResult::dtcDoesNotExist);
+
+    dtcs = ecu.readDTCStatus(0x00);
+    assert(dtcs.empty());
+
+    dtcs = ecu.readDTCStatus(0x10);
+    assert(dtcs.empty());
 }
