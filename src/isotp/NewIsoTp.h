@@ -32,7 +32,7 @@ namespace IsoTp {
         ReceiveFrameResult processFirstFrame(const std::vector<std::uint8_t>& payload);
         ReceiveFrameResult processConsecutiveFrame(const std::vector<std::uint8_t>& payload);
         void resetStateUponCompletion();
-        void resetStateUponError();
+        void resetCompleteState();
 
         public:
             ReceiveFrameResult receiveFrame(const CANFrame&);
