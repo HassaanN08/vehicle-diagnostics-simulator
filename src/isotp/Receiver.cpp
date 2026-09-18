@@ -102,7 +102,7 @@ ReceiveFrameResult Receiver::processConsecutiveFrame(const std::vector<std::uint
 
         return ReceiveFrameResult::WaitingForMoreFrames;
     } else {
-        if (payload.size() < remainingBytes) return ReceiveFrameResult::TransportError;
+        if (payload.size() < remainingBytes + 1) return ReceiveFrameResult::TransportError;
 
         for (std::size_t i { 1 }; i <= static_cast<std::size_t>(remainingBytes); ++i) {
             m_partialReassemblyBuffer.push_back(payload[i]);
