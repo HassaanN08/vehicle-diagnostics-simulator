@@ -18,7 +18,7 @@ void receiverTests() {
 
     Receiver engineReceiver { engine->getRequestCANId(), engine->getResponseCANId() };
     Receiver brakeReceiver { brake->getRequestCANId(), brake->getResponseCANId() };
-    Receiver batteryReceiver { battery->getRequestCANId(), engine->getResponseCANId() };
+    Receiver batteryReceiver { battery->getRequestCANId(), battery->getResponseCANId() };
 
     {
         std::vector<std::uint8_t> originalPayload {0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x07};
