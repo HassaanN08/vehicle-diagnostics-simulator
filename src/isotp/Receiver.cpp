@@ -1,10 +1,10 @@
-#include "isotp/NewIsoTp.h"
+#include "isotp/Receiver.h"
 #include "can/CANFrame.h"
 
 #include <vector>
 #include <cstdint>
 
-ReceiveFrameResult IsoTp::Receiver::receiveFrame(const CANFrame& frame) {
+ReceiveFrameResult Receiver::receiveFrame(const CANFrame& frame) {
     std::vector<std::uint8_t> payload { frame.getFramePayload() };
     if (payload.empty() || payload.size() > 8) return ReceiveFrameResult::TransportError;
 
@@ -35,11 +35,14 @@ ReceiveFrameResult IsoTp::Receiver::receiveFrame(const CANFrame& frame) {
     return result;
 }
 
-std::array<std::uint8_t, 3> IsoTp::Receiver::getFlowControlFrame() {
-    return std::array<std::uint8_t, 3> {0x30, 0x00, 0x00};
+std::optional<CANFrame> Receiver::getFlowControlFrame() {
+    auto frame { CANFrame::createCANFrame(m_diagnosticRequestCANId, {0x30, 0x00, 0x00}) };
+
+    if (frame) return *frame;
+    return std::nullopt;
 }
 
-ReceiveFrameResult IsoTp::Receiver::processSingleFrame(const std::vector<std::uint8_t>& payload) {
+ReceiveFrameResult Receiver::processSingleFrame(const std::vector<std::uint8_t>& payload) {
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F)};
 
@@ -56,13 +59,14 @@ ReceiveFrameResult IsoTp::Receiver::processSingleFrame(const std::vector<std::ui
     return ReceiveFrameResult::CompletedPayload;
 }
 
-ReceiveFrameResult IsoTp::Receiver::processFirstFrame(const std::vector<std::uint8_t>& payload) {
+ReceiveFrameResult Receiver::processFirstFrame(const std::vector<std::uint8_t>& payload) {
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F)};
 
-    m_messageLength = (static_cast<std::uint16_t>(lowerNibble) << 8) | (static_cast<std::uint16_t>(payload[1]));
+    if (payload.empty() || (payload.size() < 8)) return ReceiveFrameResult::TransportError;
 
-    if (payload.empty() || (payload.size() < 8) || m_messageLength <= 7) return ReceiveFrameResult::TransportError;
+    m_messageLength = (static_cast<std::uint16_t>(lowerNibble) << 8) | (static_cast<std::uint16_t>(payload[1]));
+    if (m_messageLength <= 7) return ReceiveFrameResult::TransportError;
 
     m_partialReassemblyBuffer.reserve(m_messageLength);
     m_currentState = ReceiverState::Reassembling;
@@ -77,7 +81,7 @@ ReceiveFrameResult IsoTp::Receiver::processFirstFrame(const std::vector<std::uin
     return ReceiveFrameResult::NeedToSendFC;
 }
 
-ReceiveFrameResult IsoTp::Receiver::processConsecutiveFrame(const std::vector<std::uint8_t>& payload) {
+ReceiveFrameResult Receiver::processConsecutiveFrame(const std::vector<std::uint8_t>& payload) {
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F) };
 
@@ -87,7 +91,7 @@ ReceiveFrameResult IsoTp::Receiver::processConsecutiveFrame(const std::vector<st
 
     if (remainingBytes > 7) {
         if (payload.size() < 8) return ReceiveFrameResult::TransportError;
-        
+
         for (std::size_t i { 1 }; i < 8; ++i) {
             m_partialReassemblyBuffer.push_back(payload[i]);
             ++m_usefulBytesCollected;
@@ -98,6 +102,8 @@ ReceiveFrameResult IsoTp::Receiver::processConsecutiveFrame(const std::vector<st
 
         return ReceiveFrameResult::WaitingForMoreFrames;
     } else {
+        if (payload.size() < remainingBytes) return ReceiveFrameResult::TransportError;
+
         for (std::size_t i { 1 }; i <= static_cast<std::size_t>(remainingBytes); ++i) {
             m_partialReassemblyBuffer.push_back(payload[i]);
             ++m_usefulBytesCollected;
@@ -107,7 +113,7 @@ ReceiveFrameResult IsoTp::Receiver::processConsecutiveFrame(const std::vector<st
     }
 }
 
-void IsoTp::Receiver::resetStateUponCompletion() {
+void Receiver::resetStateUponCompletion() {
     m_currentState = ReceiverState::Idle;
     m_messageLength = 0;
     m_usefulBytesCollected = 0;
@@ -118,7 +124,7 @@ void IsoTp::Receiver::resetStateUponCompletion() {
     m_CFCount = 0;
 }
 
-void IsoTp::Receiver::resetCompleteState() {
+void Receiver::resetCompleteState() {
     m_currentState = ReceiverState::Idle;
     m_messageLength = 0;
     m_usefulBytesCollected = 0;

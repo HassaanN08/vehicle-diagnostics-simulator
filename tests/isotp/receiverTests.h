@@ -5,20 +5,20 @@
 #include <vector>
 #include <cstdint>
 
-#include "isotp/NewIsoTp.h"
+#include "isotp/Receiver.h"
 #include "domain/ECU.h"
 #include "domain/Vehicle.h"
 #include "can/CANFrame.h"
 
-void newIsoTpTests() {
+void receiverTests() {
     Vehicle vehicle {"Mercedez Benz"};
     const ECU* engine {vehicle.findEcuByRequestCanId(0x7E0)};
     const ECU* brake {vehicle.findEcuByRequestCanId(0x7E1)};
     const ECU* battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
-    IsoTp::Receiver engineReceiver;
-    IsoTp::Receiver brakeReceiver;
-    IsoTp::Receiver batteryReceiver;
+    Receiver engineReceiver { engine->getRequestCANId(), engine->getResponseCANId() };
+    Receiver brakeReceiver { brake->getRequestCANId(), brake->getResponseCANId() };
+    Receiver batteryReceiver { battery->getRequestCANId(), engine->getResponseCANId() };
 
     {
         std::vector<std::uint8_t> originalPayload {0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x07};
@@ -34,8 +34,9 @@ void newIsoTpTests() {
         assert(result == ReceiveFrameResult::NeedToSendFC);
         assert(engineReceiver.getCurrentState() == ReceiverState::Reassembling);
 
-        std::array<std::uint8_t, 3> flowControlFrame { engineReceiver.getFlowControlFrame() };
-        assert(flowControlFrame[0] == 0x30 && flowControlFrame[1] == 0x00 && flowControlFrame[2] == 0x00);
+        auto flowControlFrame { engineReceiver.getFlowControlFrame() };
+        std::vector<std::uint8_t> flowControlPPayload { flowControlFrame->getFramePayload() };
+        assert(flowControlPPayload[0] == 0x30 && flowControlPPayload[1] == 0x00 && flowControlPPayload[2] == 0x00);
 
         result = engineReceiver.receiveFrame(*correctCF1);
         assert(result == ReceiveFrameResult::WaitingForMoreFrames);
@@ -90,8 +91,9 @@ void newIsoTpTests() {
         assert(result == ReceiveFrameResult::NeedToSendFC);
         assert(engineReceiver.getCurrentState() == ReceiverState::Reassembling);
 
-        std::array<std::uint8_t, 3> flowControlFrame { engineReceiver.getFlowControlFrame() };
-        assert(flowControlFrame[0] == 0x30 && flowControlFrame[1] == 0x00 && flowControlFrame[2] == 0x00);
+        auto flowControlFrame { engineReceiver.getFlowControlFrame() };
+        std::vector<std::uint8_t> flowControlPPayload { flowControlFrame->getFramePayload() };
+        assert(flowControlPPayload[0] == 0x30 && flowControlPPayload[1] == 0x00 && flowControlPPayload[2] == 0x00);
 
         result = engineReceiver.receiveFrame(*correctCF1);
         assert(result == ReceiveFrameResult::WaitingForMoreFrames);
@@ -138,9 +140,14 @@ void newIsoTpTests() {
 
         assert(engineReceiver.getNextCFSequenceNumber() == 15);
 
-        correctCF = CANFrame::createCANFrame(0x7E0, {static_cast<std::uint8_t>(0x2F), 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03});
+        correctCF = CANFrame::createCANFrame(0x7E0, {0x2F, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03});
         engineReceiver.receiveFrame(*correctCF);
 
         assert(engineReceiver.getNextCFSequenceNumber() == 0);
+
+        correctCF = CANFrame::createCANFrame(0x7E0, {0x20, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03});
+        engineReceiver.receiveFrame(*correctCF);
+
+        assert(engineReceiver.getNextCFSequenceNumber() == 1);
     }
 }

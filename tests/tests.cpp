@@ -9,7 +9,7 @@
 #include "domain/vehicleTests.h"
 #include "uds/readDataByIdentifierTests.h"
 #include "uds/clearDiagnosticInformationTests.h"
-#include "isotp/newIsoTpTests.h"
+#include "isotp/receiverTests.h"
 
 int main() {
     ecuTests();
@@ -20,7 +20,7 @@ int main() {
     vehicleTests();
     readDataByIdentifierTests();
     clearDiagnosticInformationTests();
-    newIsoTpTests();
+    receiverTests();
 
     std::cout << "\nAll Tests  Passed!\n";
     return 0;

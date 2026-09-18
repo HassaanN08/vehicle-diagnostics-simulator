@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "can/CANFrame.h"
+#include "isotp/Receiver.h"
+#include "domain/ECU.h"
 
 enum class ReceiverState {
     Idle,
@@ -18,31 +20,12 @@ enum class ReceiveFrameResult {
     TransportError,
 };
 
-namespace IsoTp {
-    class Receiver {
-        ReceiverState m_currentState { ReceiverState::Idle };
-        std::uint16_t m_messageLength {};
-        std::uint16_t m_usefulBytesCollected {};
-        std::vector<std::uint8_t> m_partialReassemblyBuffer;
-        std::vector<std::uint8_t> m_reassembledPayload;
-        int m_nextCFSequenceNumber {};
-        int m_CFCount {};
+class NewIsoTp {
+    Receiver m_receiver;
 
-        ReceiveFrameResult processSingleFrame(const std::vector<std::uint8_t>& payload);
-        ReceiveFrameResult processFirstFrame(const std::vector<std::uint8_t>& payload);
-        ReceiveFrameResult processConsecutiveFrame(const std::vector<std::uint8_t>& payload);
-        void resetStateUponCompletion();
-        void resetCompleteState();
+    public:
+        NewIsoTp(const std::uint16_t diagnosticRequestCANId, const std::uint16_t diagnosticResponseCANId) 
+            : m_receiver {diagnosticRequestCANId, diagnosticResponseCANId} {}
 
-        public:
-            ReceiveFrameResult receiveFrame(const CANFrame&);
-
-            std::array<std::uint8_t, 3> getFlowControlFrame();
-            std::vector<std::uint8_t> getReassembledPayload() const { return m_reassembledPayload; }
-            std::vector<std::uint8_t> getPartialReassemblyBuffer() const { return m_partialReassemblyBuffer; }
-            std::uint16_t getMessageLength() const { return m_messageLength; }
-            std::uint16_t getNextCFSequenceNumber() const { return m_nextCFSequenceNumber; }
-            std::uint16_t getUsefulBytesCollected() const { return m_usefulBytesCollected; }
-            ReceiverState getCurrentState() const { return m_currentState; }
-    };
+        
 };
