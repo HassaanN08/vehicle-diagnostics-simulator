@@ -30,6 +30,7 @@ ReceiveFrameResult IsoTp::Receiver::receiveFrame(const CANFrame& frame) {
     }
 
     if (result == ReceiveFrameResult::CompletedPayload) this->resetStateUponCompletion();
+    if (result == ReceiveFrameResult::TransportError) this->resetCompleteState();
 
     return result;
 }
@@ -42,10 +43,7 @@ ReceiveFrameResult IsoTp::Receiver::processSingleFrame(const std::vector<std::ui
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F)};
 
-    if ((lowerNibble == 0) || payload.empty() || (lowerNibble != (payload.size() - 1))) {
-        this->resetCompleteState();
-        return ReceiveFrameResult::TransportError;
-    }
+    if ((lowerNibble == 0) || payload.empty() || (lowerNibble != (payload.size() - 1))) return ReceiveFrameResult::TransportError;
 
     m_partialReassemblyBuffer.reserve(lowerNibble);
     m_currentState = ReceiverState::Reassembling;
@@ -62,11 +60,9 @@ ReceiveFrameResult IsoTp::Receiver::processFirstFrame(const std::vector<std::uin
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F)};
 
-    if (payload.empty() || (payload.size() < 8)) {
-        return ReceiveFrameResult::TransportError;
-    }
-
     m_messageLength = (static_cast<std::uint16_t>(lowerNibble) << 8) | (static_cast<std::uint16_t>(payload[1]));
+
+    if (payload.empty() || (payload.size() < 8) || m_messageLength <= 7) return ReceiveFrameResult::TransportError;
 
     m_partialReassemblyBuffer.reserve(m_messageLength);
     m_currentState = ReceiverState::Reassembling;
@@ -85,14 +81,13 @@ ReceiveFrameResult IsoTp::Receiver::processConsecutiveFrame(const std::vector<st
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F) };
 
-    if (lowerNibble != m_nextCFSequenceNumber) {
-        this->resetCompleteState();
-        return ReceiveFrameResult::TransportError;
-    }
+    if (lowerNibble != m_nextCFSequenceNumber) return ReceiveFrameResult::TransportError;
 
     const std::uint16_t remainingBytes { static_cast<std::uint16_t>(m_messageLength - m_usefulBytesCollected) };
 
     if (remainingBytes > 7) {
+        if (payload.size() < 8) return ReceiveFrameResult::TransportError;
+        
         for (std::size_t i { 1 }; i < 8; ++i) {
             m_partialReassemblyBuffer.push_back(payload[i]);
             ++m_usefulBytesCollected;

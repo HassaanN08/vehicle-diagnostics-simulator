@@ -81,6 +81,7 @@ void newIsoTpTests() {
         std::vector<std::uint8_t> originalPayload {0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x07};
 
         auto correctFirstFrame { CANFrame::createCANFrame(0x7E0, {0x10, 0x15, 0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1}) };
+        auto incorrectFirstFrame { CANFrame::createCANFrame(0x7E0, {0x10, 0x07, 0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1}) };
         auto correctCF1 { CANFrame::createCANFrame(0x7E0, {0x21, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03}) };
         auto correctCF2 { CANFrame::createCANFrame(0x7E0, {0x22, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01}) };
         auto correctCF3 { CANFrame::createCANFrame(0x7E0, {0x23, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}) };
@@ -100,6 +101,11 @@ void newIsoTpTests() {
 
         std::vector<std::uint8_t> assembledPayload { engineReceiver.getReassembledPayload() };
         assert(assembledPayload.empty());
+        assert(engineReceiver.getCurrentState() == ReceiverState::Idle);
+
+        result = engineReceiver.receiveFrame(*incorrectFirstFrame);
+        assert(result == ReceiveFrameResult::TransportError);
+
         assert(engineReceiver.getCurrentState() == ReceiverState::Idle);
 
         result = engineReceiver.receiveFrame(*correctCF1);
@@ -132,7 +138,7 @@ void newIsoTpTests() {
 
         assert(engineReceiver.getNextCFSequenceNumber() == 15);
 
-        correctCF = CANFrame::createCANFrame(0x7E0, {0x20, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03});
+        correctCF = CANFrame::createCANFrame(0x7E0, {static_cast<std::uint8_t>(0x2F), 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03});
         engineReceiver.receiveFrame(*correctCF);
 
         assert(engineReceiver.getNextCFSequenceNumber() == 0);
