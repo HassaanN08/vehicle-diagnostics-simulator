@@ -14,17 +14,20 @@ add_executable(vehicle-diagnostics-simulator
     src/uds/UDSRequestProcessor/DiagnosticSessionControl.cpp
     src/uds/UDSRequestProcessor/ReadDataByIdentifier.cpp
     src/isotp/Receiver.cpp
+    src/isotp/Sender.cpp
+    src/can/CANFrame.cpp
 )
 
 add_executable(vehicle-diagnostics-tests
     tests/tests.cpp
     src/domain/ECU.cpp
-    src/can/CANFrame.cpp
     src/domain/Vehicle.cpp
     src/uds/UDSRequestProcessor/ClearDiagnosticInformation.cpp
     src/uds/UDSRequestProcessor/DiagnosticSessionControl.cpp
     src/uds/UDSRequestProcessor/ReadDataByIdentifier.cpp
     src/isotp/Receiver.cpp
+    src/isotp/Sender.cpp
+    src/can/CANFrame.cpp
 )
 
 target_include_directories(vehicle-diagnostics-simulator 

@@ -10,6 +10,7 @@
 #include "uds/readDataByIdentifierTests.h"
 #include "uds/clearDiagnosticInformationTests.h"
 #include "isotp/receiverTests.h"
+#include "isotp/senderTests.h"
 
 int main() {
     ecuTests();
@@ -21,6 +22,7 @@ int main() {
     readDataByIdentifierTests();
     clearDiagnosticInformationTests();
     receiverTests();
+    senderTests();
 
     std::cout << "\nAll Tests  Passed!\n";
     return 0;

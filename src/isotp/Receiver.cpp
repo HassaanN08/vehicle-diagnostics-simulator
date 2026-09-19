@@ -38,7 +38,7 @@ ReceiveFrameResult Receiver::receiveFrame(const CANFrame& frame) {
 std::optional<CANFrame> Receiver::getFlowControlFrame() {
     auto frame { CANFrame::createCANFrame(m_diagnosticResponseCANId, {0x30, 0x00, 0x00}) };
 
-    if (frame) return *frame;
+    if (frame) return frame;
     return std::nullopt;
 }
 
