@@ -6,7 +6,7 @@
 #include "domain/Vehicle.h"
 #include "domain/ECU.h"
 
-void vehicleTests() {
+inline void vehicleTests() {
     Vehicle vehicle {"Mercedez Benz"};
     const ECU* engine {vehicle.findEcuByRequestCanId(0x7E0)};
     const ECU* brake {vehicle.findEcuByRequestCanId(0x7E1)};

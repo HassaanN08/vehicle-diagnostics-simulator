@@ -7,7 +7,7 @@
 
 #include "isotp/IsoTp.h"
 
-void isoTpTests() {
+inline void isoTpTests() {
     std::vector<std::uint8_t> validOneBytePayload {0x10};
     std::vector<std::uint8_t> validTwoBytePayload {0x10, 0x03};
     std::vector<std::uint8_t> validSevenBytePayload {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};

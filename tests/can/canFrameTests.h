@@ -6,7 +6,7 @@
 
 #include "can/CANFrame.h"
 
-void canFrameTests() {
+inline void canFrameTests() {
     {
         auto frame { CANFrame::createCANFrame(0x000, {}) };
         assert(frame.has_value());

@@ -10,7 +10,7 @@
 #include "domain/Vehicle.h"
 #include "can/CANFrame.h"
 
-void receiverTests() {
+inline void receiverTests() {
     Vehicle vehicle {"Mercedez Benz"};
     const ECU* engine {vehicle.findEcuByRequestCanId(0x7E0)};
     const ECU* brake {vehicle.findEcuByRequestCanId(0x7E1)};

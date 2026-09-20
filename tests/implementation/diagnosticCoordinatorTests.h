@@ -10,7 +10,7 @@
 #include "domain/ECU.h"
 #include "domain/Vehicle.h"
 
-void diagnosticCoordinatorTests() {
+inline void diagnosticCoordinatorTests() {
     {   
         Vehicle vehicle {"Mercedez Benz"};
         ECU* engine {vehicle.findEcuByRequestCanId(0x7E0)};
