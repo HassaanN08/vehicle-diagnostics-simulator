@@ -69,7 +69,7 @@ std::optional<CANFrame> Sender::processFirstFrame(const std::vector<std::uint8_t
 void Sender::receiveFC(const CANFrame& FCFrame) {
     std::vector<std::uint8_t> FCPayload { FCFrame.getFramePayload() };
 
-    if (FCPayload.size() != 3) return;
+    if ((FCPayload.size() != 3) || (m_currentState != SenderState::WaitingForFlowControl)) return;
 
     switch(FCPayload[0]) {
         case 0x30:

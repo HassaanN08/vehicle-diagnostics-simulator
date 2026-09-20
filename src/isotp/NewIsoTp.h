@@ -13,9 +13,9 @@ class NewIsoTp {
     Sender m_sender;
 
     public:
-        NewIsoTp(const std::uint16_t diagnosticRequestCANId, const std::uint16_t diagnosticResponseCANId, const std::vector<std::uint8_t>& payload) 
-            : m_receiver {diagnosticRequestCANId, diagnosticResponseCANId}
-            , m_sender {diagnosticRequestCANId, diagnosticResponseCANId, payload} {}
+        NewIsoTp(const std::uint16_t TXCanId, const std::uint16_t RXCanId, const std::vector<std::uint8_t>& payload) 
+            : m_receiver {TXCanId, RXCanId}
+            , m_sender {TXCanId} {}
 
         
 };

@@ -6,16 +6,11 @@
 #include <optional>
 
 #include "can/CANFrame.h"
-#include "isotp/Receiver.h"
 
 enum class SenderState {
     Idle,
     WaitingForFlowControl,
     ReadyToSendCF,
-};
-
-enum class SenderOperationResult {
-    
 };
 
 class Sender {
