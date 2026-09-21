@@ -27,6 +27,12 @@ enum class DecodeSTminResult {
     InvalidSTmin,
 };
 
+enum class CheckTimeoutResult {
+    NotWaiting,
+    Waiting,
+    TimeoutExpired,
+};
+
 class Sender {
     SenderState m_currentState {};
     std::vector<std::uint8_t> m_payload;
@@ -35,6 +41,8 @@ class Sender {
     std::uint8_t m_blockSize {};
     std::chrono::microseconds m_STmin {};
     std::optional<std::chrono::steady_clock::time_point> m_lastCFSent { std::nullopt };
+    std::chrono::milliseconds m_timeout { 1000 };
+    std::optional<std::chrono::steady_clock::time_point> m_lastFlowFrameSent { std::nullopt };
     std::uint32_t m_TXCanId {};
 
     std::optional<CANFrame> processSingleFrame(const std::vector<std::uint8_t>& payload);
@@ -50,6 +58,7 @@ class Sender {
         std::optional<CANFrame> receivePayload(const std::vector<std::uint8_t>& payload);
         std::optional<CANFrame> getNextCF();
         FlowControlResult receiveFC(const CANFrame& FCFrame);
+        CheckTimeoutResult checkTimeout();
 
         SenderState getCurrentState() const { return m_currentState; }
         std::uint8_t getCurrentBlockSize() const { return m_blockSize; }

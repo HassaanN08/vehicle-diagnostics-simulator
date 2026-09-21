@@ -63,6 +63,8 @@ std::optional<CANFrame> Sender::processFirstFrame(const std::vector<std::uint8_t
         m_currentState = SenderState::WaitingForFlowControl;
     }
 
+    m_lastFlowFrameSent = std::chrono::steady_clock::now();
+
     return frame;
 }
 
@@ -78,22 +80,23 @@ FlowControlResult Sender::receiveFC(const CANFrame& FCFrame) {
                 if (result == DecodeSTminResult::Successful) {
                     m_blockSize = FCPayload[1];
                     m_currentState = SenderState::ReadyToSendCF;
-                    return FlowControlResult::CTF;
+                    return FlowControlResult::CTS;
+                    m_lastFlowFrameSent = std::nullopt;
                 } else {
                     return FlowControlResult::InvalidSTmin;
                 }
             }
-            break;
         case 0x31:
+            m_lastFlowFrameSent = std::chrono::steady_clock::now();
             return FlowControlResult::Wait;
-            break;
         case 0x32:
             this->setDefault();
             return FlowControlResult::Abort;
-            break;
         default:
             return FlowControlResult::InvalidFC;
     }
+
+    return FlowControlResult::InvalidFC;
 }
 
 std::optional<CANFrame> Sender::getNextCF() {
@@ -125,7 +128,10 @@ std::optional<CANFrame> Sender::getNextCF() {
             m_lastCFSent = std::chrono::steady_clock::now();
             if (m_blockSize > 0) {
                 --m_blockSize;
-                if ((m_blockSize) == 0) m_currentState = SenderState::WaitingForFlowControl;
+                if ((m_blockSize) == 0) {
+                    m_currentState = SenderState::WaitingForFlowControl;
+                    m_lastFlowFrameSent = std::chrono::steady_clock::now();
+                }
             }
         }
 
@@ -149,6 +155,16 @@ std::optional<CANFrame> Sender::getNextCF() {
     }
 }
 
+CheckTimeoutResult Sender::checkTimeout() {
+    auto currentTime { std::chrono::steady_clock::now() };
+    if (m_currentState != SenderState::WaitingForFlowControl) return CheckTimeoutResult::NotWaiting;
+    if (currentTime - *m_lastFlowFrameSent < m_timeout) return CheckTimeoutResult::Waiting;
+    else {
+        this->setDefault();
+        return CheckTimeoutResult::TimeoutExpired;
+    }
+}
+
 DecodeSTminResult Sender::decodeSTmin(const std::uint8_t flowControlSTmin) {
     if (flowControlSTmin >= 0x00 && flowControlSTmin <= 0x7F) {
         m_STmin = std::chrono::microseconds{ flowControlSTmin * 1000};
@@ -169,4 +185,5 @@ void Sender::setDefault() {
     m_blockSize = 0;
     m_STmin = std::chrono::microseconds{ 0 };
     m_lastCFSent = std::nullopt;
+    m_lastFlowFrameSent = std::nullopt;
 }
