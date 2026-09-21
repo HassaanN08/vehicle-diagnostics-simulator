@@ -16,7 +16,6 @@ enum class SenderState {
 
 enum class FlowControlResult {
     CTS,
-    InvalidSTmin,
     Wait,
     Abort,
     InvalidFC,

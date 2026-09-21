@@ -41,8 +41,6 @@ std::optional<CANFrame> Sender::processFirstFrame(const std::vector<std::uint8_t
 
     if (payload.empty() || payloadLength < 8 || payloadLength > 4095) return std::nullopt;
 
-    m_payload = payload;
-
     const std::uint16_t payloadMetaData { static_cast<std::uint16_t>(0x1000 | static_cast<std::uint16_t>(payloadLength))};
     const std::uint8_t firstByte { static_cast<std::uint8_t>(payloadMetaData >> 8) };
     const std::uint8_t secondByte { static_cast<std::uint8_t>(payloadMetaData & 0x00FF) };
@@ -58,6 +56,7 @@ std::optional<CANFrame> Sender::processFirstFrame(const std::vector<std::uint8_t
     auto frame { CANFrame::createCANFrame(m_TXCanId, framePayload) };
 
     if (frame) {
+        m_payload = payload;
         m_payloadOffset = 6;
         m_nextCFSequenceNumber = 1;
         m_currentState = SenderState::WaitingForFlowControl;
@@ -84,7 +83,8 @@ FlowControlResult Sender::receiveFC(const CANFrame& FCFrame) {
 
                     return FlowControlResult::CTS;
                 } else {
-                    return FlowControlResult::InvalidSTmin;
+                    this->setDefault();
+                    return FlowControlResult::Abort;
                 }
             }
         case 0x31:
