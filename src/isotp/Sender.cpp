@@ -153,7 +153,7 @@ DecodeSTminResult Sender::decodeSTmin(const std::uint8_t flowControlSTmin) {
     if (flowControlSTmin >= 0x00 && flowControlSTmin <= 0x7F) {
         m_STmin = std::chrono::microseconds{ flowControlSTmin * 1000};
     } else if (flowControlSTmin >= 0xF1 && flowControlSTmin <= 0xF9) {
-        m_STmin = std::chrono::microseconds{ flowControlSTmin & 0x0F };
+        m_STmin = std::chrono::microseconds{ (flowControlSTmin & 0x0F) * 100 };
     } else {
         return DecodeSTminResult::InvalidSTmin;
     }
