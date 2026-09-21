@@ -42,7 +42,9 @@ class Sender {
     std::chrono::microseconds m_STmin {};
     std::optional<std::chrono::steady_clock::time_point> m_lastCFSent { std::nullopt };
     std::chrono::milliseconds m_timeout { 1000 };
-    std::optional<std::chrono::steady_clock::time_point> m_lastFlowFrameSent { std::nullopt };
+    std::optional<std::chrono::steady_clock::time_point> m_flowControlWaitStarted { std::nullopt };
+    std::size_t m_currentWaitCount {};
+    std::size_t m_wftmax { 5 };
     std::uint32_t m_TXCanId {};
 
     std::optional<CANFrame> processSingleFrame(const std::vector<std::uint8_t>& payload);
