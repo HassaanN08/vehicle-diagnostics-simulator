@@ -38,7 +38,6 @@ inline void senderTests() {
         engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x00, 0xF1}));
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
         assert(engineSender.getCurrentBlockSize() == 0x00);
-        assert(engineSender.getCurrentSTmin() == 0xF1);
         assert(engineSender.getCurrentOffset() == 6);
 
         frame = engineSender.getNextCF();

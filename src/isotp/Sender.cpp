@@ -66,27 +66,43 @@ std::optional<CANFrame> Sender::processFirstFrame(const std::vector<std::uint8_t
     return frame;
 }
 
-void Sender::receiveFC(const CANFrame& FCFrame) {
+FlowControlResult Sender::receiveFC(const CANFrame& FCFrame) {
     std::vector<std::uint8_t> FCPayload { FCFrame.getFramePayload() };
 
-    if ((FCPayload.size() != 3) || (m_currentState != SenderState::WaitingForFlowControl)) return;
+    if ((FCPayload.size() != 3) || (m_currentState != SenderState::WaitingForFlowControl)) return FlowControlResult::InvalidFC;
 
     switch(FCPayload[0]) {
         case 0x30:
-            m_blockSize = FCPayload[1];
-            m_STmin = FCPayload[2];
-            m_currentState = SenderState::ReadyToSendCF;
+            {
+                DecodeSTminResult result { this->decodeSTmin(FCPayload[2]) };
+                if (result == DecodeSTminResult::Successful) {
+                    m_blockSize = FCPayload[1];
+                    m_currentState = SenderState::ReadyToSendCF;
+                    return FlowControlResult::CTF;
+                } else {
+                    return FlowControlResult::InvalidSTmin;
+                }
+            }
             break;
         case 0x31:
+            return FlowControlResult::Wait;
             break;
         case 0x32:
             this->setDefault();
+            return FlowControlResult::Abort;
             break;
+        default:
+            return FlowControlResult::InvalidFC;
     }
 }
 
 std::optional<CANFrame> Sender::getNextCF() {
-    if ((m_currentState != SenderState::ReadyToSendCF) || m_payload.empty()) return std::nullopt;
+    auto currentTime { std::chrono::steady_clock::now() };
+    if ((m_currentState != SenderState::ReadyToSendCF) 
+        || m_payload.empty() 
+        || (m_lastCFSent.has_value() && (currentTime - *m_lastCFSent < m_STmin))) {
+            return std::nullopt;
+        }
 
     std::uint8_t firstByte { static_cast<std::uint8_t>(0x20 | m_nextCFSequenceNumber) };
     std::size_t remainingBytes { m_payload.size() - m_payloadOffset };
@@ -106,6 +122,7 @@ std::optional<CANFrame> Sender::getNextCF() {
         if (frame) {
             m_payloadOffset += 7;
             m_nextCFSequenceNumber = (m_nextCFSequenceNumber + 1) % 16;
+            m_lastCFSent = std::chrono::steady_clock::now();
             if (m_blockSize > 0) {
                 --m_blockSize;
                 if ((m_blockSize) == 0) m_currentState = SenderState::WaitingForFlowControl;
@@ -132,11 +149,24 @@ std::optional<CANFrame> Sender::getNextCF() {
     }
 }
 
+DecodeSTminResult Sender::decodeSTmin(const std::uint8_t flowControlSTmin) {
+    if (flowControlSTmin >= 0x00 && flowControlSTmin <= 0x7F) {
+        m_STmin = std::chrono::microseconds{ flowControlSTmin * 1000};
+    } else if (flowControlSTmin >= 0xF1 && flowControlSTmin <= 0xF9) {
+        m_STmin = std::chrono::microseconds{ flowControlSTmin & 0x0F };
+    } else {
+        return DecodeSTminResult::InvalidSTmin;
+    }
+
+    return DecodeSTminResult::Successful;
+}
+
 void Sender::setDefault() {
     m_currentState = SenderState::Idle;
     m_payload.clear();
     m_payloadOffset = 0;
     m_nextCFSequenceNumber = 0;
     m_blockSize = 0;
-    m_STmin = 0;
+    m_STmin = std::chrono::microseconds{ 0 };
+    m_lastCFSent = std::nullopt;
 }
