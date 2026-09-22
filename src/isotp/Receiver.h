@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <array>
 #include <vector>
+#include <optional>
+#include <chrono>
 
 #include "can/CANFrame.h"
 
@@ -18,6 +20,12 @@ enum class ReceiveFrameResult {
     TransportError,
 };
 
+enum class CheckTimeoutResult {
+    NotWaiting,
+    Waiting,
+    TimeoutExpired,
+};
+
 class Receiver {
     ReceiverState m_currentState { ReceiverState::Idle };
     std::uint16_t m_messageLength {};
@@ -26,8 +34,11 @@ class Receiver {
     std::vector<std::uint8_t> m_reassembledPayload;
     int m_nextCFSequenceNumber {};
     int m_CFCount {};
-    std::uint32_t m_diagnosticRequestCANId {};
-    std::uint32_t m_diagnosticResponseCANId {};
+    std::uint8_t m_blockSize {};
+    std::uint8_t m_STmin {};
+    std::uint32_t m_RXCanId {};
+    std::chrono::milliseconds m_timeout { 1000 };
+    std::optional<std::chrono::steady_clock::time_point> m_CFWaitStarted { std::nullopt };
 
     ReceiveFrameResult processSingleFrame(const std::vector<std::uint8_t>& payload);
     ReceiveFrameResult processFirstFrame(const std::vector<std::uint8_t>& payload);
@@ -36,11 +47,15 @@ class Receiver {
     void resetCompleteState();
 
     public:
-        Receiver(const std::uint16_t diagnosticRequestCANId, const std::uint16_t diagnosticResponseCANId) 
-            : m_diagnosticRequestCANId { diagnosticRequestCANId }
-            , m_diagnosticResponseCANId { diagnosticResponseCANId } {}
+        Receiver(const std::uint16_t RXCanId, std::uint8_t blockSize = 0, std::uint8_t STmin = 0) 
+            : m_RXCanId { RXCanId }
+            , m_blockSize { blockSize }
+            , m_STmin { STmin } {}
 
         ReceiveFrameResult receiveFrame(const CANFrame&);
+        void setBlockSize(std::uint8_t blockSize) { m_blockSize = blockSize; }
+        bool setSTmin(std::uint8_t STmin);
+        CheckTimeoutResult checkTimeout();
 
         std::optional<CANFrame> getFlowControlFrame();
         std::vector<std::uint8_t> getReassembledPayload() const { return m_reassembledPayload; }

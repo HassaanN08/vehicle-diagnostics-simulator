@@ -15,6 +15,7 @@ ReceiveFrameResult Receiver::receiveFrame(const CANFrame& frame) {
 
     switch(upperNibble) {
         case 0x00:
+            this->resetCompleteState();
             result = this->processSingleFrame(payload);
             break;
         case 0x01:
@@ -36,9 +37,15 @@ ReceiveFrameResult Receiver::receiveFrame(const CANFrame& frame) {
 }
 
 std::optional<CANFrame> Receiver::getFlowControlFrame() {
-    auto frame { CANFrame::createCANFrame(m_diagnosticResponseCANId, {0x30, 0x00, 0x00}) };
-
-    if (frame) return frame;
+    std::uint8_t firstItem {};
+    if (m_currentState == ReceiverState::Idle) firstItem = 0x30;
+    else if (m_currentState == ReceiverState::Reassembling) firstItem = 0x31;
+    std::vector<std::uint8_t> FCPayload {0x30, m_blockSize, m_STmin};
+    auto frame { CANFrame::createCANFrame(m_RXCanId, FCPayload) };
+    if (frame) {
+        m_blockSize = FCPayload[1];
+        return frame;
+    }
     return std::nullopt;
 }
 
@@ -77,6 +84,7 @@ ReceiveFrameResult Receiver::processFirstFrame(const std::vector<std::uint8_t>& 
 
     m_nextCFSequenceNumber = 1;
     m_usefulBytesCollected = 6;
+    m_CFWaitStarted = std::chrono::steady_clock::now();
 
     return ReceiveFrameResult::NeedToSendFC;
 }
@@ -99,6 +107,9 @@ ReceiveFrameResult Receiver::processConsecutiveFrame(const std::vector<std::uint
 
         m_nextCFSequenceNumber = (m_nextCFSequenceNumber + 1) % 16;
         ++m_CFCount;
+        m_CFWaitStarted = std::chrono::steady_clock::now();
+        
+        if ((m_blockSize != 0) && (m_CFCount >= m_blockSize)) return ReceiveFrameResult::NeedToSendFC;
 
         return ReceiveFrameResult::WaitingForMoreFrames;
     } else {
@@ -113,6 +124,15 @@ ReceiveFrameResult Receiver::processConsecutiveFrame(const std::vector<std::uint
     }
 }
 
+bool Receiver::setSTmin(std::uint8_t STmin) {
+    if (STmin <= 0x7F || (STmin >= 0xF1 && STmin <= 0xF9)) {
+        m_STmin = STmin;
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void Receiver::resetStateUponCompletion() {
     m_currentState = ReceiverState::Idle;
     m_messageLength = 0;
@@ -122,6 +142,7 @@ void Receiver::resetStateUponCompletion() {
     m_reassembledPayload.swap(m_partialReassemblyBuffer);
     m_nextCFSequenceNumber = 0;
     m_CFCount = 0;
+    m_CFWaitStarted = std::nullopt;
 }
 
 void Receiver::resetCompleteState() {
@@ -133,4 +154,17 @@ void Receiver::resetCompleteState() {
     m_partialReassemblyBuffer.clear();
     m_nextCFSequenceNumber = 0;
     m_CFCount = 0;
+    m_CFWaitStarted = std::nullopt;
+}
+
+CheckTimeoutResult Receiver::checkTimeout() {
+    auto currentTime { std::chrono::steady_clock::now() };
+    if (m_currentState != ReceiverState::Reassembling) return CheckTimeoutResult::NotWaiting;
+    if (m_CFWaitStarted.has_value() && (currentTime - *m_CFWaitStarted < m_timeout)) return CheckTimeoutResult::Waiting;
+    else {
+        m_partialReassemblyBuffer.clear();
+        m_CFWaitStarted = std::nullopt;
+        m_currentState = ReceiverState::Idle;
+        return CheckTimeoutResult::TimeoutExpired;
+    }
 }
