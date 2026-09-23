@@ -26,7 +26,7 @@ enum class DecodeSTminResult {
     InvalidSTmin,
 };
 
-enum class CheckTimeoutResult {
+enum class CheckSenderTimeoutResult {
     NotWaiting,
     Waiting,
     TimeoutExpired,
@@ -59,7 +59,7 @@ class Sender {
         std::optional<CANFrame> receivePayload(const std::vector<std::uint8_t>& payload);
         std::optional<CANFrame> getNextCF();
         FlowControlResult receiveFC(const CANFrame& FCFrame);
-        CheckTimeoutResult checkTimeout();
+        CheckSenderTimeoutResult checkTimeout();
 
         SenderState getCurrentState() const { return m_currentState; }
         std::uint8_t getCurrentBlockSize() const { return m_blockSize; }

@@ -11,6 +11,7 @@
 enum class ReceiverState {
     Idle,
     Reassembling,
+    SenderPaused,
 };
 
 enum class ReceiveFrameResult {
@@ -20,7 +21,7 @@ enum class ReceiveFrameResult {
     TransportError,
 };
 
-enum class CheckTimeoutResult {
+enum class CheckReceiverTimeoutResult {
     NotWaiting,
     Waiting,
     TimeoutExpired,
@@ -36,7 +37,8 @@ class Receiver {
     int m_CFCount {};
     std::uint8_t m_blockSize {};
     std::uint8_t m_STmin {};
-    std::uint32_t m_RXCanId {};
+    std::uint16_t m_RXCanId {};
+    std::uint16_t m_TXCanId {};
     std::chrono::milliseconds m_timeout { 1000 };
     std::optional<std::chrono::steady_clock::time_point> m_CFWaitStarted { std::nullopt };
 
@@ -46,16 +48,25 @@ class Receiver {
     void resetStateUponCompletion();
     void resetCompleteState();
 
+    Receiver(const std::uint16_t RXCanId, const std::uint16_t TXCanId, std::uint8_t blockSize = 0, std::uint8_t STmin = 0) 
+        : m_RXCanId { RXCanId }
+        , m_TXCanId { TXCanId }
+        , m_blockSize { blockSize }
+        , m_STmin { STmin } {}
+
     public:
-        Receiver(const std::uint16_t RXCanId, std::uint8_t blockSize = 0, std::uint8_t STmin = 0) 
-            : m_RXCanId { RXCanId }
-            , m_blockSize { blockSize }
-            , m_STmin { STmin } {}
+        static inline std::optional<Receiver> createReceiver(const Receiver& receiver) {
+            if (receiver.m_STmin <= 0x7F || (receiver.m_STmin >= 0xF1 && receiver.m_STmin <= 0xF9)) { 
+                return Receiver {receiver.m_RXCanId, receiver.m_TXCanId, receiver.m_blockSize, receiver.m_STmin};
+            } else {
+                return std::nullopt;
+            }
+        }
 
         ReceiveFrameResult receiveFrame(const CANFrame&);
         void setBlockSize(std::uint8_t blockSize) { m_blockSize = blockSize; }
         bool setSTmin(std::uint8_t STmin);
-        CheckTimeoutResult checkTimeout();
+        CheckReceiverTimeoutResult checkTimeout();
 
         std::optional<CANFrame> getFlowControlFrame();
         std::vector<std::uint8_t> getReassembledPayload() const { return m_reassembledPayload; }
