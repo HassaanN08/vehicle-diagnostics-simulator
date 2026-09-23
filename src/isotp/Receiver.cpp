@@ -5,6 +5,10 @@
 #include <cstdint>
 
 ReceiveFrameResult Receiver::receiveFrame(const CANFrame& frame) {
+    std::uint16_t frameId { frame.getFrameId() };
+            
+    if (frameId != m_RXCanId) return ReceiveFrameResult::IncorrectFrameId;
+
     std::vector<std::uint8_t> payload { frame.getFramePayload() };
     if (payload.empty() || payload.size() > 8) return ReceiveFrameResult::TransportError;
 

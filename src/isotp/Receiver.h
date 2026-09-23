@@ -8,6 +8,8 @@
 
 #include "can/CANFrame.h"
 
+class NewIsoTp;
+
 enum class ReceiverState {
     Idle,
     Reassembling,
@@ -19,6 +21,7 @@ enum class ReceiveFrameResult {
     CompletedPayload,
     NeedToSendFC,
     TransportError,
+    IncorrectFrameId,
 };
 
 enum class CheckReceiverTimeoutResult {
@@ -28,6 +31,7 @@ enum class CheckReceiverTimeoutResult {
 };
 
 class Receiver {
+    friend class NewIsoTp;
     ReceiverState m_currentState { ReceiverState::Idle };
     std::uint16_t m_messageLength {};
     std::uint16_t m_usefulBytesCollected {};
@@ -41,12 +45,6 @@ class Receiver {
     std::uint16_t m_TXCanId {};
     std::chrono::milliseconds m_timeout { 1000 };
     std::optional<std::chrono::steady_clock::time_point> m_CFWaitStarted { std::nullopt };
-
-    ReceiveFrameResult processSingleFrame(const std::vector<std::uint8_t>& payload);
-    ReceiveFrameResult processFirstFrame(const std::vector<std::uint8_t>& payload);
-    ReceiveFrameResult processConsecutiveFrame(const std::vector<std::uint8_t>& payload);
-    void resetStateUponCompletion();
-    void resetCompleteState();
 
     Receiver(const std::uint16_t RXCanId, const std::uint16_t TXCanId, std::uint8_t blockSize = 0, std::uint8_t STmin = 0) 
         : m_RXCanId { RXCanId }
@@ -75,4 +73,13 @@ class Receiver {
         std::uint16_t getNextCFSequenceNumber() const { return m_nextCFSequenceNumber; }
         std::uint16_t getUsefulBytesCollected() const { return m_usefulBytesCollected; }
         ReceiverState getCurrentState() const { return m_currentState; }
+
+        void setCurrentState(ReceiverState state) { m_currentState = state; }
+
+        void resetStateUponCompletion();
+        void resetCompleteState();
+
+        ReceiveFrameResult processSingleFrame(const std::vector<std::uint8_t>& payload);
+        ReceiveFrameResult processFirstFrame(const std::vector<std::uint8_t>& payload);
+        ReceiveFrameResult processConsecutiveFrame(const std::vector<std::uint8_t>& payload);
 };

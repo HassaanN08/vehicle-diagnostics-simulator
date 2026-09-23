@@ -16,6 +16,7 @@ add_executable(vehicle-diagnostics-simulator
     src/isotp/Receiver.cpp
     src/isotp/Sender.cpp
     src/can/CANFrame.cpp
+    src/isotp/IsoTp.cpp
 )
 
 add_executable(vehicle-diagnostics-tests
@@ -28,6 +29,7 @@ add_executable(vehicle-diagnostics-tests
     src/isotp/Receiver.cpp
     src/isotp/Sender.cpp
     src/can/CANFrame.cpp
+    src/isotp/IsoTp.cpp
 )
 
 target_include_directories(vehicle-diagnostics-simulator 

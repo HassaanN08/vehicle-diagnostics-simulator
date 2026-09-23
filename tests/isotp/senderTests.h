@@ -35,7 +35,7 @@ inline void senderTests() {
         assert(frame);
         assert(frame->getFramePayload() == correctFirstFrame->getFramePayload());
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
-        engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x00, 0xF1}));
+        engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x00, 0x00}));
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
         assert(engineSender.getCurrentBlockSize() == 0x00);
         assert(engineSender.getCurrentOffset() == 6);
@@ -81,7 +81,7 @@ inline void senderTests() {
         assert(frame);
         assert(frame->getFramePayload() == correctFirstFrame->getFramePayload());
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
-        engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x02, 0xF1}));
+        engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x02, 0x00}));
 
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
@@ -100,7 +100,7 @@ inline void senderTests() {
         engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x31, 0x00, 0x00}));
         assert(engineSender.getCurrentOffset() == 20);
 
-        engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x00, 0xF1}));
+        engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x00, 0x00}));
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::Idle);
         assert(frame);
@@ -127,7 +127,7 @@ inline void senderTests() {
         assert(frame);
         assert(frame->getFramePayload() == correctFirstFrame->getFramePayload());
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
-        engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x02, 0xF1}));
+        engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x02, 0x00}));
 
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
