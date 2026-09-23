@@ -55,9 +55,9 @@ class Receiver {
         , m_STmin { STmin } {}
 
     public:
-        static inline std::optional<Receiver> createReceiver(const Receiver& receiver) {
-            if (receiver.m_STmin <= 0x7F || (receiver.m_STmin >= 0xF1 && receiver.m_STmin <= 0xF9)) { 
-                return Receiver {receiver.m_RXCanId, receiver.m_TXCanId, receiver.m_blockSize, receiver.m_STmin};
+        static inline std::optional<Receiver> createReceiver(const std::uint16_t RXCanId, const std::uint16_t TXCanId, std::uint8_t blockSize = 0, std::uint8_t STmin = 0) {
+            if (STmin <= 0x7F || (STmin >= 0xF1 && STmin <= 0xF9)) { 
+                return Receiver {RXCanId, TXCanId, blockSize, STmin};
             } else {
                 return std::nullopt;
             }
