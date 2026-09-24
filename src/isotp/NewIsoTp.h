@@ -17,22 +17,23 @@ enum class IsoTpReceiveFrameResult {
     Error,
 };
 
-enum class IsoTpState {
-    ReassembledPayloadCompleted,
-    Processing,
-    Idle,
+enum class IsoTpTimeoutResponse {
+    TxTimedout,
+    RxTimedout,
+    Active,
 };
 
 class NewIsoTp {
-    Receiver m_receiver;
-    Sender m_sender;
-    IsoTpState m_currentState { IsoTpState::Idle };
-    std::vector<std::uint8_t> m_reassembledPayload;
     std::uint16_t m_TXCanId {};
     std::uint16_t m_RXCanId {};
+    Receiver m_receiver;
+    Sender m_sender;
+    std::vector<std::uint8_t> m_reassembledPayload;
 
     NewIsoTp(const std::uint16_t RXCanId, const std::uint16_t TXCanId, const std::uint8_t blockSize = 0, const std::uint8_t STmin = 0) 
-            : m_receiver {*Receiver::createReceiver(RXCanId, TXCanId, blockSize, STmin)}
+            : m_RXCanId { RXCanId }
+            , m_TXCanId { TXCanId }
+            , m_receiver {*Receiver::createReceiver(RXCanId, TXCanId, blockSize, STmin)}
             , m_sender {TXCanId} {}
 
     public:
@@ -45,12 +46,11 @@ class NewIsoTp {
         }
 
         IsoTpReceiveFrameResult receiveFrame(const CANFrame& frame);
-        std::optional<CANFrame> sendPayload(const std::vector<std::uint8_t>& payload);
+        std::optional<CANFrame> sendPayload(const std::vector<std::uint8_t>& payload) { return m_sender.receivePayload(payload); }
         std::optional<CANFrame> getNextFrame();
-        std::vector<std::uint8_t> getCompleteReassembledPayload() const;
+        std::vector<std::uint8_t> getCompleteReassembledPayload() const { return m_reassembledPayload; }
 
-        void resetState() {
-            m_currentState = IsoTpState::Idle;
-            m_reassembledPayload.clear();
-        }
+        void resetState() { m_reassembledPayload.clear(); }
+
+        IsoTpTimeoutResponse checkTimeout();
 };

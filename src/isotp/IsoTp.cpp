@@ -10,6 +10,8 @@ IsoTpReceiveFrameResult NewIsoTp::receiveFrame(const CANFrame& frame) {
 
     std::vector<std::uint8_t> payload { frame.getFramePayload() };
 
+    if (payload.empty()) return IsoTpReceiveFrameResult::Error;
+
     if ((payload[0] >> 4) < 0x03) {
         ReceiveFrameResult result { m_receiver.receiveFrame(frame) };
 
@@ -27,6 +29,8 @@ IsoTpReceiveFrameResult NewIsoTp::receiveFrame(const CANFrame& frame) {
         }
 
     } else if (payload[0] >> 4 == 0x03) {
+        if (frame.getFrameId() != m_RXCanId) return IsoTpReceiveFrameResult::Error;
+
         FlowControlResult result { m_sender.receiveFC(frame) };
 
         switch(result) {
@@ -39,25 +43,27 @@ IsoTpReceiveFrameResult NewIsoTp::receiveFrame(const CANFrame& frame) {
             case FlowControlResult::InvalidFC:
                 return IsoTpReceiveFrameResult::Error;
         }
-    }
+    } 
+    
+    return IsoTpReceiveFrameResult::Error;
 }
 
 std::optional<CANFrame> NewIsoTp::getNextFrame() {
-    if (m_sender.m_currentState == SenderState::ReadyToSendCF) return m_sender.getNextCF();
+    if (m_sender.m_currentState == SenderState::ReadyToSendCF) {
+        auto returnFrame { m_sender.getNextCF() };
+
+        if (returnFrame.has_value()) return returnFrame;
+    }
+    
     if (m_receiver.m_currentState == ReceiverState::SenderPaused) return m_receiver.getFlowControlFrame();
 
     return std::nullopt;
 }
 
-std::optional<CANFrame> NewIsoTp::sendPayload(const std::vector<std::uint8_t>& payload) {
-    std::size_t payloadLength { payload.size() };
-    if (payloadLength > 0 && payloadLength < 8) {
-        return m_sender.processSingleFrame(payload);
-    } else if (payloadLength >= 8 && payloadLength <= 4095 ) {
-        return m_sender.processFirstFrame(payload);
-    } else return std::nullopt;
-}
-
-std::vector<std::uint8_t> NewIsoTp::getCompleteReassembledPayload() const {
-    return m_reassembledPayload;
+IsoTpTimeoutResponse NewIsoTp::checkTimeout() {
+    if (m_receiver.checkTimeout() == CheckReceiverTimeoutResult::TimeoutExpired) {
+        return IsoTpTimeoutResponse::RxTimedout;
+    } else if (m_sender.checkTimeout() == CheckSenderTimeoutResult::TimeoutExpired) {
+        return IsoTpTimeoutResponse::TxTimedout;
+    } else return IsoTpTimeoutResponse::Active;
 }
