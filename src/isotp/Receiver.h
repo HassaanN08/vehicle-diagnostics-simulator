@@ -51,6 +51,13 @@ class Receiver {
         , m_blockSize { blockSize }
         , m_STmin { STmin } {}
 
+    void resetStateUponCompletion();
+    void resetCompleteState();
+
+    ReceivePayloadResult processSingleFrame(const std::vector<std::uint8_t>& payload);
+    ReceivePayloadResult processFirstFrame(const std::vector<std::uint8_t>& payload);
+    ReceivePayloadResult processConsecutiveFrame(const std::vector<std::uint8_t>& payload);
+
     public:
         static inline std::optional<Receiver> createReceiver(const std::uint16_t RXCanId, const std::uint16_t TXCanId, std::uint8_t blockSize = 0, std::uint8_t STmin = 0) {
             if (STmin <= 0x7F || (STmin >= 0xF1 && STmin <= 0xF9)) { 
@@ -74,11 +81,4 @@ class Receiver {
         ReceiverState getCurrentState() const { return m_currentState; }
 
         void setCurrentState(ReceiverState state) { m_currentState = state; }
-
-        void resetStateUponCompletion();
-        void resetCompleteState();
-
-        ReceivePayloadResult processSingleFrame(const std::vector<std::uint8_t>& payload);
-        ReceivePayloadResult processFirstFrame(const std::vector<std::uint8_t>& payload);
-        ReceivePayloadResult processConsecutiveFrame(const std::vector<std::uint8_t>& payload);
 };
