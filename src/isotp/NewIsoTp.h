@@ -50,7 +50,5 @@ class NewIsoTp {
         std::optional<CANFrame> getNextFrame();
         std::vector<std::uint8_t> getCompleteReassembledPayload() const { return m_reassembledPayload; }
 
-        void resetState() { m_reassembledPayload.clear(); }
-
         IsoTpTimeoutResponse checkTimeout();
 };
