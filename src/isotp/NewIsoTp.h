@@ -11,8 +11,8 @@
 
 enum class IsoTpReceiveFrameResult {
     NothingYet,
-    CTS,
     OutgoingCanFrameReady,
+    CTS,
     WaitingForNextCF,
     CompletedPayloadIsReady,
     Error,

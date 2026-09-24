@@ -21,7 +21,6 @@ enum class ReceivePayloadResult {
     CompletedPayload,
     NeedToSendFC,
     TransportError,
-    IncorrectFrameId,
 };
 
 enum class CheckReceiverTimeoutResult {

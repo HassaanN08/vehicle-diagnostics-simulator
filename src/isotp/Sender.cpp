@@ -163,12 +163,15 @@ std::optional<CANFrame> Sender::getNextCF() {
 
 CheckSenderTimeoutResult Sender::checkTimeout() {
     auto currentTime { std::chrono::steady_clock::now() };
-    if (m_currentState != SenderState::WaitingForFlowControl) return CheckSenderTimeoutResult::NotWaiting;
-    if (currentTime - *m_flowControlWaitStarted < m_timeout) return CheckSenderTimeoutResult::Waiting;
-    else {
+    if (m_currentState == SenderState::Idle) return CheckSenderTimeoutResult::NotWaiting;
+    if (m_flowControlWaitStarted.has_value() && (currentTime - *m_flowControlWaitStarted < m_timeout))
+        return CheckSenderTimeoutResult::Waiting;
+    else if (m_flowControlWaitStarted.has_value() && (currentTime - *m_flowControlWaitStarted >= m_timeout)) {
         this->setDefault();
         return CheckSenderTimeoutResult::TimeoutExpired;
     }
+
+    return CheckSenderTimeoutResult::NotWaiting;
 }
 
 DecodeSTminResult Sender::decodeSTmin(const std::uint8_t flowControlSTmin) {

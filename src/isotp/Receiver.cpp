@@ -163,10 +163,12 @@ void Receiver::resetCompleteState() {
 
 CheckReceiverTimeoutResult Receiver::checkTimeout() {
     auto currentTime { std::chrono::steady_clock::now() };
-    if (m_currentState != ReceiverState::Reassembling) return CheckReceiverTimeoutResult::NotWaiting;
+    if ((m_currentState != ReceiverState::Reassembling) || !m_CFWaitStarted.has_value()) return CheckReceiverTimeoutResult::NotWaiting;
     if (m_CFWaitStarted.has_value() && (currentTime - *m_CFWaitStarted < m_timeout)) return CheckReceiverTimeoutResult::Waiting;
-    else {
+    else if (m_CFWaitStarted.has_value() && (currentTime - *m_CFWaitStarted >= m_timeout)) {
         this->resetCompleteState();
         return CheckReceiverTimeoutResult::TimeoutExpired;
     }
+
+    return CheckReceiverTimeoutResult::NotWaiting;
 }

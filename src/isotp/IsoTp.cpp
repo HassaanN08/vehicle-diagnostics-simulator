@@ -34,12 +34,7 @@ IsoTpReceiveFrameResult NewIsoTp::receiveFrame(const CANFrame& frame) {
 
         switch(result) {
             case FlowControlResult::CTS:
-                if (m_sender.m_lastCFSent.has_value()) {
-                    if (std::chrono::steady_clock::now() - *m_sender.m_lastCFSent < m_sender.m_STmin) 
-                        return IsoTpReceiveFrameResult::CTS;
-                    else if (std::chrono::steady_clock::now() - *m_sender.m_lastCFSent >= m_sender.m_STmin) 
-                        return IsoTpReceiveFrameResult::OutgoingCanFrameReady;
-                } else return IsoTpReceiveFrameResult::OutgoingCanFrameReady;
+                return IsoTpReceiveFrameResult::CTS;
             case FlowControlResult::Wait:
                 return IsoTpReceiveFrameResult::NothingYet;
             case FlowControlResult::Abort:
@@ -53,23 +48,25 @@ IsoTpReceiveFrameResult NewIsoTp::receiveFrame(const CANFrame& frame) {
 }
 
 std::optional<CANFrame> NewIsoTp::getNextFrame() {
-    if (m_sender.m_currentState == SenderState::ReadyToSendCF) {
-        auto returnFrame { m_sender.getNextCF() };
+    if (m_receiver.m_currentState == ReceiverState::SenderPaused) {
+        auto returnFrame { m_receiver.getFlowControlFrame() };
 
         if (returnFrame.has_value()) return returnFrame;
     }
     
-    if (m_receiver.m_currentState == ReceiverState::SenderPaused) return m_receiver.getFlowControlFrame();
+    if (m_sender.m_currentState == SenderState::ReadyToSendCF) return m_sender.getNextCF();
 
     return std::nullopt;
 }
 
 IsoTpTimeoutResponse NewIsoTp::checkTimeout() {
-    if ((m_receiver.checkTimeout() == CheckReceiverTimeoutResult::TimeoutExpired) && (m_sender.checkTimeout() == CheckSenderTimeoutResult::TimeoutExpired))
+    CheckReceiverTimeoutResult receiverTimeout { m_receiver.checkTimeout() };
+    CheckSenderTimeoutResult senderTimeout { m_sender.checkTimeout() };
+    if ((receiverTimeout == CheckReceiverTimeoutResult::TimeoutExpired) && (senderTimeout == CheckSenderTimeoutResult::TimeoutExpired))
         return IsoTpTimeoutResponse::BothTimedOut;
-    else if (m_receiver.checkTimeout() == CheckReceiverTimeoutResult::TimeoutExpired)
+    else if (receiverTimeout == CheckReceiverTimeoutResult::TimeoutExpired)
         return IsoTpTimeoutResponse::RxTimedOut;
-    else if (m_sender.checkTimeout() == CheckSenderTimeoutResult::TimeoutExpired)
+    else if (senderTimeout == CheckSenderTimeoutResult::TimeoutExpired)
         return IsoTpTimeoutResponse::TxTimedOut;
     else return IsoTpTimeoutResponse::Active;
 }
@@ -77,6 +74,6 @@ IsoTpTimeoutResponse NewIsoTp::checkTimeout() {
 std::vector<std::uint8_t> NewIsoTp::getCompleteReassembledPayload() {
     std::vector<std::uint8_t> payload;
     payload.swap(m_reassembledPayload);
-    
+
     return payload;
 }
