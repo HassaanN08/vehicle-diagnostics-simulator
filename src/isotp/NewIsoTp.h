@@ -11,6 +11,7 @@
 
 enum class IsoTpReceiveFrameResult {
     NothingYet,
+    CTS,
     OutgoingCanFrameReady,
     WaitingForNextCF,
     CompletedPayloadIsReady,
@@ -18,8 +19,9 @@ enum class IsoTpReceiveFrameResult {
 };
 
 enum class IsoTpTimeoutResponse {
-    TxTimedout,
-    RxTimedout,
+    TxTimedOut,
+    RxTimedOut,
+    BothTimedOut,
     Active,
 };
 
@@ -48,7 +50,7 @@ class NewIsoTp {
         IsoTpReceiveFrameResult receiveFrame(const CANFrame& frame);
         std::optional<CANFrame> sendPayload(const std::vector<std::uint8_t>& payload) { return m_sender.receivePayload(payload); }
         std::optional<CANFrame> getNextFrame();
-        std::vector<std::uint8_t> getCompleteReassembledPayload() const { return m_reassembledPayload; }
+        std::vector<std::uint8_t> getCompleteReassembledPayload();
 
         IsoTpTimeoutResponse checkTimeout();
 };

@@ -16,7 +16,7 @@ enum class ReceiverState {
     SenderPaused,
 };
 
-enum class ReceiveFrameResult {
+enum class ReceivePayloadResult {
     WaitingForMoreFrames,
     CompletedPayload,
     NeedToSendFC,
@@ -61,7 +61,7 @@ class Receiver {
             }
         }
 
-        ReceiveFrameResult receiveFrame(const CANFrame&);
+        ReceivePayloadResult receivePayload(const std::vector<std::uint8_t>& payload);
         void setBlockSize(std::uint8_t blockSize) { m_blockSize = blockSize; }
         bool setSTmin(std::uint8_t STmin);
         CheckReceiverTimeoutResult checkTimeout();
@@ -79,7 +79,7 @@ class Receiver {
         void resetStateUponCompletion();
         void resetCompleteState();
 
-        ReceiveFrameResult processSingleFrame(const std::vector<std::uint8_t>& payload);
-        ReceiveFrameResult processFirstFrame(const std::vector<std::uint8_t>& payload);
-        ReceiveFrameResult processConsecutiveFrame(const std::vector<std::uint8_t>& payload);
+        ReceivePayloadResult processSingleFrame(const std::vector<std::uint8_t>& payload);
+        ReceivePayloadResult processFirstFrame(const std::vector<std::uint8_t>& payload);
+        ReceivePayloadResult processConsecutiveFrame(const std::vector<std::uint8_t>& payload);
 };

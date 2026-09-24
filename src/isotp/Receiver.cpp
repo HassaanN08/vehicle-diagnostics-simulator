@@ -4,18 +4,13 @@
 #include <vector>
 #include <cstdint>
 
-ReceiveFrameResult Receiver::receiveFrame(const CANFrame& frame) {
-    std::uint16_t frameId { frame.getFrameId() };
-            
-    if (frameId != m_RXCanId) return ReceiveFrameResult::IncorrectFrameId;
-
-    std::vector<std::uint8_t> payload { frame.getFramePayload() };
-    if (payload.empty() || payload.size() > 8) return ReceiveFrameResult::TransportError;
+ReceivePayloadResult Receiver::receivePayload(const std::vector<std::uint8_t>& payload) {
+    if (payload.empty() || payload.size() > 8) return ReceivePayloadResult::TransportError;
 
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t upperNibble { static_cast<std::uint8_t>(firstByte >> 4)};
 
-    ReceiveFrameResult result;
+    ReceivePayloadResult result;
 
     switch(upperNibble) {
         case 0x00:
@@ -28,17 +23,17 @@ ReceiveFrameResult Receiver::receiveFrame(const CANFrame& frame) {
             break;
         case 0x02:
             if (m_currentState == ReceiverState::Reassembling) result = this->processConsecutiveFrame(payload);
-            else result = ReceiveFrameResult::TransportError;
+            else result = ReceivePayloadResult::TransportError;
             break;
         default:
-            result = ReceiveFrameResult::TransportError;
+            result = ReceivePayloadResult::TransportError;
     }
 
-    if (result == ReceiveFrameResult::CompletedPayload) this->resetStateUponCompletion();
-    if (result == ReceiveFrameResult::NeedToSendFC) {
+    if (result == ReceivePayloadResult::CompletedPayload) this->resetStateUponCompletion();
+    if (result == ReceivePayloadResult::NeedToSendFC) {
         m_currentState = ReceiverState::SenderPaused;
     }
-    if (result == ReceiveFrameResult::TransportError) this->resetCompleteState();
+    if (result == ReceivePayloadResult::TransportError) this->resetCompleteState();
 
     return result;
 }
@@ -57,11 +52,11 @@ std::optional<CANFrame> Receiver::getFlowControlFrame() {
     return std::nullopt;
 }
 
-ReceiveFrameResult Receiver::processSingleFrame(const std::vector<std::uint8_t>& payload) {
+ReceivePayloadResult Receiver::processSingleFrame(const std::vector<std::uint8_t>& payload) {
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F)};
 
-    if ((lowerNibble == 0) || payload.empty() || (lowerNibble != (payload.size() - 1))) return ReceiveFrameResult::TransportError;
+    if ((lowerNibble == 0) || payload.empty() || (lowerNibble != (payload.size() - 1))) return ReceivePayloadResult::TransportError;
 
     m_partialReassemblyBuffer.reserve(lowerNibble);
     m_currentState = ReceiverState::Reassembling;
@@ -71,17 +66,17 @@ ReceiveFrameResult Receiver::processSingleFrame(const std::vector<std::uint8_t>&
         ++m_usefulBytesCollected;
     }
 
-    return ReceiveFrameResult::CompletedPayload;
+    return ReceivePayloadResult::CompletedPayload;
 }
 
-ReceiveFrameResult Receiver::processFirstFrame(const std::vector<std::uint8_t>& payload) {
+ReceivePayloadResult Receiver::processFirstFrame(const std::vector<std::uint8_t>& payload) {
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F)};
 
-    if (payload.empty() || (payload.size() < 8)) return ReceiveFrameResult::TransportError;
+    if (payload.empty() || (payload.size() < 8)) return ReceivePayloadResult::TransportError;
 
     m_messageLength = (static_cast<std::uint16_t>(lowerNibble) << 8) | (static_cast<std::uint16_t>(payload[1]));
-    if (m_messageLength <= 7) return ReceiveFrameResult::TransportError;
+    if (m_messageLength <= 7) return ReceivePayloadResult::TransportError;
 
     m_partialReassemblyBuffer.reserve(m_messageLength);
     m_currentState = ReceiverState::SenderPaused;
@@ -93,19 +88,19 @@ ReceiveFrameResult Receiver::processFirstFrame(const std::vector<std::uint8_t>& 
     m_nextCFSequenceNumber = 1;
     m_usefulBytesCollected = 6;
 
-    return ReceiveFrameResult::NeedToSendFC;
+    return ReceivePayloadResult::NeedToSendFC;
 }
 
-ReceiveFrameResult Receiver::processConsecutiveFrame(const std::vector<std::uint8_t>& payload) {
+ReceivePayloadResult Receiver::processConsecutiveFrame(const std::vector<std::uint8_t>& payload) {
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F) };
 
-    if (lowerNibble != m_nextCFSequenceNumber) return ReceiveFrameResult::TransportError;
+    if (lowerNibble != m_nextCFSequenceNumber) return ReceivePayloadResult::TransportError;
 
     const std::uint16_t remainingBytes { static_cast<std::uint16_t>(m_messageLength - m_usefulBytesCollected) };
 
     if (remainingBytes > 7) {
-        if (payload.size() < 8) return ReceiveFrameResult::TransportError;
+        if (payload.size() < 8) return ReceivePayloadResult::TransportError;
 
         for (std::size_t i { 1 }; i < 8; ++i) {
             m_partialReassemblyBuffer.push_back(payload[i]);
@@ -119,19 +114,19 @@ ReceiveFrameResult Receiver::processConsecutiveFrame(const std::vector<std::uint
         if ((m_blockSize != 0) && (m_CFCount >= m_blockSize)) {
             m_CFCount = 0;
             m_currentState = ReceiverState::SenderPaused;
-            return ReceiveFrameResult::NeedToSendFC;
+            return ReceivePayloadResult::NeedToSendFC;
         }
 
-        return ReceiveFrameResult::WaitingForMoreFrames;
+        return ReceivePayloadResult::WaitingForMoreFrames;
     } else {
-        if (payload.size() < remainingBytes + 1) return ReceiveFrameResult::TransportError;
+        if (payload.size() < remainingBytes + 1) return ReceivePayloadResult::TransportError;
 
         for (std::size_t i { 1 }; i <= static_cast<std::size_t>(remainingBytes); ++i) {
             m_partialReassemblyBuffer.push_back(payload[i]);
             ++m_usefulBytesCollected;
         }
 
-        return ReceiveFrameResult::CompletedPayload;
+        return ReceivePayloadResult::CompletedPayload;
     }
 }
 
