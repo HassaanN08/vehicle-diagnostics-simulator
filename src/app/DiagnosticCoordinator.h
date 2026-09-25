@@ -11,7 +11,7 @@
 #include <optional>
 
 enum class DiagnosticCoordinatorResult {
-    OutgoingFrameReady,
+    Processed,
     Waiting,
     Error,
 };
@@ -48,7 +48,7 @@ class DiagnosticCoordinator {
             if (result == IsoTpReceiveFrameResult::CompletedPayloadIsReady)
                 m_responsePayload = UDSServer::server(*m_ecu, m_isoTpEndpoint.getCompleteReassembledPayload());
 
-            return DiagnosticCoordinatorResult::OutgoingFrameReady;
+            return DiagnosticCoordinatorResult::Processed;
         }
 
         std::optional<CANFrame> getOutgoingFrame() {
