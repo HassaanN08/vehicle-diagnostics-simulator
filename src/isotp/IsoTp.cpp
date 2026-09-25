@@ -8,10 +8,11 @@
 #include <chrono>
 
 IsoTpReceiveFrameResult IsoTp::receiveFrame(const CANFrame& frame) {
+    if (frame.getFrameId() != m_RXCanId) return IsoTpReceiveFrameResult::InvalidFrameId;
 
     std::vector<std::uint8_t> payload { frame.getFramePayload() };
 
-    if (payload.empty() || frame.getFrameId() != m_RXCanId) return IsoTpReceiveFrameResult::Error;
+    if (payload.empty()) return IsoTpReceiveFrameResult::Error;
 
     if ((payload[0] >> 4) < 0x03) {
         ReceivePayloadResult result { m_receiver.receivePayload(payload) };

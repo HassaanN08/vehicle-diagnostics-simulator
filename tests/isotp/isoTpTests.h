@@ -107,7 +107,7 @@ inline void isoTpTests() {
         assert(frame->getFramePayload() == CtsPayload);
 
         result = testerIsoTpEndpoint->receiveFrame(*incorrentFCFrame);
-        assert(result == IsoTpReceiveFrameResult::Error);
+        assert(result == IsoTpReceiveFrameResult::InvalidFrameId);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
@@ -124,7 +124,7 @@ inline void isoTpTests() {
         assert(frame->getFramePayload() == CtsPayload);
 
         result = testerIsoTpEndpoint->receiveFrame(*incorrentFCFrame);
-        assert(result == IsoTpReceiveFrameResult::Error);
+        assert(result == IsoTpReceiveFrameResult::InvalidFrameId);
 
         result = testerIsoTpEndpoint->receiveFrame(*frame);
         assert(result == IsoTpReceiveFrameResult::CTS);
@@ -174,7 +174,7 @@ inline void isoTpTests() {
         assert(frame->getFramePayload() == correctFirstFrame->getFramePayload());
 
         IsoTpReceiveFrameResult result { brakeIsoTpEndpoint->receiveFrame(*frame) };
-        assert(result == IsoTpReceiveFrameResult::Error);
+        assert(result == IsoTpReceiveFrameResult::InvalidFrameId);
     }
 
     {

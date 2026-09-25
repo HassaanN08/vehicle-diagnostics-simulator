@@ -22,17 +22,17 @@ inline void diagnosticCoordinatorTests() {
     ECU batteryTester { "Battery Tester", battery->getResponseCANId(), battery->getRequestCANId(), 0xFF };
 
     auto engineCoordinator { DiagnosticCoordinator::createDiagnosticCoordinator(engine) };
-    auto engineTesterCoordinator { DiagnosticCoordinator::createDiagnosticCoordinator(&engineTester) };
+    auto engineTesterIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId()) };
 
     assert(engine && brake && battery);
 
     //Test engine session: Default -> Extended
     auto frame { CANFrame::createCANFrame(0x7E0, {0x02, 0x10, 0x03}) };
 
-    IsoTpReceiveFrameResult result { engineCoordinator->coordinate(*frame) };
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    DiagnosticCoordinatorResult result { engineCoordinator->coordinate(*frame) };
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    auto returnedFrame { engineCoordinator->getResponse() };
+    auto returnedFrame { engineCoordinator->getOutgoingFrame() };
 
     assert(returnedFrame.has_value());
 
@@ -51,9 +51,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x03});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
 
@@ -67,9 +67,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x01});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
 
@@ -85,9 +85,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x000, {0x02, 0x10, 0x01});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::InvalidFrameId);
+    assert(result == DiagnosticCoordinatorResult::Error);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(!returnedFrame.has_value());
 
@@ -97,9 +97,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x11, 0x03});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
 
@@ -113,9 +113,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x04});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
 
@@ -129,9 +129,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x01, 0x10});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
 
@@ -145,9 +145,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x22, 0xF1});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
 
@@ -161,9 +161,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x03, 0x22, 0xF1, 0x86});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
 
@@ -177,9 +177,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x03, 0x22, 0xF1, 0x11});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
 
@@ -197,9 +197,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x04, 0x14, 0xFF, 0xFF, 0xFF});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
 
@@ -213,9 +213,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x03});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
@@ -223,9 +223,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x04, 0x14, 0xFF, 0xFF, 0xFF});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
 
@@ -238,9 +238,9 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x04, 0x14, 0xFF, 0xFF, 0xFF});
 
     result = batteryCoordinator->coordinate(*frame);
-    assert(result == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+    assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
 
-    returnedFrame = batteryCoordinator->getResponse();
+    returnedFrame = batteryCoordinator->getOutgoingFrame();
 
     assert(returnedFrame.has_value());
 
@@ -249,4 +249,54 @@ inline void diagnosticCoordinatorTests() {
     assert(battery->getDTCList().empty());
     assert(returnedFrame->getFramePayload() == response);
     assert(returnedFrame->getFrameId() == 0x7EA);
+
+    //Test Multiframe transport
+    {
+        std::vector<std::uint8_t> originalPayload {0xFF, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x07};
+        std::vector<std::uint8_t> CtsPayload { 0x30, 0x00, 0x00 };
+
+        auto correctFirstFrame { CANFrame::createCANFrame(0x7E0, {0x10, 0x15, 0xFF, 0xF1, 0x90, 0xF1, 0x89, 0xF1}) };
+        auto correctCF1 { CANFrame::createCANFrame(0x7E0, {0x21, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03}) };
+        auto correctCF2 { CANFrame::createCANFrame(0x7E0, {0x22, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01}) };
+        auto correctCF3 { CANFrame::createCANFrame(0x7E0, {0x23, 0x07}) };
+
+        auto frame { engineTesterIsoTpEndpoint->sendPayload(originalPayload) };
+        assert(frame->getFramePayload() == correctFirstFrame->getFramePayload());
+
+        DiagnosticCoordinatorResult coordinatorResult { engineCoordinator->coordinate(*frame) };
+        assert(coordinatorResult == DiagnosticCoordinatorResult::OutgoingFrameReady);
+
+        frame = engineCoordinator->getOutgoingFrame();
+        assert(frame.has_value());
+        assert(frame->getFramePayload() == CtsPayload);
+
+        IsoTpReceiveFrameResult isoTpResult { engineTesterIsoTpEndpoint->receiveFrame(*frame) };
+        assert(result == DiagnosticCoordinatorResult::OutgoingFrameReady);
+
+        frame = engineTesterIsoTpEndpoint->getNextFrame();
+        assert(frame.has_value());
+        assert(frame->getFramePayload() == correctCF1->getFramePayload());
+
+        coordinatorResult = engineCoordinator->coordinate(*frame);
+        assert(coordinatorResult == DiagnosticCoordinatorResult::Waiting);
+
+        frame = engineTesterIsoTpEndpoint->getNextFrame();
+        assert(frame.has_value());
+        assert(frame->getFramePayload() == correctCF2->getFramePayload());
+
+        coordinatorResult = engineCoordinator->coordinate(*frame);
+        assert(coordinatorResult == DiagnosticCoordinatorResult::Waiting);
+
+        frame = engineTesterIsoTpEndpoint->getNextFrame();
+        assert(frame.has_value());
+        assert(frame->getFramePayload() == correctCF3->getFramePayload());
+
+        coordinatorResult = engineCoordinator->coordinate(*frame);
+        assert(coordinatorResult == DiagnosticCoordinatorResult::OutgoingFrameReady);
+
+        frame = engineCoordinator->getOutgoingFrame();
+        std::vector<std::uint8_t> response = { 0x03, 0x7F, 0xFF, 0x11 };
+        assert(frame.has_value());
+        assert(frame->getFramePayload() == response);
+    }
 }
