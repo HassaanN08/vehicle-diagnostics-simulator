@@ -1,54 +1,57 @@
 #pragma once
 
-#include <vector>
 #include <cstdint>
+#include <array>
+#include <vector>
 #include <optional>
 
-namespace IsoTp {
-    inline std::optional<std::vector<std::uint8_t>> encode (const std::vector<std::uint8_t>& payload) {
-        if (payload.empty()) return std::nullopt;
+#include "can/CANFrame.h"
+#include "isotp/Receiver.h"
+#include "isotp/Sender.h"
 
-        std::size_t payloadLength = payload.size();
+enum class IsoTpReceiveFrameResult {
+    InvalidFrameId,
+    NothingYet,
+    OutgoingCanFrameReady,
+    CTS,
+    WaitingForNextCF,
+    CompletedPayloadIsReady,
+    Error,
+};
 
-        std::vector<std::uint8_t> encodedPayload;
+enum class IsoTpTimeoutResponse {
+    TxTimedOut,
+    RxTimedOut,
+    BothTimedOut,
+    Active,
+};
 
-        if (payloadLength < 8) {
-            encodedPayload.reserve(payloadLength);
+class IsoTp {
+    std::uint16_t m_TXCanId {};
+    std::uint16_t m_RXCanId {};
+    Receiver m_receiver;
+    Sender m_sender;
+    std::vector<std::uint8_t> m_reassembledPayload;
 
-            encodedPayload.push_back(static_cast<uint8_t>(payloadLength));
+    IsoTp(const std::uint16_t RXCanId, const std::uint16_t TXCanId, const std::uint8_t blockSize = 0, const std::uint8_t STmin = 0) 
+            : m_RXCanId { RXCanId }
+            , m_TXCanId { TXCanId }
+            , m_receiver {*Receiver::createReceiver(RXCanId, TXCanId, blockSize, STmin)}
+            , m_sender {TXCanId} {}
 
-            encodedPayload.insert(encodedPayload.end(), payload.begin(), payload.end());
-
-            return encodedPayload;
-        }
-        
-        return std::nullopt;
-    }
-
-    inline std::optional<std::vector<std::uint8_t>> decode(const std::vector<std::uint8_t>& encodedPayload) {
-        std::size_t encodedPayloadLength = encodedPayload.size();
-
-        if (encodedPayload.empty() || encodedPayloadLength == 1) return std::nullopt;
-
-        std::uint8_t upperNibble { static_cast<std::uint8_t>((encodedPayload[0] >> 4) & 0x0F) };        //For checking whether it's Single-Frame or Multi-Frame
-        std::uint8_t lowerNibble { static_cast<std::uint8_t>(encodedPayload[0] & 0x0F) };
-
-        if ((upperNibble == 0x00) &&
-            (lowerNibble == (encodedPayloadLength - 1)) &&
-            (encodedPayloadLength > 1) &&
-            (encodedPayloadLength <= 8)) {
-
-            std::vector<std::uint8_t> decodedPayload;
-
-            decodedPayload.reserve(encodedPayloadLength - 1);
-
-            for (std::size_t i { 1 }; i < encodedPayloadLength; ++i) {
-                decodedPayload.push_back(encodedPayload[i]);
+    public:
+        static inline std::optional<IsoTp> createIsoTpEndpoint(const std::uint16_t RXCanId, const std::uint16_t TXCanId, const std::uint8_t blockSize = 0, const std::uint8_t STmin = 0) {
+            if (STmin <= 0x7F || (STmin >= 0xF1 && STmin <= 0xF9)) { 
+                return IsoTp {RXCanId, TXCanId, blockSize, STmin};
+            } else {
+                return std::nullopt;
             }
-
-            return decodedPayload;
         }
 
-        return std::nullopt;
-    }
+        IsoTpReceiveFrameResult receiveFrame(const CANFrame& frame);
+        std::optional<CANFrame> sendPayload(const std::vector<std::uint8_t>& payload) { return m_sender.receivePayload(payload); }
+        std::optional<CANFrame> getNextFrame();
+        std::vector<std::uint8_t> getCompleteReassembledPayload();
+
+        IsoTpTimeoutResponse checkTimeout();
 };

@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <thread>
 
-#include "isotp/NewIsoTp.h"
+#include "isotp/IsoTp.h"
 #include "domain/ECU.h"
 #include "domain/Vehicle.h"
 #include "can/CANFrame.h"
@@ -18,8 +18,8 @@ inline void isoTpTests() {
     const ECU* battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
     {
-        auto engineIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId()) };
-        auto testerIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId()) };
+        auto engineIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId()) };
+        auto testerIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId()) };
 
         std::vector<std::uint8_t> originalPayload {0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93};
 
@@ -38,8 +38,8 @@ inline void isoTpTests() {
     }
 
     {
-        auto engineIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId()) };
-        auto testerIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId()) };
+        auto engineIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId()) };
+        auto testerIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId()) };
 
         std::vector<std::uint8_t> originalPayload {0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x07};
         std::vector<std::uint8_t> CtsPayload { 0x30, 0x00, 0x00 };
@@ -84,8 +84,8 @@ inline void isoTpTests() {
     }
 
     {
-        auto engineIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId(), 2) };
-        auto testerIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId(), 2) };
+        auto engineIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId(), 2) };
+        auto testerIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId(), 2) };
 
         std::vector<std::uint8_t> originalPayload {0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x07};
         std::vector<std::uint8_t> CtsPayload { 0x30, 0x02, 0x00 };
@@ -158,8 +158,8 @@ inline void isoTpTests() {
     }
 
     {
-        auto brakeIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(brake->getRequestCANId(), brake->getResponseCANId(), 2) };
-        auto testerIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId(), 2) };
+        auto brakeIsoTpEndpoint { IsoTp::createIsoTpEndpoint(brake->getRequestCANId(), brake->getResponseCANId(), 2) };
+        auto testerIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId(), 2) };
 
         std::vector<std::uint8_t> originalPayload {0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x07};
         std::vector<std::uint8_t> CtsPayload { 0x30, 0x02, 0x00 };
@@ -178,8 +178,8 @@ inline void isoTpTests() {
     }
 
     {
-        auto engineIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId()) };
-        auto testerIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId()) };
+        auto engineIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId()) };
+        auto testerIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId()) };
 
         std::vector<std::uint8_t> originalPayload {0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x07};
         std::vector<std::uint8_t> CtsPayload { 0x30, 0x00, 0x00 };
@@ -250,8 +250,8 @@ inline void isoTpTests() {
     }
 
     {
-        auto engineIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId(), 2) };
-        auto testerIsoTpEndpoint { NewIsoTp::createNewIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId(), 2) };
+        auto engineIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId(), 2) };
+        auto testerIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getResponseCANId(), engine->getRequestCANId(), 2) };
 
         std::vector<std::uint8_t> originalPayload {0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x07};
         std::vector<std::uint8_t> CtsPayload { 0x30, 0x02, 0x00 };

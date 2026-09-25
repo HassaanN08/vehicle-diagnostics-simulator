@@ -1,4 +1,4 @@
-#include "isotp/NewIsoTp.h"
+#include "isotp/IsoTp.h"
 #include "isotp/Receiver.h"
 #include "can/CANFrame.h"
 
@@ -7,7 +7,7 @@
 #include <optional>
 #include <chrono>
 
-IsoTpReceiveFrameResult NewIsoTp::receiveFrame(const CANFrame& frame) {
+IsoTpReceiveFrameResult IsoTp::receiveFrame(const CANFrame& frame) {
 
     std::vector<std::uint8_t> payload { frame.getFramePayload() };
 
@@ -47,7 +47,7 @@ IsoTpReceiveFrameResult NewIsoTp::receiveFrame(const CANFrame& frame) {
     return IsoTpReceiveFrameResult::Error;
 }
 
-std::optional<CANFrame> NewIsoTp::getNextFrame() {
+std::optional<CANFrame> IsoTp::getNextFrame() {
     if (m_receiver.m_currentState == ReceiverState::SenderPaused) {
         auto returnFrame { m_receiver.getFlowControlFrame() };
 
@@ -59,7 +59,7 @@ std::optional<CANFrame> NewIsoTp::getNextFrame() {
     return std::nullopt;
 }
 
-IsoTpTimeoutResponse NewIsoTp::checkTimeout() {
+IsoTpTimeoutResponse IsoTp::checkTimeout() {
     CheckReceiverTimeoutResult receiverTimeout { m_receiver.checkTimeout() };
     CheckSenderTimeoutResult senderTimeout { m_sender.checkTimeout() };
     if ((receiverTimeout == CheckReceiverTimeoutResult::TimeoutExpired) && (senderTimeout == CheckSenderTimeoutResult::TimeoutExpired))
@@ -71,7 +71,7 @@ IsoTpTimeoutResponse NewIsoTp::checkTimeout() {
     else return IsoTpTimeoutResponse::Active;
 }
 
-std::vector<std::uint8_t> NewIsoTp::getCompleteReassembledPayload() {
+std::vector<std::uint8_t> IsoTp::getCompleteReassembledPayload() {
     std::vector<std::uint8_t> payload;
     payload.swap(m_reassembledPayload);
 

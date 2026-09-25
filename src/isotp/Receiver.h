@@ -8,7 +8,7 @@
 
 #include "can/CANFrame.h"
 
-class NewIsoTp;
+class IsoTp;
 
 enum class ReceiverState {
     Idle,
@@ -30,7 +30,7 @@ enum class CheckReceiverTimeoutResult {
 };
 
 class Receiver {
-    friend class NewIsoTp;
+    friend class IsoTp;
     ReceiverState m_currentState { ReceiverState::Idle };
     std::uint16_t m_messageLength {};
     std::uint16_t m_usefulBytesCollected {};

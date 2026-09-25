@@ -8,7 +8,7 @@
 
 #include "can/CANFrame.h"
 
-class NewIsoTp;
+class IsoTp;
 
 enum class SenderState {
     Idle,
@@ -35,7 +35,7 @@ enum class CheckSenderTimeoutResult {
 };
 
 class Sender {
-    friend class NewIsoTp;
+    friend class IsoTp;
     SenderState m_currentState {};
     std::vector<std::uint8_t> m_payload;
     std::size_t m_payloadOffset {};
