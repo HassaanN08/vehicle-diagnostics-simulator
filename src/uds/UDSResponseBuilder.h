@@ -12,7 +12,7 @@ namespace UDSResponseBuilder {
         const std::uint8_t positiveSID { static_cast<std::uint8_t>((requestSID & 0xFF) + 0x40) };
 
         switch(response) {
-            case UDSProcessingOutcome::success:
+            case UDSProcessingOutcome::Success:
                 {
                     std::vector<std::uint8_t> responsePayload;
                     responsePayload.reserve(1 + responseData.size());
@@ -21,15 +21,15 @@ namespace UDSResponseBuilder {
                         responsePayload.insert(responsePayload.end(), responseData.begin(), responseData.end());
                     return responsePayload;
                 }
-            case UDSProcessingOutcome::unSupportedService:
+            case UDSProcessingOutcome::UnSupportedService:
                 return {0x7F, requestSID, UDSNegativeResponse::unSupportedServiceNRC};
-            case UDSProcessingOutcome::unSupportedSubFunction:
+            case UDSProcessingOutcome::UnSupportedSubFunction:
                 return {0x7F, requestSID, UDSNegativeResponse::unSupportedSubFunctionNRC};
-            case UDSProcessingOutcome::incorrectLength:
+            case UDSProcessingOutcome::IncorrectLength:
                 return {0x7F, requestSID, UDSNegativeResponse::incorrectLengthNRC};
-            case UDSProcessingOutcome::requestOutOfRange:
+            case UDSProcessingOutcome::RequestOutOfRange:
                 return {0x7F, requestSID, UDSNegativeResponse::requestOutOfRangeNRC};
-            case UDSProcessingOutcome::ecuInDefaultSession:
+            case UDSProcessingOutcome::EcuInDefaultSession:
                 return {0x7F, requestSID, UDSNegativeResponse::ecuInDefaultSessionNRC};
         }
 

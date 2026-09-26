@@ -13,4 +13,6 @@ namespace UDSRequestProcessor {
     UDSProcessingOutcome processReadDataByIdentifier(ECU& ecu, const std::vector<std::uint8_t>& payload, std::vector<std::uint8_t>& responseData);
 
     UDSProcessingOutcome processClearDiagnosticInformation(ECU& ecu, const std::vector<std::uint8_t>& payload, std::vector<std::uint8_t>& responseData);
+
+    UDSProcessingOutcome processReadDTCInformation(ECU& ecu, const std::vector<std::uint8_t>& payload, std::vector<std::uint8_t>& responseData);
 };

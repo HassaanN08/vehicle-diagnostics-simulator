@@ -3,19 +3,20 @@
 #include <cstdint>
 
 enum class UDSProcessingOutcome {
-    success,
-    unSupportedService,         //Requested Service isn't supported
-    unSupportedSubFunction,     //Requested Subfunction isn't supported
-    incorrectLength,            //Incorrect Payload Length
-    requestOutOfRange,          //Request Out Of Range
-    ecuInDefaultSession,
+    Success,
+    UnSupportedService,         //Requested Service isn't supported
+    UnSupportedSubFunction,     //Requested Subfunction isn't supported
+    IncorrectLength,            //Incorrect Payload Length
+    RequestOutOfRange,          //Request Out Of Range
+    EcuInDefaultSession,
 };
 
 enum class UDSService {
-    diagnosticSessionControl,
-    readDataByIdentifier,
-    clearDiagnosticInformation,
-    noService,
+    DiagnosticSessionControl,
+    ReadDataByIdentifier,
+    ClearDiagnosticInformation,
+    ReadDTCInformation,
+    NoService,
 };
 
 namespace UDSNegativeResponse {

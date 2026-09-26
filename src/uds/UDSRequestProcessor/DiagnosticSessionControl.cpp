@@ -9,7 +9,7 @@ UDSProcessingOutcome UDSRequestProcessor::processDiagnosticSessionControl(ECU& e
 
     const size_t payloadLength { payload.size() };
 
-    if (payloadLength != 2) return UDSProcessingOutcome::incorrectLength;
+    if (payloadLength != 2) return UDSProcessingOutcome::IncorrectLength;
 
     switch(payload[1]) {
         case 0x03:
@@ -19,9 +19,9 @@ UDSProcessingOutcome UDSRequestProcessor::processDiagnosticSessionControl(ECU& e
             ecu.setCurrentDiagnosticSession(DiagnosticSession::Default);
             break;
         default:
-            return UDSProcessingOutcome::unSupportedSubFunction;
+            return UDSProcessingOutcome::UnSupportedSubFunction;
     }
 
     responseData.push_back(payload[1]);
-    return UDSProcessingOutcome::success;
+    return UDSProcessingOutcome::Success;
 }

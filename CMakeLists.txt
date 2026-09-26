@@ -13,6 +13,7 @@ add_executable(vehicle-diagnostics-simulator
     src/uds/UDSRequestProcessor/ClearDiagnosticInformation.cpp
     src/uds/UDSRequestProcessor/DiagnosticSessionControl.cpp
     src/uds/UDSRequestProcessor/ReadDataByIdentifier.cpp
+    src/uds/UDSRequestProcessor/ReadDTCInformation.cpp
     src/isotp/Receiver.cpp
     src/isotp/Sender.cpp
     src/can/CANFrame.cpp
@@ -26,6 +27,7 @@ add_executable(vehicle-diagnostics-tests
     src/uds/UDSRequestProcessor/ClearDiagnosticInformation.cpp
     src/uds/UDSRequestProcessor/DiagnosticSessionControl.cpp
     src/uds/UDSRequestProcessor/ReadDataByIdentifier.cpp
+    src/uds/UDSRequestProcessor/ReadDTCInformation.cpp
     src/isotp/Receiver.cpp
     src/isotp/Sender.cpp
     src/can/CANFrame.cpp

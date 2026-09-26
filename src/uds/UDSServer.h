@@ -26,17 +26,20 @@ namespace UDSServer {
         UDSService parsedService { UDSRequestParser::parser(requestSID) };
 
         switch(parsedService) {
-            case UDSService::diagnosticSessionControl:
+            case UDSService::DiagnosticSessionControl:
                 response = UDSRequestProcessor::processDiagnosticSessionControl(ecu, payload, ecuResponseData);
                 break;
-            case UDSService::readDataByIdentifier:
+            case UDSService::ReadDataByIdentifier:
                 response = UDSRequestProcessor::processReadDataByIdentifier(ecu, payload, ecuResponseData);
                 break;
-            case UDSService::clearDiagnosticInformation:
+            case UDSService::ClearDiagnosticInformation:
                 response = UDSRequestProcessor::processClearDiagnosticInformation(ecu, payload, ecuResponseData);
                 break;
-            case UDSService::noService:
-                response = UDSProcessingOutcome::unSupportedService;
+            case UDSService::ReadDTCInformation:
+                response = UDSRequestProcessor::processReadDTCInformation(ecu, payload, ecuResponseData);
+                break;
+            case UDSService::NoService:
+                response = UDSProcessingOutcome::UnSupportedService;
                 break;
         }
 

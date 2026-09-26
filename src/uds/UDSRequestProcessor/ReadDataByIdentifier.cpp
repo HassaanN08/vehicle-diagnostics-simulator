@@ -8,7 +8,7 @@
 UDSProcessingOutcome UDSRequestProcessor::processReadDataByIdentifier(ECU& ecu, const std::vector<std::uint8_t>& payload, std::vector<std::uint8_t>& responseData) {
     const size_t payloadLength { payload.size() };
 
-    if (payloadLength != 3) return UDSProcessingOutcome::incorrectLength;
+    if (payloadLength != 3) return UDSProcessingOutcome::IncorrectLength;
 
     const std::uint16_t DID = (static_cast<std::uint16_t>(payload[1]) << 8) | (static_cast<std::uint16_t>(payload[2]) & 0x00FF);
 
@@ -19,7 +19,7 @@ UDSProcessingOutcome UDSRequestProcessor::processReadDataByIdentifier(ECU& ecu, 
             currentDiagnosticSession = ecu.getCurrentDiagnosticSession();
             break;
         default:
-            return UDSProcessingOutcome::requestOutOfRange;
+            return UDSProcessingOutcome::RequestOutOfRange;
     }
 
     if (currentDiagnosticSession == DiagnosticSession::Default) {
@@ -28,5 +28,5 @@ UDSProcessingOutcome UDSRequestProcessor::processReadDataByIdentifier(ECU& ecu, 
         responseData.assign({payload[1], payload[2], 0x03});
     }
 
-    return UDSProcessingOutcome::success;
+    return UDSProcessingOutcome::Success;
 }
