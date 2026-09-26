@@ -392,6 +392,9 @@ inline void diagnosticCoordinatorTests() {
     }
 
     {
+        Vehicle vehicle {"Mercedez Benz"};
+        ECU* battery {vehicle.findEcuByRequestCanId(0x7E2)};
+
         //Test ReadDTCInformation when there's no match
         battery->addDtc(*DTC::createDTC(0x120300));
         battery->addDtc(*DTC::createDTC(0x340171));
