@@ -302,59 +302,111 @@ inline void diagnosticCoordinatorTests() {
 
     {
         //Test ReadDTCInformation when session is extended
-        battery->addDtc(*DTC::createDTC(0x0300));
-        battery->addDtc(*DTC::createDTC(0x0171));
-        battery->addDtc(*DTC::createDTC(0x0F11));
-        assert(battery->setDTCStatus(0x0300, 0x0F) == DtcResult::dtcStatusSet);
-        assert(battery->setDTCStatus(0x0171, 0x0F) == DtcResult::dtcStatusSet);
+        battery->addDtc(*DTC::createDTC(0x120300));
+        battery->addDtc(*DTC::createDTC(0x340171));
+        battery->addDtc(*DTC::createDTC(0x560F11));
+        assert(battery->setDTCStatus(0x120300, 0x08) == DtcResult::dtcStatusSet);
+        assert(battery->setDTCStatus(0x340171, 0x08) == DtcResult::dtcStatusSet);
+        assert(battery->setDTCStatus(0x560F11, 0x02) == DtcResult::dtcStatusSet);
 
-        std::vector<std::uint8_t> responsePayload { 0x59, 0x02, 0x0F, 0x03, 0x00, 0x00, 0x0F, 0x01, 0x07, 0x01, 0x0F };
+        std::vector<std::uint8_t> responsePayload { 0x59, 0x02, 0x0F, 0x12, 0x03, 0x00, 0x08, 0x34, 0x01, 0x71, 0x08 };
         std::vector<std::uint8_t> CtsPayload { 0x30, 0x00, 0x00 };
-        auto correctFirstFrame { CANFrame::createCANFrame(0x7E0, {0x10, 0x0B, 0x59, 0x02, 0x0F, 0x03, 0x00, 0x00}) };
-        auto correctCF1 { CANFrame::createCANFrame(0x7E0, {0x21, 0x0F, 0x01, 0x07, 0x01, 0x0F}) };
+        auto correctFirstFrame { CANFrame::createCANFrame(0x7E0, {0x10, 0x0B, 0x59, 0x02, 0x0F, 0x12, 0x03, 0x00}) };
+        auto correctCF1 { CANFrame::createCANFrame(0x7E0, {0x21, 0x08, 0x34, 0x01, 0x71, 0x08}) };
 
         frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x03});
-
         result = batteryCoordinator->coordinate(*frame);
         assert(result == DiagnosticCoordinatorResult::Processed);
 
         returnedFrame = batteryCoordinator->getOutgoingFrame();
-
         assert(returnedFrame.has_value());
         assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
 
-        frame = CANFrame::createCANFrame(0x7E2, {0x03, 0x19, 0x02, 0x0F});
-
+        frame = CANFrame::createCANFrame(0x7E2, {0x03, 0x19, 0x02, 0x09});
         result = batteryCoordinator->coordinate(*frame);
         assert(result == DiagnosticCoordinatorResult::Processed);
 
         returnedFrame = batteryCoordinator->getOutgoingFrame();
-
         assert(returnedFrame.has_value());
-
-        responsePayload = returnedFrame->getFramePayload();
 
         assert(returnedFrame->getFramePayload() == correctFirstFrame->getFramePayload());
 
         IsoTpReceiveFrameResult isoTpResult { batteryTesterIsoTpEndpoint->receiveFrame(*returnedFrame) };
-
         assert(isoTpResult == IsoTpReceiveFrameResult::OutgoingCanFrameReady);
 
         frame = batteryTesterIsoTpEndpoint->getNextFrame();
-
         assert(frame.has_value());
-
         assert(frame->getFramePayload() == CtsPayload);
 
         result = batteryCoordinator->coordinate(*frame);
         assert(result == DiagnosticCoordinatorResult::Processed);
 
         returnedFrame = batteryCoordinator->getOutgoingFrame();
-
         assert(returnedFrame.has_value());
-
         assert(returnedFrame->getFramePayload() == correctCF1->getFramePayload());
 
+        isoTpResult = batteryTesterIsoTpEndpoint->receiveFrame(*returnedFrame);
+        assert(isoTpResult == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
+
+        std::vector<std::uint8_t> response { batteryTesterIsoTpEndpoint->getCompleteReassembledPayload() };
+        assert(response == responsePayload);
         assert(returnedFrame->getFrameId() == 0x7EA);
+    }
+
+    {
+        //Test ReadDTCInformation when subfunction isn't supported
+        battery->addDtc(*DTC::createDTC(0x120300));
+        battery->addDtc(*DTC::createDTC(0x340171));
+        battery->addDtc(*DTC::createDTC(0x560F11));
+        assert(battery->setDTCStatus(0x120300, 0x09) == DtcResult::dtcStatusSet);
+        assert(battery->setDTCStatus(0x340171, 0x09) == DtcResult::dtcStatusSet);
+
+        std::vector<std::uint8_t> responsePayload { 0x03, 0x7F, 0x19, 0x12 };
+
+        frame = CANFrame::createCANFrame(0x7E2, {0x03, 0x19, 0x03, 0x09});
+        result = batteryCoordinator->coordinate(*frame);
+        assert(result == DiagnosticCoordinatorResult::Processed);
+
+        returnedFrame = batteryCoordinator->getOutgoingFrame();
+        assert(returnedFrame.has_value());
+        assert(returnedFrame->getFramePayload() == responsePayload);
+    }
+
+    {
+        //Test ReadDTCInformation when request length isn't correct isn't supported
+        battery->addDtc(*DTC::createDTC(0x120300));
+        battery->addDtc(*DTC::createDTC(0x340171));
+        battery->addDtc(*DTC::createDTC(0x560F11));
+        assert(battery->setDTCStatus(0x120300, 0x09) == DtcResult::dtcStatusSet);
+        assert(battery->setDTCStatus(0x340171, 0x09) == DtcResult::dtcStatusSet);
+
+        std::vector<std::uint8_t> responsePayload { 0x03, 0x7F, 0x19, 0x13 };
+
+        frame = CANFrame::createCANFrame(0x7E2, {0x04, 0x19, 0x03, 0x09, 0x10});
+        result = batteryCoordinator->coordinate(*frame);
+        assert(result == DiagnosticCoordinatorResult::Processed);
+
+        returnedFrame = batteryCoordinator->getOutgoingFrame();
+        assert(returnedFrame.has_value());
+        assert(returnedFrame->getFramePayload() == responsePayload);
+    }
+
+    {
+        //Test ReadDTCInformation when there's no match
+        battery->addDtc(*DTC::createDTC(0x120300));
+        battery->addDtc(*DTC::createDTC(0x340171));
+        battery->addDtc(*DTC::createDTC(0x560F11));
+        assert(battery->setDTCStatus(0x120300, 0x09) == DtcResult::dtcStatusSet);
+        assert(battery->setDTCStatus(0x340171, 0x09) == DtcResult::dtcStatusSet);
+
+        std::vector<std::uint8_t> responsePayload { 0x03, 0x59, 0x02, 0x0F };
+
+        frame = CANFrame::createCANFrame(0x7E2, {0x03, 0x19, 0x02, 0x04});
+        result = batteryCoordinator->coordinate(*frame);
+        assert(result == DiagnosticCoordinatorResult::Processed);
+
+        returnedFrame = batteryCoordinator->getOutgoingFrame();
+        assert(returnedFrame.has_value());
+        assert(returnedFrame->getFramePayload() == responsePayload);
     }
 }
