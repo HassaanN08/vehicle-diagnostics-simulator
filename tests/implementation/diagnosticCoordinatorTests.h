@@ -411,5 +411,6 @@ inline void diagnosticCoordinatorTests() {
         returnedFrame = batteryCoordinator->getOutgoingFrame();
         assert(returnedFrame.has_value());
         assert(returnedFrame->getFramePayload() == responsePayload);
+        assert(returnedFrame->getFrameId() == 0x7EA);
     }
 }
