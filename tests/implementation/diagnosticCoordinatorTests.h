@@ -394,6 +394,8 @@ inline void diagnosticCoordinatorTests() {
     {
         Vehicle vehicle {"Mercedez Benz"};
         ECU* battery {vehicle.findEcuByRequestCanId(0x7E2)};
+        auto batteryCoordinator { DiagnosticCoordinator::createDiagnosticCoordinator(battery) };
+        auto batteryTesterIsoTpEndpoint { IsoTp::createIsoTpEndpoint(battery->getResponseCANId(), battery->getRequestCANId()) };
 
         //Test ReadDTCInformation when there's no match
         battery->addDtc(*DTC::createDTC(0x120300));
