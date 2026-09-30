@@ -8,6 +8,8 @@
 
 #include "domain/ECU.h"
 
+class DiagnosticRuntime;
+
 enum class AddEcuResult{
     success,
     ecuAlreadyExists,
@@ -15,6 +17,7 @@ enum class AddEcuResult{
 };
 
 class Vehicle {
+    friend class DiagnosticRuntime;
     std::string m_name {};
     std::size_t m_ecuLimit {100};
     std::vector<ECU> m_ecuList;
