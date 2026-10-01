@@ -11,6 +11,7 @@
 #include "uds/clearDiagnosticInformationTests.h"
 #include "isotp/receiverTests.h"
 #include "isotp/senderTests.h"
+#include "implementation/diagnosticRuntimeTests.h"
 
 int main() {
     ecuTests();
@@ -23,6 +24,7 @@ int main() {
     clearDiagnosticInformationTests();
     receiverTests();
     senderTests();
+    diagnosticRuntimeTests();
 
     std::cout << "\nAll Tests  Passed!\n";
     return 0;

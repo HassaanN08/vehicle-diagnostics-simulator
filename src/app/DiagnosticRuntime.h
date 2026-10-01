@@ -1,14 +1,19 @@
+#pragma once
+
 #include <app/DiagnosticCoordinator.h>
 #include <domain/Vehicle.h>
 #include <domain/ECU.h>
+#include <can/CANFrame.h>
 
 #include <unordered_map>
 #include <cstdint>
 #include <vector>
 #include <utility>
+#include <optional>
 
-enum class GetCANFrameResult {
+enum class DiagnosticRuntimeResult {
     FrameRouted,
+    ProcessingError,
     CoordinatorNotFound,
 };
 
@@ -23,21 +28,30 @@ class DiagnosticRuntime {
                 for (ECU& ecu : vehicle.m_ecuList) {
                     auto coordinator { DiagnosticCoordinator::createDiagnosticCoordinator(&ecu) };
                     if (coordinator.has_value())
-                        m_diagnosticCoordinators.emplace(ecu.getRequestCANId(), std::move(coordinator));
+                        m_diagnosticCoordinators.emplace(ecu.getRequestCANId(), std::move(*coordinator));
                     else continue;
                 }
             }
         
-        GetCANFrameResult receiveCANFrame(const CANFrame& frame) {
-            std::uint32_t frameId { frame.getFrameId() };
-            
-            if (m_diagnosticCoordinators.find(frameId) == m_diagnosticCoordinators.end()) {
-                return GetCANFrameResult::CoordinatorNotFound;
+        DiagnosticRuntimeResult receiveCANFrame(const CANFrame& frame) {
+            auto coordinator { m_diagnosticCoordinators.find(frame.getFrameId()) };
+            if (coordinator == m_diagnosticCoordinators.end()) {
+                return DiagnosticRuntimeResult::CoordinatorNotFound;
             }
 
-            m_diagnosticCoordinators[frameId].coordinate(frame);
-            return GetCANFrameResult::FrameRouted;
+            DiagnosticCoordinatorResult result { coordinator->second.coordinate(frame) };
+            if (result == DiagnosticCoordinatorResult::Error)
+                return DiagnosticRuntimeResult::ProcessingError;
+            else
+                return DiagnosticRuntimeResult::FrameRouted;
         }
 
-        
+        std::optional<CANFrame> getOutgoingFrame() {
+            for (auto& [CANId, coordinator] : m_diagnosticCoordinators) {
+                auto frame { coordinator.getOutgoingFrame() };
+                if (frame.has_value()) return frame;
+            }
+
+            return std::nullopt;
+        }
 };
