@@ -391,7 +391,7 @@ inline void diagnosticCoordinatorTests() {
         assert(returnedFrame.has_value());
         assert(returnedFrame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
 
-        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+        for (std::size_t i { 0 }; i < returnedFrame->getFramePayload().size(); ++i) {
             assert(returnedFrame->getFramePayload()[i] == correctFirstFrame->getFramePayload()[i]);
         }
 

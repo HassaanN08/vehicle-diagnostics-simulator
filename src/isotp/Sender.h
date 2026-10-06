@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <array>
+#include <span>
 #include <vector>
 #include <optional>
 #include <chrono>
@@ -49,8 +49,8 @@ class Sender {
     std::size_t m_wftmax { 5 };
     std::uint32_t m_TXCanId {};
 
-    std::optional<CANFrame> processSingleFrame(const std::vector<std::uint8_t>& payload);
-    std::optional<CANFrame> processFirstFrame(const std::vector<std::uint8_t>& payload);
+    std::optional<CANFrame> processSingleFrame(std::span<const std::uint8_t> payload);
+    std::optional<CANFrame> processFirstFrame(std::span<const std::uint8_t> payload);
 
     void setDefault();
     DecodeSTminResult decodeSTmin(const std::uint8_t flowControlSTmin);
@@ -59,7 +59,7 @@ class Sender {
         Sender(const std::uint16_t TXCanId) 
             : m_TXCanId { TXCanId } {}
         
-        std::optional<CANFrame> receivePayload(const std::vector<std::uint8_t>& payload);
+        std::optional<CANFrame> receivePayload(std::span<const std::uint8_t> payload);
         std::optional<CANFrame> getNextCF();
         FlowControlResult receiveFC(const CANFrame& FCFrame);
         CheckSenderTimeoutResult checkTimeout();

@@ -3,10 +3,11 @@
 
 #include <vector>
 #include <span>
+#include <array>
 #include <cstdint>
 #include <chrono>
 
-std::optional<CANFrame> Sender::receivePayload(const std::vector<std::uint8_t>& payload) {
+std::optional<CANFrame> Sender::receivePayload(std::span<const std::uint8_t> payload) {
     if (m_currentState != SenderState::Idle || payload.empty()) return std::nullopt;
 
     std::size_t payloadLength { payload.size() };
@@ -18,26 +19,29 @@ std::optional<CANFrame> Sender::receivePayload(const std::vector<std::uint8_t>& 
     } else return std::nullopt;
 }
 
-std::optional<CANFrame> Sender::processSingleFrame(const std::vector<std::uint8_t>& payload) {
+std::optional<CANFrame> Sender::processSingleFrame(std::span<const std::uint8_t> payload) {
     std::size_t payloadLength { payload.size() };
 
     if (payload.empty() || payloadLength >= 8) return std::nullopt;
 
     const std::uint8_t firstByte { static_cast<std::uint8_t>(0x00 | payloadLength) };
 
-    std::vector<std::uint8_t> framePayload;
-    framePayload.reserve(payloadLength + 1);
+    std::array<std::uint8_t, 8> framePayload;
+    framePayload[0] = firstByte;
 
-    framePayload.push_back(firstByte);
-    framePayload.insert(framePayload.end(), payload.begin(), payload.end());
+    for (std::size_t i { 0 }; i < payloadLength; i++) {
+        framePayload[i + 1] = payload[i];
+    }
 
-    auto frame { CANFrame::createCANFrame(m_TXCanId, framePayload) };
+    std::span<const std::uint8_t> framePayloadSpan { framePayload.data(), payloadLength + 1 };
+
+    auto frame { CANFrame::createCANFrame(m_TXCanId, framePayloadSpan) };
 
     m_currentState = SenderState::Idle;
     return frame;
 }
 
-std::optional<CANFrame> Sender::processFirstFrame(const std::vector<std::uint8_t>& payload) {
+std::optional<CANFrame> Sender::processFirstFrame(std::span<const std::uint8_t> payload) {
     std::size_t payloadLength { payload.size() };
 
     if (payload.empty() || payloadLength < 8 || payloadLength > 4095) return std::nullopt;
@@ -46,18 +50,20 @@ std::optional<CANFrame> Sender::processFirstFrame(const std::vector<std::uint8_t
     const std::uint8_t firstByte { static_cast<std::uint8_t>(payloadMetaData >> 8) };
     const std::uint8_t secondByte { static_cast<std::uint8_t>(payloadMetaData & 0x00FF) };
 
-    std::vector<std::uint8_t> framePayload;
-    framePayload.reserve(8);
+    std::array<std::uint8_t, 8> framePayload;
+    framePayload[0] = firstByte;
+    framePayload[1] = secondByte;
 
-    framePayload.assign({firstByte, secondByte});
     for (std::size_t i { 0 }; i < 6; ++i) {
-        framePayload.push_back(payload[i]);
+        framePayload[i + 2] = payload[i];
     }
 
     auto frame { CANFrame::createCANFrame(m_TXCanId, framePayload) };
 
     if (frame) {
-        m_payload = payload;
+        for (std::uint8_t byte : payload) {
+            m_payload.push_back(byte);
+        }
         m_payloadOffset = 6;
         m_nextCFSequenceNumber = 1;
         m_currentState = SenderState::WaitingForFlowControl;
@@ -117,14 +123,13 @@ std::optional<CANFrame> Sender::getNextCF() {
     std::uint8_t firstByte { static_cast<std::uint8_t>(0x20 | m_nextCFSequenceNumber) };
     std::size_t remainingBytes { m_payload.size() - m_payloadOffset };
 
-    std::vector<std::uint8_t> framePayload;
+    std::array<std::uint8_t, 8> framePayload;
 
     if (remainingBytes >= 8) {
-        framePayload.reserve(8);
-        framePayload.push_back(firstByte);
+        framePayload[0] = firstByte;
 
         for (std::size_t i { 0 }; i < 7; ++i) {
-            framePayload.push_back(m_payload[m_payloadOffset + i]);
+            framePayload[i + 1] = (m_payload[m_payloadOffset + i]);
         }
 
         auto frame { CANFrame::createCANFrame(m_TXCanId, framePayload) };
@@ -145,14 +150,15 @@ std::optional<CANFrame> Sender::getNextCF() {
         return frame;
 
     } else {
-        framePayload.reserve(remainingBytes);
-        framePayload.push_back(firstByte);
+        framePayload[0] = firstByte;
 
         for (std::size_t i { 0 }; i < remainingBytes; ++i) {
-            framePayload.push_back(m_payload[m_payloadOffset + i]);
+            framePayload[i + 1] = m_payload[m_payloadOffset + i];
         }
 
-        auto frame { CANFrame::createCANFrame(m_TXCanId, framePayload) };
+        std::span<const std::uint8_t> framePayloadSpan { framePayload.data(), remainingBytes + 1};
+
+        auto frame { CANFrame::createCANFrame(m_TXCanId, framePayloadSpan) };
 
         if (frame) {
             this->setDefault();

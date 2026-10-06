@@ -22,7 +22,7 @@ class CANFrame {
     public:
 
         static std::optional<CANFrame> createCANFrame(const int frameID, std::span<const std::uint8_t> payload);
-        static std::optional<CANFrame> createCANFrame(const int frameID, std::initializer_list<const std::uint8_t> payload);
+        static std::optional<CANFrame> createCANFrame(const int frameID, std::initializer_list<std::uint8_t> payload);
 
         std::uint16_t getFrameId() const { return m_frameId; }
 
@@ -34,5 +34,5 @@ class CANFrame {
 
         std::size_t getLength() const { return m_payloadLength; }
 
-        std::span<const std::uint8_t>& getFramePayload () const && = delete;                      //Can't get the frame payload when called as an rvalue now
+        std::span<const std::uint8_t> getFramePayload () const && = delete;                      //Can't get the frame payload when called as an rvalue now
 };
