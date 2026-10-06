@@ -11,14 +11,14 @@ inline void canFrameTests() {
     {
         auto frame { CANFrame::createCANFrame(0x000, {}) };
         assert(frame.has_value());
-        assert(frame->getLength() == 0);
+        assert(frame->getFramePayload().size() == 0);
     }
 
     {
         auto frame { CANFrame::createCANFrame(0x7FF, {}) };
         assert(frame.has_value());
         assert(frame->getFrameId() == 0x7FF);
-        assert(frame->getLength() == 0);
+        assert(frame->getFramePayload().size() == 0);
     }
 
     {
@@ -34,7 +34,7 @@ inline void canFrameTests() {
     {
         auto frame { CANFrame::createCANFrame(0x000, {0}) };
         assert(frame.has_value());
-        assert(frame->getLength() == 1);
+        assert(frame->getFramePayload().size() == 1);
     }
 
     {
@@ -50,7 +50,7 @@ inline void canFrameTests() {
             assert(eightByteReturnedPayload[i] == eightBytePayload[i]);
         }
 
-        assert(frame->getLength() == 8);
+        assert(frame->getFramePayload().size() == 8);
     }
 
     {

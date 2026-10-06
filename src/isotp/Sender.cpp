@@ -61,9 +61,7 @@ std::optional<CANFrame> Sender::processFirstFrame(std::span<const std::uint8_t> 
     auto frame { CANFrame::createCANFrame(m_TXCanId, framePayload) };
 
     if (frame) {
-        for (std::uint8_t byte : payload) {
-            m_payload.push_back(byte);
-        }
+        m_payload.assign(payload.begin(), payload.end());
         m_payloadOffset = 6;
         m_nextCFSequenceNumber = 1;
         m_currentState = SenderState::WaitingForFlowControl;

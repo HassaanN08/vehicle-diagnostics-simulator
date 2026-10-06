@@ -42,7 +42,7 @@ std::optional<CANFrame> Receiver::getFlowControlFrame() {
     if (m_currentState != ReceiverState::SenderPaused) return std::nullopt;
 
     std::uint8_t firstItem {};
-    std::vector<std::uint8_t> FCPayload {0x30, m_blockSize, m_STmin};
+    std::array<std::uint8_t, 3> FCPayload {0x30, m_blockSize, m_STmin};
     auto frame { CANFrame::createCANFrame(m_TXCanId, FCPayload) };
     if (frame) {
         m_CFWaitStarted = std::chrono::steady_clock::now();
