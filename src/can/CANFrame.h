@@ -32,5 +32,7 @@ class CANFrame {
             return framePayload.first(m_payloadLength);
         }
 
+        std::size_t getLength() const { return m_payloadLength; }
+
         std::span<const std::uint8_t>& getFramePayload () const && = delete;                      //Can't get the frame payload when called as an rvalue now
 };
