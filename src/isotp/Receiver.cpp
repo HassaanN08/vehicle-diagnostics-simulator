@@ -1,7 +1,7 @@
 #include "isotp/Receiver.h"
 #include "can/CANFrame.h"
 
-#include <vector>
+#include <array>
 #include <cstdint>
 
 ReceivePayloadResult Receiver::receivePayload(std::span<const std::uint8_t> payload) {
@@ -41,7 +41,6 @@ ReceivePayloadResult Receiver::receivePayload(std::span<const std::uint8_t> payl
 std::optional<CANFrame> Receiver::getFlowControlFrame() {
     if (m_currentState != ReceiverState::SenderPaused) return std::nullopt;
 
-    std::uint8_t firstItem {};
     std::array<std::uint8_t, 3> FCPayload {0x30, m_blockSize, m_STmin};
     auto frame { CANFrame::createCANFrame(m_TXCanId, FCPayload) };
     if (frame) {
