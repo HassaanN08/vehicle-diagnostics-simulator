@@ -1,37 +1,44 @@
 #include <iostream>
 #include <cstdint>
 
-#include "domain/ECU.h"
-#include "uds/UDSServer.h"
-#include "app/DiagnosticCoordinator.h"
+#include "domain/Vehicle.h"
+#include "app/DiagnosticRuntime.h"
 #include "can/CanSocket.h"
+#include "can/CANFrame.h"
 
 int main() {
+    Vehicle vehicle { "Mercedez G-Wagon" };
+    DiagnosticRuntime runtime { vehicle };
+
     auto socket { CanSocket::create("vcan0") };
 
     if (!socket.has_value())
         return 0;
 
-    auto frame { socket->receiveFrame() };
+    while(true) {
+        auto frame { socket->receiveFrame() };
+        if (!frame.has_value())
+            return 0;
 
-    if (!frame.has_value())
-        return 0;
+        DiagnosticRuntimeResult runtimeResult { runtime.receiveCANFrame(*frame) };
 
-    std::cout << static_cast<int>(frame->getFrameId()) << '\n';
-    
-    for (std::uint8_t byte : frame->getFramePayload()) {
-        std::cout << static_cast<int>(byte) << '\n';
+        if (runtimeResult == DiagnosticRuntimeResult::CoordinatorNotFound)
+            continue;
+
+        if (runtimeResult == DiagnosticRuntimeResult::ProcessingError)
+            return 0;
+
+        frame = runtime.getOutgoingFrame();
+
+        while(frame.has_value()) {
+            CanSocketSendFrameResult result { socket->sendFrame(*frame) };
+
+            if (result != CanSocketSendFrameResult::FrameSent)
+                return 0;
+
+            frame = runtime.getOutgoingFrame();
+        }
     }
-
-    frame = CANFrame::createCANFrame(0x321, { 0x11, 0x22, 0x33, 0x44 });
-
-    if (!frame.has_value())
-        return 0;
-
-    CanSocketSendFrameResult result { socket->sendFrame(*frame) };
-
-    if (result == CanSocketSendFrameResult::FrameSent)
-        std::cout << "Frame sent!";
 
     return 0;
 }
