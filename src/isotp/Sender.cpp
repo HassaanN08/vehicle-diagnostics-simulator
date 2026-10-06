@@ -2,6 +2,7 @@
 #include "can/CANFrame.h"
 
 #include <vector>
+#include <span>
 #include <cstdint>
 #include <chrono>
 
@@ -67,7 +68,7 @@ std::optional<CANFrame> Sender::processFirstFrame(const std::vector<std::uint8_t
 }
 
 FlowControlResult Sender::receiveFC(const CANFrame& FCFrame) {
-    std::vector<std::uint8_t> FCPayload { FCFrame.getFramePayload() };
+    std::span<const std::uint8_t> FCPayload { FCFrame.getFramePayload() };
 
     if ((FCPayload.size() != 3) || (m_currentState != SenderState::WaitingForFlowControl)) return FlowControlResult::InvalidFC;
 

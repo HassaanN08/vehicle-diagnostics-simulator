@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <array>
 #include <vector>
+#include <span>
 #include <optional>
 #include <chrono>
 
@@ -54,9 +55,9 @@ class Receiver {
     void resetStateUponCompletion();
     void resetCompleteState();
 
-    ReceivePayloadResult processSingleFrame(const std::vector<std::uint8_t>& payload);
-    ReceivePayloadResult processFirstFrame(const std::vector<std::uint8_t>& payload);
-    ReceivePayloadResult processConsecutiveFrame(const std::vector<std::uint8_t>& payload);
+    ReceivePayloadResult processSingleFrame(std::span<const std::uint8_t> payload);
+    ReceivePayloadResult processFirstFrame(std::span<const std::uint8_t> payload);
+    ReceivePayloadResult processConsecutiveFrame(std::span<const std::uint8_t> payload);
 
     public:
         static inline std::optional<Receiver> createReceiver(const std::uint16_t RXCanId, const std::uint16_t TXCanId, std::uint8_t blockSize = 0, std::uint8_t STmin = 0) {
@@ -67,7 +68,7 @@ class Receiver {
             }
         }
 
-        ReceivePayloadResult receivePayload(const std::vector<std::uint8_t>& payload);
+        ReceivePayloadResult receivePayload(std::span<const std::uint8_t> payload);
         void setBlockSize(std::uint8_t blockSize) { m_blockSize = blockSize; }
         bool setSTmin(std::uint8_t STmin);
         CheckReceiverTimeoutResult checkTimeout();

@@ -33,7 +33,11 @@ inline void senderTests() {
 
         frame = engineSender.receivePayload(originalPayload);
         assert(frame);
-        assert(frame->getFramePayload() == correctFirstFrame->getFramePayload());
+        assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctFirstFrame->getFramePayload()[i]);
+        }
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
         engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x00, 0x00}));
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
@@ -43,13 +47,21 @@ inline void senderTests() {
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
         assert(frame);
-        assert(frame->getFramePayload() == correctCF1->getFramePayload());
+        assert(frame->getFramePayload().size() == correctCF1->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctCF1->getFramePayload()[i]);
+        }
         assert(engineSender.getCurrentOffset() == 13);
 
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
         assert(frame);
-        assert(frame->getFramePayload() == correctCF2->getFramePayload());
+        assert(frame->getFramePayload().size() == correctCF2->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctCF2->getFramePayload()[i]);
+        }
         assert(engineSender.getCurrentOffset() == 20);
 
         frame = engineSender.receivePayload(originalPayload);
@@ -58,7 +70,11 @@ inline void senderTests() {
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::Idle);
         assert(frame);
-        assert(frame->getFramePayload() == correctCF3->getFramePayload());
+        assert(frame->getFramePayload().size() == correctCF3->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctCF3->getFramePayload()[i]);
+        }
         assert(engineSender.getCurrentOffset() == 0);
     }
 
@@ -79,19 +95,31 @@ inline void senderTests() {
 
         frame = engineSender.receivePayload(originalPayload);
         assert(frame);
-        assert(frame->getFramePayload() == correctFirstFrame->getFramePayload());
+        assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctFirstFrame->getFramePayload()[i]);
+        }
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
         engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x02, 0x00}));
 
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
         assert(frame);
-        assert(frame->getFramePayload() == correctCF1->getFramePayload());
+        assert(frame->getFramePayload().size() == correctCF1->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctCF1->getFramePayload()[i]);
+        }
 
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
         assert(frame);
-        assert(frame->getFramePayload() == correctCF2->getFramePayload());
+        assert(frame->getFramePayload().size() == correctCF2->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctCF2->getFramePayload()[i]);
+        }
 
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
@@ -104,7 +132,11 @@ inline void senderTests() {
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::Idle);
         assert(frame);
-        assert(frame->getFramePayload() == correctCF3->getFramePayload());
+        assert(frame->getFramePayload().size() == correctCF3->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctCF3->getFramePayload()[i]);
+        }
         assert(engineSender.getCurrentOffset() == 0);
     }
 
@@ -125,19 +157,31 @@ inline void senderTests() {
 
         frame = engineSender.receivePayload(originalPayload);
         assert(frame);
-        assert(frame->getFramePayload() == correctFirstFrame->getFramePayload());
+        assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctFirstFrame->getFramePayload()[i]);
+        }
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
         engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x02, 0x00}));
 
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
         assert(frame);
-        assert(frame->getFramePayload() == correctCF1->getFramePayload());
+        assert(frame->getFramePayload().size() == correctCF1->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctCF1->getFramePayload()[i]);
+        }
 
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
         assert(frame);
-        assert(frame->getFramePayload() == correctCF2->getFramePayload());
+        assert(frame->getFramePayload().size() == correctCF2->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctCF2->getFramePayload()[i]);
+        }
 
         frame = engineSender.getNextCF();
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
@@ -161,12 +205,20 @@ inline void senderTests() {
         
         frame = engineSender.receivePayload(originalPayload);
         assert(frame);
-        assert(frame->getFramePayload() == correctSingleFrame->getFramePayload());
+        assert(frame->getFramePayload().size() == correctSingleFrame->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctSingleFrame->getFramePayload()[i]);
+        }
         assert(engineSender.getCurrentState() == SenderState::Idle);
 
         frame = engineSender.receivePayload(originalPayload);
         assert(frame);
-        assert(frame->getFramePayload() == correctSingleFrame->getFramePayload());
+        assert(frame->getFramePayload().size() == correctSingleFrame->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctSingleFrame->getFramePayload()[i]);
+        }
         assert(engineSender.getCurrentState() == SenderState::Idle);
     }
 }

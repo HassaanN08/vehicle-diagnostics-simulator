@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstdint>
 
-ReceivePayloadResult Receiver::receivePayload(const std::vector<std::uint8_t>& payload) {
+ReceivePayloadResult Receiver::receivePayload(std::span<const std::uint8_t> payload) {
     if (payload.empty() || payload.size() > 8) return ReceivePayloadResult::TransportError;
 
     const std::uint8_t firstByte { payload[0] };
@@ -52,7 +52,7 @@ std::optional<CANFrame> Receiver::getFlowControlFrame() {
     return std::nullopt;
 }
 
-ReceivePayloadResult Receiver::processSingleFrame(const std::vector<std::uint8_t>& payload) {
+ReceivePayloadResult Receiver::processSingleFrame(std::span<const std::uint8_t> payload) {
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F)};
 
@@ -69,7 +69,7 @@ ReceivePayloadResult Receiver::processSingleFrame(const std::vector<std::uint8_t
     return ReceivePayloadResult::CompletedPayload;
 }
 
-ReceivePayloadResult Receiver::processFirstFrame(const std::vector<std::uint8_t>& payload) {
+ReceivePayloadResult Receiver::processFirstFrame(std::span<const std::uint8_t> payload) {
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F)};
 
@@ -91,7 +91,7 @@ ReceivePayloadResult Receiver::processFirstFrame(const std::vector<std::uint8_t>
     return ReceivePayloadResult::NeedToSendFC;
 }
 
-ReceivePayloadResult Receiver::processConsecutiveFrame(const std::vector<std::uint8_t>& payload) {
+ReceivePayloadResult Receiver::processConsecutiveFrame(std::span<const std::uint8_t> payload) {
     const std::uint8_t firstByte { payload[0] };
     const std::uint8_t lowerNibble { static_cast<std::uint8_t>(firstByte & 0x0F) };
 

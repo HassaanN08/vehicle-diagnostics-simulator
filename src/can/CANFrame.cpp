@@ -1,10 +1,18 @@
 #include "can/CANFrame.h"
 
-#include <vector>
+#include <span>
 #include <cstdint>
 #include <optional>
 
-std::optional<CANFrame> CANFrame::createCANFrame(const int frameId, const std::vector<std::uint8_t>& payload) {
+std::optional<CANFrame> CANFrame::createCANFrame(const int frameId, std::span<const std::uint8_t> payload) {
+    if (frameId >= 0x000 && frameId <= 0x7FF && payload.size() <= 8) {
+        return CANFrame {frameId, payload};
+    }
+
+    return std::nullopt;
+}
+
+std::optional<CANFrame> CANFrame::createCANFrame(const int frameId, std::initializer_list<const std::uint8_t> payload) {
     if (frameId >= 0x000 && frameId <= 0x7FF && payload.size() <= 8) {
         return CANFrame {frameId, payload};
     }

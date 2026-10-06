@@ -1,9 +1,9 @@
 #pragma once
 
-#include <app/DiagnosticCoordinator.h>
-#include <domain/Vehicle.h>
-#include <domain/ECU.h>
-#include <can/CANFrame.h>
+#include "app/DiagnosticCoordinator.h"
+#include "domain/Vehicle.h"
+#include "domain/ECU.h"
+#include "can/CANFrame.h"
 
 #include <unordered_map>
 #include <cstdint>

@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <vector>
+#include <span>
 #include <cstdint>
 #include <optional>
 
@@ -44,7 +45,10 @@ inline void diagnosticCoordinatorTests() {
     assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
     assert(brake->getCurrentDiagnosticSession() == DiagnosticSession::Default);
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7E8);
 
     //Test simultaneous battery session: Default -> Extended
@@ -60,7 +64,10 @@ inline void diagnosticCoordinatorTests() {
     assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
     assert(brake->getCurrentDiagnosticSession() == DiagnosticSession::Default);
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     //Test battery session: Extended -> Default
@@ -78,7 +85,10 @@ inline void diagnosticCoordinatorTests() {
     assert(engine->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
     assert(brake->getCurrentDiagnosticSession() == DiagnosticSession::Default);
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     //Test wrong frame length
@@ -106,7 +116,10 @@ inline void diagnosticCoordinatorTests() {
     response = {0x03, 0x7F, 0x11, 0x11};
 
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     //Test unsupported UDS function
@@ -122,7 +135,10 @@ inline void diagnosticCoordinatorTests() {
     response = {0x03, 0x7F, 0x10, 0x12};
 
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     //Test incorrect UDS payload length
@@ -138,7 +154,10 @@ inline void diagnosticCoordinatorTests() {
     response = {0x03, 0x7F, 0x10, 0x13};
 
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     //Test ReadDataByIdentifier with incomplete DID
@@ -154,7 +173,10 @@ inline void diagnosticCoordinatorTests() {
     response = {0x03, 0x7F, 0x22, 0x13};
 
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     //Test ReadDataByIdentifier with complete DID
@@ -170,7 +192,10 @@ inline void diagnosticCoordinatorTests() {
     response = {0x04, 0x62, 0xF1, 0x86, 0x01};
 
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     //Test ReadDataByIdentifier with unsupported DID
@@ -186,7 +211,10 @@ inline void diagnosticCoordinatorTests() {
     response = {0x03, 0x7F, 0x22, 0x31};
 
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     //Test ClearDiagnosticInformation when session is default
@@ -206,7 +234,10 @@ inline void diagnosticCoordinatorTests() {
     response = {0x03, 0x7F, 0x14, 0x7F};
 
     assert(!battery->getDTCList().empty());
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     //Test ClearDiagnosticInformation when session is extended
@@ -232,7 +263,10 @@ inline void diagnosticCoordinatorTests() {
     response = {0x01, 0x54};
 
     assert(battery->getDTCList().empty());
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     frame = CANFrame::createCANFrame(0x7E2, {0x04, 0x14, 0xFF, 0xFF, 0xFF});
@@ -247,7 +281,10 @@ inline void diagnosticCoordinatorTests() {
     response = {0x01, 0x54};
 
     assert(battery->getDTCList().empty());
-    assert(returnedFrame->getFramePayload() == response);
+    assert (returnedFrame->getFramePayload().size() == response.size());
+    for (std::size_t i { 0 }; i < response.size(); ++i) {
+        assert(returnedFrame->getFramePayload()[i] == response[i]);
+    }
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     //Test Multiframe transport
@@ -261,35 +298,55 @@ inline void diagnosticCoordinatorTests() {
         auto correctCF3 { CANFrame::createCANFrame(0x7E0, {0x23, 0x07}) };
 
         auto frame { engineTesterIsoTpEndpoint->sendPayload(originalPayload) };
-        assert(frame->getFramePayload() == correctFirstFrame->getFramePayload());
+        assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctFirstFrame->getFramePayload()[i]);
+        }
 
         DiagnosticCoordinatorResult coordinatorResult { engineCoordinator->coordinate(*frame) };
         assert(coordinatorResult == DiagnosticCoordinatorResult::Processed);
 
         frame = engineCoordinator->getOutgoingFrame();
         assert(frame.has_value());
-        assert(frame->getFramePayload() == CtsPayload);
+        assert(frame->getFramePayload().size() == CtsPayload.size());
+
+        for (std::size_t i { 0 }; i < CtsPayload.size(); ++i) {
+            assert(frame->getFramePayload()[i] == CtsPayload[i]);
+        }
 
         IsoTpReceiveFrameResult isoTpResult { engineTesterIsoTpEndpoint->receiveFrame(*frame) };
         assert(isoTpResult == IsoTpReceiveFrameResult::CTS);
 
         frame = engineTesterIsoTpEndpoint->getNextFrame();
         assert(frame.has_value());
-        assert(frame->getFramePayload() == correctCF1->getFramePayload());
+        assert(frame->getFramePayload().size() == correctCF1->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctCF1->getFramePayload()[i]);
+        }
 
         coordinatorResult = engineCoordinator->coordinate(*frame);
         assert(coordinatorResult == DiagnosticCoordinatorResult::Waiting);
 
         frame = engineTesterIsoTpEndpoint->getNextFrame();
         assert(frame.has_value());
-        assert(frame->getFramePayload() == correctCF2->getFramePayload());
+        assert(frame->getFramePayload().size() == correctCF2->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctCF2->getFramePayload()[i]);
+        }
 
         coordinatorResult = engineCoordinator->coordinate(*frame);
         assert(coordinatorResult == DiagnosticCoordinatorResult::Waiting);
 
         frame = engineTesterIsoTpEndpoint->getNextFrame();
         assert(frame.has_value());
-        assert(frame->getFramePayload() == correctCF3->getFramePayload());
+        assert(frame->getFramePayload().size() == correctCF3->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == correctCF3->getFramePayload()[i]);
+        }
 
         coordinatorResult = engineCoordinator->coordinate(*frame);
         assert(coordinatorResult == DiagnosticCoordinatorResult::Processed);
@@ -297,7 +354,11 @@ inline void diagnosticCoordinatorTests() {
         frame = engineCoordinator->getOutgoingFrame();
         std::vector<std::uint8_t> response = { 0x03, 0x7F, 0xFF, 0x11 };
         assert(frame.has_value());
-        assert(frame->getFramePayload() == response);
+        assert(frame->getFramePayload().size() == response.size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == response[i]);
+        }
     }
 
     {
@@ -328,22 +389,33 @@ inline void diagnosticCoordinatorTests() {
 
         returnedFrame = batteryCoordinator->getOutgoingFrame();
         assert(returnedFrame.has_value());
+        assert(returnedFrame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
 
-        assert(returnedFrame->getFramePayload() == correctFirstFrame->getFramePayload());
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(returnedFrame->getFramePayload()[i] == correctFirstFrame->getFramePayload()[i]);
+        }
 
         IsoTpReceiveFrameResult isoTpResult { batteryTesterIsoTpEndpoint->receiveFrame(*returnedFrame) };
         assert(isoTpResult == IsoTpReceiveFrameResult::OutgoingCanFrameReady);
 
         frame = batteryTesterIsoTpEndpoint->getNextFrame();
         assert(frame.has_value());
-        assert(frame->getFramePayload() == CtsPayload);
+        assert(frame->getFramePayload().size() == CtsPayload.size());
+
+        for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+            assert(frame->getFramePayload()[i] == CtsPayload[i]);
+        }
 
         result = batteryCoordinator->coordinate(*frame);
         assert(result == DiagnosticCoordinatorResult::Processed);
 
         returnedFrame = batteryCoordinator->getOutgoingFrame();
         assert(returnedFrame.has_value());
-        assert(returnedFrame->getFramePayload() == correctCF1->getFramePayload());
+        assert(returnedFrame->getFramePayload().size() == correctCF1->getFramePayload().size());
+
+        for (std::size_t i { 0 }; i < returnedFrame->getFramePayload().size(); ++i) {
+            assert(returnedFrame->getFramePayload()[i] == correctCF1->getFramePayload()[i]);
+        }
 
         isoTpResult = batteryTesterIsoTpEndpoint->receiveFrame(*returnedFrame);
         assert(isoTpResult == IsoTpReceiveFrameResult::CompletedPayloadIsReady);
@@ -369,7 +441,11 @@ inline void diagnosticCoordinatorTests() {
 
         returnedFrame = batteryCoordinator->getOutgoingFrame();
         assert(returnedFrame.has_value());
-        assert(returnedFrame->getFramePayload() == responsePayload);
+        assert(returnedFrame->getFramePayload().size() == responsePayload.size());
+
+        for (std::size_t i { 0 }; i < returnedFrame->getFramePayload().size(); ++i) {
+            assert(returnedFrame->getFramePayload()[i] == responsePayload[i]);
+        }
     }
 
     {
@@ -388,7 +464,11 @@ inline void diagnosticCoordinatorTests() {
 
         returnedFrame = batteryCoordinator->getOutgoingFrame();
         assert(returnedFrame.has_value());
-        assert(returnedFrame->getFramePayload() == responsePayload);
+        assert(returnedFrame->getFramePayload().size() == responsePayload.size());
+
+        for (std::size_t i { 0 }; i < returnedFrame->getFramePayload().size(); ++i) {
+            assert(returnedFrame->getFramePayload()[i] == responsePayload[i]);
+        }
     }
 
     {
@@ -412,7 +492,11 @@ inline void diagnosticCoordinatorTests() {
 
         returnedFrame = batteryCoordinator->getOutgoingFrame();
         assert(returnedFrame.has_value());
-        assert(returnedFrame->getFramePayload() == responsePayload);
+        assert(returnedFrame->getFramePayload().size() == responsePayload.size());
+
+        for (std::size_t i { 0 }; i < returnedFrame->getFramePayload().size(); ++i) {
+            assert(returnedFrame->getFramePayload()[i] == responsePayload[i]);
+        }
         assert(returnedFrame->getFrameId() == 0x7EA);
     }
 }

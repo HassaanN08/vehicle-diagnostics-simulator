@@ -35,7 +35,7 @@ inline void receiverTests() {
         assert(engineReceiver->getCurrentState() == ReceiverState::SenderPaused);
 
         auto flowControlFrame { engineReceiver->getFlowControlFrame() };
-        std::vector<std::uint8_t> flowControlPayload { flowControlFrame->getFramePayload() };
+        std::span<const std::uint8_t> flowControlPayload { flowControlFrame->getFramePayload() };
         assert(flowControlPayload[0] == 0x30 && flowControlPayload[1] == 0x00 && flowControlPayload[2] == 0x00);
 
         result = engineReceiver->receivePayload(correctCF1->getFramePayload());
@@ -89,7 +89,7 @@ inline void receiverTests() {
         assert(engineReceiver->getCurrentState() == ReceiverState::SenderPaused);
 
         auto flowControlFrame { engineReceiver->getFlowControlFrame() };
-        std::vector<std::uint8_t> flowControlPayload { flowControlFrame->getFramePayload() };
+        std::span<const std::uint8_t> flowControlPayload { flowControlFrame->getFramePayload() };
         assert(flowControlPayload[0] == 0x30 && flowControlPayload[1] == 0x00 && flowControlPayload[2] == 0x00);
 
         result = engineReceiver->receivePayload(correctCF1->getFramePayload());
@@ -135,7 +135,7 @@ inline void receiverTests() {
         assert(engineReceiver->getCurrentState() == ReceiverState::SenderPaused);
 
         auto flowControlFrame { engineReceiver->getFlowControlFrame() };
-        std::vector<std::uint8_t> flowControlPayload { flowControlFrame->getFramePayload() };
+        std::span<const std::uint8_t> flowControlPayload { flowControlFrame->getFramePayload() };
         assert(flowControlPayload[0] == 0x30 && flowControlPayload[1] == 0x00 && flowControlPayload[2] == 0x00);
 
         for (int i { 0 }; i < 14; ++i) {

@@ -44,7 +44,11 @@ void diagnosticRuntimeTests() {
 
     frame = runtime.getOutgoingFrame();
     assert(frame.has_value());
-    assert(frame->getFramePayload() == correctFirstFrame->getFramePayload());
+    assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
+
+    for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+        assert(frame->getFramePayload()[i] == correctFirstFrame->getFramePayload()[i]);
+    }
 
     IsoTpReceiveFrameResult isoTpResult { engineTesterIsoTp->receiveFrame(*frame) };
 
@@ -52,14 +56,22 @@ void diagnosticRuntimeTests() {
 
     frame = engineTesterIsoTp->getNextFrame();
     assert(frame);
-    assert(frame->getFramePayload() == ctsPayload);
+    assert(frame->getFramePayload().size() == ctsPayload.size());
+
+    for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+        assert(frame->getFramePayload()[i] == ctsPayload[i]);
+    }
 
     result = runtime.receiveCANFrame(*frame);
     assert(result == DiagnosticRuntimeResult::FrameRouted);
 
     frame = runtime.getOutgoingFrame();
     assert(frame.has_value());
-    assert(frame->getFramePayload() == correctCF1->getFramePayload());
+    assert(frame->getFramePayload().size() == correctCF1->getFramePayload().size());
+
+    for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
+        assert(frame->getFramePayload()[i] == correctCF1->getFramePayload()[i]);
+    }
 
     frame = runtime.getOutgoingFrame();
     assert(!frame);

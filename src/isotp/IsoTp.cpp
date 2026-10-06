@@ -3,6 +3,7 @@
 #include "can/CANFrame.h"
 
 #include <vector>
+#include <span>
 #include <cstdint>
 #include <optional>
 #include <chrono>
@@ -10,7 +11,7 @@
 IsoTpReceiveFrameResult IsoTp::receiveFrame(const CANFrame& frame) {
     if (frame.getFrameId() != m_RXCanId) return IsoTpReceiveFrameResult::InvalidFrameId;
 
-    std::vector<std::uint8_t> payload { frame.getFramePayload() };
+    std::span<const std::uint8_t> payload { frame.getFramePayload() };
 
     if (payload.empty()) return IsoTpReceiveFrameResult::Error;
 

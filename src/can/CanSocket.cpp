@@ -9,6 +9,7 @@
 #include <cerrno>
 #include <string>
 #include <cstdint>
+#include <vector>
 
 #include "can/FdOwner.h"
 #include "can/CANFrame.h"
@@ -89,7 +90,7 @@ std::optional<CANFrame> CanSocket::receiveFrame() {
 CanSocketSendFrameResult CanSocket::sendFrame(const CANFrame& vdsFrame) {
     can_frame linuxFrame {};
     linuxFrame.can_id = vdsFrame.getFrameId();
-    std::vector<std::uint8_t> payload { vdsFrame.getFramePayload() };
+    std::span<const std::uint8_t> payload { vdsFrame.getFramePayload() };
     linuxFrame.len = payload.size();
 
     for (std::size_t i {}; i < linuxFrame.len; ++i) {

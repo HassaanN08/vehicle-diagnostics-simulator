@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <span>
 #include <vector>
 #include <cstdint>
 
@@ -41,8 +42,10 @@ inline void canFrameTests() {
         const uint16_t frameId { frame->getFrameId() };
         assert(frameId == 0x000);
 
-        const std::vector<std::uint8_t>& eightByteReturnedPayload { frame->getFramePayload() };
-        assert(eightByteReturnedPayload == eightBytePayload);
+        std::span<const std::uint8_t> eightByteReturnedPayload { frame->getFramePayload() };
+        for (std::size_t i { 0 }; i < eightByteReturnedPayload.size(); ++i) {
+            assert(eightByteReturnedPayload[i] == eightBytePayload[i]);
+        }
     }
 
     {
