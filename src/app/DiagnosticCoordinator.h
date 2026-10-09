@@ -63,4 +63,6 @@ class DiagnosticCoordinator {
         IsoTpTimeoutResponse checkTimeout() {
             return m_isoTpEndpoint.checkTimeout();
         }
+
+        void confirmOutgoingFrameSent() { m_isoTpEndpoint.confirmOutgoingFrameSent(); }
 };

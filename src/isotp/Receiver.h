@@ -81,4 +81,9 @@ class Receiver {
         ReceiverState getCurrentState() const { return m_currentState; }
 
         void setCurrentState(ReceiverState state) { m_currentState = state; }
+        void confirmOutgoingFrameSent() {
+            if (m_currentState == ReceiverState::Reassembling) {
+                m_CFWaitStarted = std::chrono::steady_clock::now();
+            }
+        }
 };

@@ -6,7 +6,6 @@
 #include <span>
 #include <cstdint>
 #include <optional>
-#include <chrono>
 
 IsoTpReceiveFrameResult IsoTp::receiveFrame(const CANFrame& frame) {
     if (frame.getFrameId() != m_RXCanId) return IsoTpReceiveFrameResult::InvalidFrameId;
@@ -53,10 +52,16 @@ std::optional<CANFrame> IsoTp::getNextFrame() {
     if (m_receiver.m_currentState == ReceiverState::SenderPaused) {
         auto returnFrame { m_receiver.getFlowControlFrame() };
 
-        if (returnFrame.has_value()) return returnFrame;
+        if (returnFrame.has_value()) {
+            m_currentFrameSent = CurrentFrame::Receiver;
+            return returnFrame;
+        }
     }
     
-    if (m_sender.m_currentState == SenderState::ReadyToSendCF) return m_sender.getNextCF();
+    if (m_sender.m_currentState == SenderState::ReadyToSendCF) {
+        m_currentFrameSent = CurrentFrame::Sender;
+        return m_sender.getNextCF();
+    }
 
     return std::nullopt;
 }

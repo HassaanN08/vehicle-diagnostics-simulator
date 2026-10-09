@@ -68,4 +68,12 @@ class Sender {
         std::uint8_t getCurrentBlockSize() const { return m_blockSize; }
         std::chrono::microseconds getCurrentSTmin() const { return m_STmin; }
         std::size_t getCurrentOffset() const{ return m_payloadOffset; }
+
+        void  confirmOutgoingFrameSent() {
+            if (m_currentState == SenderState::ReadyToSendCF) {
+                m_lastCFSent = std::chrono::steady_clock::now();
+            } else if (m_currentState == SenderState::WaitingForFlowControl) {
+                m_flowControlWaitStarted = std::chrono::steady_clock::now();
+            }
+        }
 };

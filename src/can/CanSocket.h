@@ -9,8 +9,15 @@
 
 enum class CanSocketSendFrameResult {
     FrameSent,
-    Error,
+    WouldBlock,
     UnexpectedWrittenSize,
+    Error,
+};
+
+enum class CanSocketReceiveFrameResult {
+    FrameReceived,
+    NoFrameAvailable,
+    Error,
 };
 
 class CanSocket {
@@ -19,6 +26,7 @@ class CanSocket {
 
     public:
         static std::optional<CanSocket> create(const std::string& ifName);
-        std::optional<CANFrame> receiveFrame();
+        CanSocketReceiveFrameResult receiveFrame(std::optional<CANFrame>&);
         CanSocketSendFrameResult sendFrame(const CANFrame&);
+        int getFd() const { return m_fd.getFd(); }
 };

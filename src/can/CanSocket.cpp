@@ -47,11 +47,24 @@ std::optional<CanSocket> CanSocket::create(const std::string& ifName) {
         return std::nullopt;
     }
 
+    int flag { fcntl(fd, F_GETFL) };
+    if (flag == -1) {
+        perror("get flag");
+        return std::nullopt;
+    }
+
+    int setFlag { fcntl(fd, F_SETFL, flag | O_NONBLOCK) };
+    if (setFlag == -1) {
+        perror("set flag");
+        return std::nullopt;
+    }
+
     return CanSocket { std::move(fdWrapper) };
 }
 
-std::optional<CANFrame> CanSocket::receiveFrame() {
+CanSocketReceiveFrameResult CanSocket::receiveFrame(std::optional<CANFrame>& vdsFrame) {
     can_frame frame {};
+    vdsFrame = std::nullopt;
 
     ssize_t readBytes { read(m_fd.getFd(), &frame, sizeof(frame)) };
 
@@ -60,26 +73,34 @@ std::optional<CANFrame> CanSocket::receiveFrame() {
     }
 
     if (readBytes == -1) {
-        perror("read");
-        return std::nullopt;
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return CanSocketReceiveFrameResult::NoFrameAvailable;
+        } else {
+            perror("read");
+            return CanSocketReceiveFrameResult::Error;
+        }
     }
 
     if (readBytes != sizeof(frame)) {
-        return std::nullopt;
+        return CanSocketReceiveFrameResult::Error;
     }
 
     if ((frame.can_id & CAN_ERR_FLAG) || (frame.can_id & CAN_RTR_FLAG) || (frame.can_id & CAN_EFF_FLAG)) {
-        return std::nullopt;
+        return CanSocketReceiveFrameResult::Error;
     }
 
     if (frame.len > CAN_MAX_DLEN) {
-        return std::nullopt;
+        return CanSocketReceiveFrameResult::Error;
     }
 
     std::uint16_t frameId { static_cast<std::uint16_t>(frame.can_id & CAN_SFF_MASK) };
     std::span<std::uint8_t> payload { frame.data, frame.len };
 
-    return CANFrame::createCANFrame(frameId, payload);
+    vdsFrame = CANFrame::createCANFrame(frameId, payload);
+    if (!vdsFrame.has_value()) {
+        return CanSocketReceiveFrameResult::Error;
+    }
+    return CanSocketReceiveFrameResult::FrameReceived;
 }
 
 CanSocketSendFrameResult CanSocket::sendFrame(const CANFrame& vdsFrame) {
@@ -99,8 +120,12 @@ CanSocketSendFrameResult CanSocket::sendFrame(const CANFrame& vdsFrame) {
     }
 
     if (writtenBytes == -1) {
-        perror("write");
-        return CanSocketSendFrameResult::Error;
+        if (errno == EWOULDBLOCK || errno == EAGAIN) {
+            return CanSocketSendFrameResult::WouldBlock;
+        } else {
+            perror("write");
+            return CanSocketSendFrameResult::Error;
+        }
     }
 
     if (writtenBytes != sizeof(linuxFrame)) {

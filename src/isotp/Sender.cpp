@@ -65,7 +65,6 @@ std::optional<CANFrame> Sender::processFirstFrame(std::span<const std::uint8_t> 
         m_payloadOffset = 6;
         m_nextCFSequenceNumber = 1;
         m_currentState = SenderState::WaitingForFlowControl;
-        m_flowControlWaitStarted = std::chrono::steady_clock::now();
     }
 
     return frame;
@@ -93,7 +92,6 @@ FlowControlResult Sender::receiveFC(const CANFrame& FCFrame) {
                 }
             }
         case 0x31:
-            m_flowControlWaitStarted = std::chrono::steady_clock::now();
             ++m_currentWaitCount;
             if (m_currentWaitCount <= m_wftmax) return FlowControlResult::Wait;
             else {
@@ -135,12 +133,10 @@ std::optional<CANFrame> Sender::getNextCF() {
         if (frame) {
             m_payloadOffset += 7;
             m_nextCFSequenceNumber = (m_nextCFSequenceNumber + 1) % 16;
-            m_lastCFSent = std::chrono::steady_clock::now();
             if (m_blockSize > 0) {
                 --m_blockSize;
                 if ((m_blockSize) == 0) {
                     m_currentState = SenderState::WaitingForFlowControl;
-                    m_flowControlWaitStarted = std::chrono::steady_clock::now();
                 }
             }
         }

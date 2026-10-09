@@ -20,6 +20,8 @@ enum class DiagnosticRuntimeResult {
 class DiagnosticRuntime {
     std::unordered_map<std::uint32_t, DiagnosticCoordinator> m_diagnosticCoordinators {};
 
+    DiagnosticCoordinator* m_currentCoordinator { nullptr };
+
     Vehicle& m_vehicle;
 
     public:
@@ -49,9 +51,25 @@ class DiagnosticRuntime {
         std::optional<CANFrame> getOutgoingFrame() {
             for (auto& [CANId, coordinator] : m_diagnosticCoordinators) {
                 auto frame { coordinator.getOutgoingFrame() };
-                if (frame.has_value()) return frame;
+                if (frame.has_value()) {
+                    m_currentCoordinator = &coordinator;
+                    return *frame;
+                }
             }
 
             return std::nullopt;
+        }
+
+        void checkIsoTpTimeout() {
+            for (auto& [CANId, coordinator] : m_diagnosticCoordinators) {
+                coordinator.checkTimeout();
+            }
+        }
+
+        void confirmOutgoingFrameSent() {
+            if (m_currentCoordinator != nullptr) {
+                m_currentCoordinator->confirmOutgoingFrameSent();
+                m_currentCoordinator = nullptr;
+            }
         }
 };

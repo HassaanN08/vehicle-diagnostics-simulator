@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <array>
 #include <vector>
 #include <optional>
 
@@ -26,11 +25,18 @@ enum class IsoTpTimeoutResponse {
     Active,
 };
 
+enum class CurrentFrame {
+    Sender,
+    Receiver,
+    None,
+};
+
 class IsoTp {
     std::uint16_t m_TXCanId {};
     std::uint16_t m_RXCanId {};
     Receiver m_receiver;
     Sender m_sender;
+    CurrentFrame m_currentFrameSent { CurrentFrame::None };
     std::vector<std::uint8_t> m_reassembledPayload;
 
     IsoTp(const std::uint16_t RXCanId, const std::uint16_t TXCanId, const std::uint8_t blockSize = 0, const std::uint8_t STmin = 0) 
@@ -49,9 +55,28 @@ class IsoTp {
         }
 
         IsoTpReceiveFrameResult receiveFrame(const CANFrame& frame);
-        std::optional<CANFrame> sendPayload(const std::vector<std::uint8_t>& payload) { return m_sender.receivePayload(payload); }
+        std::optional<CANFrame> sendPayload(const std::vector<std::uint8_t>& payload) {
+            auto frame { m_sender.receivePayload(payload) };
+            if (frame.has_value()) {
+                m_currentFrameSent = CurrentFrame::Sender;
+                return *frame;
+            }
+            
+            return std::nullopt;
+        }
+        
         std::optional<CANFrame> getNextFrame();
         std::vector<std::uint8_t> getCompleteReassembledPayload();
 
         IsoTpTimeoutResponse checkTimeout();
+
+        void confirmOutgoingFrameSent() {
+            if (m_currentFrameSent == CurrentFrame::Sender) {
+                m_sender.confirmOutgoingFrameSent();
+                m_currentFrameSent = CurrentFrame::None;
+            } else if (m_currentFrameSent == CurrentFrame::Receiver) {
+                m_receiver.confirmOutgoingFrameSent();
+                m_currentFrameSent = CurrentFrame::None;
+            } 
+        }
 };

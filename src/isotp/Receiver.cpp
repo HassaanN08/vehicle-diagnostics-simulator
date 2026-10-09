@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstdint>
+#include <chrono>
 
 ReceivePayloadResult Receiver::receivePayload(std::span<const std::uint8_t> payload) {
     if (payload.empty() || payload.size() > 8) return ReceivePayloadResult::TransportError;
@@ -44,7 +45,6 @@ std::optional<CANFrame> Receiver::getFlowControlFrame() {
     std::array<std::uint8_t, 3> FCPayload {0x30, m_blockSize, m_STmin};
     auto frame { CANFrame::createCANFrame(m_TXCanId, FCPayload) };
     if (frame) {
-        m_CFWaitStarted = std::chrono::steady_clock::now();
         m_currentState = ReceiverState::Reassembling;
         return frame;
     }
@@ -107,8 +107,8 @@ ReceivePayloadResult Receiver::processConsecutiveFrame(std::span<const std::uint
         }
 
         m_nextCFSequenceNumber = (m_nextCFSequenceNumber + 1) % 16;
-        ++m_CFCount;
         m_CFWaitStarted = std::chrono::steady_clock::now();
+        ++m_CFCount;
 
         if ((m_blockSize != 0) && (m_CFCount >= m_blockSize)) {
             m_CFCount = 0;
