@@ -7,7 +7,6 @@
 
 #include <unordered_map>
 #include <cstdint>
-#include <vector>
 #include <utility>
 #include <optional>
 
@@ -70,6 +69,21 @@ class DiagnosticRuntime {
             if (m_currentCoordinator != nullptr) {
                 m_currentCoordinator->confirmOutgoingFrameSent();
                 m_currentCoordinator = nullptr;
+            }
+        }
+
+        void updateCoordinatorList() {
+            if (m_vehicle.m_ecuList.size() != m_diagnosticCoordinators.size()) {
+                m_diagnosticCoordinators.clear();
+                
+                for (ECU& ecu : m_vehicle.m_ecuList) {
+                    auto coordinator { DiagnosticCoordinator::createDiagnosticCoordinator(&ecu) };
+
+                    if (coordinator.has_value())
+                        m_diagnosticCoordinators.emplace(ecu.getRequestCANId(), std::move(*coordinator));
+                    else 
+                        continue;
+                }
             }
         }
 };

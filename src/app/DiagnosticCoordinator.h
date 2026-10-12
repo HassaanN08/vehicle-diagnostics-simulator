@@ -4,7 +4,6 @@
 #include "isotp/IsoTp.h"
 #include "uds/UDSServer.h"
 #include "domain/ECU.h"
-#include "domain/Vehicle.h"
 
 #include <vector>
 #include <cstdint>
@@ -54,10 +53,13 @@ class DiagnosticCoordinator {
         std::optional<CANFrame> getOutgoingFrame() {
             if (!m_responsePayload.empty()) {
                 auto frame { m_isoTpEndpoint.sendPayload(m_responsePayload) };
-                m_responsePayload.clear();
+
+                if (frame.has_value())
+                    m_responsePayload.clear();
 
                 return frame;
-            } else return m_isoTpEndpoint.getNextFrame();
+            } else 
+                return m_isoTpEndpoint.getNextFrame();
         }
 
         IsoTpTimeoutResponse checkTimeout() {
