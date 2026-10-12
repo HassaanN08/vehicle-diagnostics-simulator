@@ -12,12 +12,19 @@
 enum class DiagnosticCoordinatorResult {
     Processed,
     Waiting,
+    ResponseOutstanding,
     Error,
+};
+
+enum class DiagnosticCoordinatorState {
+    ResponseOutstanding,
+    NoResponseOutstanding,
 };
 
 class DiagnosticCoordinator {
     ECU* m_ecu;
     IsoTp m_isoTpEndpoint;
+    DiagnosticCoordinatorState m_currentState { DiagnosticCoordinatorState::NoResponseOutstanding };
     std::vector<std::uint8_t> m_responsePayload;
 
     DiagnosticCoordinator(ECU* ecu, IsoTp isoTp)
@@ -44,8 +51,13 @@ class DiagnosticCoordinator {
             if (result == IsoTpReceiveFrameResult::WaitingForNextCF || result == IsoTpReceiveFrameResult::NothingYet)
                 return DiagnosticCoordinatorResult::Waiting;
             
-            if (result == IsoTpReceiveFrameResult::CompletedPayloadIsReady)
-                m_responsePayload = UDSServer::server(*m_ecu, m_isoTpEndpoint.getCompleteReassembledPayload());
+            if (result == IsoTpReceiveFrameResult::CompletedPayloadIsReady) {
+                if (m_currentState == DiagnosticCoordinatorState::NoResponseOutstanding){
+                    m_responsePayload = UDSServer::server(*m_ecu, m_isoTpEndpoint.getCompleteReassembledPayload());
+                } else {
+                    return DiagnosticCoordinatorResult::ResponseOutstanding;
+                }
+            }
 
             return DiagnosticCoordinatorResult::Processed;
         }
@@ -66,5 +78,8 @@ class DiagnosticCoordinator {
             return m_isoTpEndpoint.checkTimeout();
         }
 
-        void confirmOutgoingFrameSent() { m_isoTpEndpoint.confirmOutgoingFrameSent(); }
+        void confirmOutgoingFrameSent() { 
+            m_isoTpEndpoint.confirmOutgoingFrameSent();
+            m_currentState = DiagnosticCoordinatorState::NoResponseOutstanding;
+        }
 };

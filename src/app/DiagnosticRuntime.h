@@ -14,6 +14,7 @@ enum class DiagnosticRuntimeResult {
     FrameRouted,
     ProcessingError,
     CoordinatorNotFound,
+    ResponseOutstanding,
 };
 
 class DiagnosticRuntime {
@@ -43,6 +44,8 @@ class DiagnosticRuntime {
             DiagnosticCoordinatorResult result { coordinator->second.coordinate(frame) };
             if (result == DiagnosticCoordinatorResult::Error)
                 return DiagnosticRuntimeResult::ProcessingError;
+            else if (result == DiagnosticCoordinatorResult::ResponseOutstanding)
+                return DiagnosticRuntimeResult::ResponseOutstanding;
             else
                 return DiagnosticRuntimeResult::FrameRouted;
         }
@@ -73,8 +76,7 @@ class DiagnosticRuntime {
         }
 
         void updateCoordinatorList() {
-            if (m_vehicle.m_ecuList.size() != m_diagnosticCoordinators.size()) {
-                m_diagnosticCoordinators.clear();
+            if (m_vehicle.m_ecuList.size() > m_diagnosticCoordinators.size()) {
                 
                 for (ECU& ecu : m_vehicle.m_ecuList) {
                     auto coordinator { DiagnosticCoordinator::createDiagnosticCoordinator(&ecu) };
