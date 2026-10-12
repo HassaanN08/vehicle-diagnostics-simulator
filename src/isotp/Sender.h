@@ -15,6 +15,7 @@ enum class FrameAwaitingAcknowledgement {
     SingleFrame,
     FirstFrame,
     ConsecutiveFrame,
+    FinalFrame,
 };
 
 enum class SenderState {
@@ -83,6 +84,9 @@ class Sender {
                 if (m_currentState == SenderState::WaitingForFlowControl) {
                     m_flowControlWaitStarted = std::chrono::steady_clock::now();
                 }
+            } else if (m_currentFrame == FrameAwaitingAcknowledgement::FinalFrame ||
+            m_currentFrame == FrameAwaitingAcknowledgement::SingleFrame) {
+                this->setDefault();
             }
 
             m_currentFrame = FrameAwaitingAcknowledgement::None;

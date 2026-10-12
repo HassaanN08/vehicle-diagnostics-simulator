@@ -79,4 +79,8 @@ class IsoTp {
                 m_currentFrameSent = CurrentFrame::None;
             } 
         }
+
+        FrameAwaitingAcknowledgement getAwaitingFrame() {
+            return m_sender.m_currentFrame;
+        }
 };

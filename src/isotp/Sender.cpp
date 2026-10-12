@@ -160,7 +160,7 @@ std::optional<CANFrame> Sender::getNextCF() {
         auto frame { CANFrame::createCANFrame(m_TXCanId, framePayloadSpan) };
 
         if (frame.has_value()) {
-            this->setDefault();
+            m_currentFrame = FrameAwaitingAcknowledgement::FinalFrame;
         }
 
         return frame;

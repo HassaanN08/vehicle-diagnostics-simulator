@@ -2,6 +2,7 @@
 
 #include "can/CANFrame.h"
 #include "isotp/IsoTp.h"
+#include "isotp/Sender.h"
 #include "uds/UDSServer.h"
 #include "domain/ECU.h"
 
@@ -54,6 +55,7 @@ class DiagnosticCoordinator {
             if (result == IsoTpReceiveFrameResult::CompletedPayloadIsReady) {
                 if (m_currentState == DiagnosticCoordinatorState::NoResponseOutstanding){
                     m_responsePayload = UDSServer::server(*m_ecu, m_isoTpEndpoint.getCompleteReassembledPayload());
+                    m_currentState = DiagnosticCoordinatorState::ResponseOutstanding;
                 } else {
                     return DiagnosticCoordinatorResult::ResponseOutstanding;
                 }
@@ -79,7 +81,11 @@ class DiagnosticCoordinator {
         }
 
         void confirmOutgoingFrameSent() { 
+            if (m_isoTpEndpoint.getAwaitingFrame() == FrameAwaitingAcknowledgement::FinalFrame ||
+            m_isoTpEndpoint.getAwaitingFrame() == FrameAwaitingAcknowledgement::SingleFrame) {
+                m_currentState = DiagnosticCoordinatorState::NoResponseOutstanding;
+            }
+            
             m_isoTpEndpoint.confirmOutgoingFrameSent();
-            m_currentState = DiagnosticCoordinatorState::NoResponseOutstanding;
         }
 };
