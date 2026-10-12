@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <cassert>
 #include <vector>
 #include <cstdint>
@@ -15,7 +14,6 @@ inline void isoTpTests() {
     Vehicle vehicle {"Mercedez Benz"};
     const ECU* engine {vehicle.findEcuByRequestCanId(0x7E0)};
     const ECU* brake {vehicle.findEcuByRequestCanId(0x7E1)};
-    const ECU* battery {vehicle.findEcuByRequestCanId(0x7E2)};
 
     {
         auto engineIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId()) };
@@ -224,10 +222,7 @@ inline void isoTpTests() {
         std::vector<std::uint8_t> CtsPayload { 0x30, 0x02, 0x00 };
 
         auto correctFirstFrame { CANFrame::createCANFrame(0x7E0, {0x10, 0x15, 0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1}) };
-        auto correctCF1 { CANFrame::createCANFrame(0x7E0, {0x21, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03}) };
-        auto correctCF2 { CANFrame::createCANFrame(0x7E0, {0x22, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01}) };
-        auto correctCF3 { CANFrame::createCANFrame(0x7E0, {0x23, 0x07}) };
-
+    
         auto frame { testerIsoTpEndpoint->sendPayload(originalPayload) };
         assert(frame);
         assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
@@ -360,10 +355,7 @@ inline void isoTpTests() {
         std::vector<std::uint8_t> CtsPayload { 0x30, 0x02, 0x00 };
 
         auto correctFirstFrame { CANFrame::createCANFrame(0x7E0, {0x10, 0x15, 0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1}) };
-        auto correctCF1 { CANFrame::createCANFrame(0x7E0, {0x21, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03}) };
-        auto correctCF2 { CANFrame::createCANFrame(0x7E0, {0x22, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01}) };
-        auto correctCF3 { CANFrame::createCANFrame(0x7E0, {0x23, 0x07}) };
-
+        
         auto frame { testerIsoTpEndpoint->sendPayload(originalPayload) };
         assert(frame);
         assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
@@ -387,5 +379,40 @@ inline void isoTpTests() {
         std::this_thread::sleep_for(std::chrono::milliseconds(1100));
 
         assert(engineIsoTpEndpoint->checkTimeout() == IsoTpTimeoutResponse::RxTimedOut);
+    }
+
+    {
+        auto engineIsoTpEndpoint { IsoTp::createIsoTpEndpoint(engine->getRequestCANId(), engine->getResponseCANId()) };
+
+        std::vector<std::uint8_t> originalPayload {0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01, 0x07};
+        std::vector<std::uint8_t> CtsPayload { 0x30, 0x02, 0x32 };
+
+        auto frame { engineIsoTpEndpoint->sendPayload(originalPayload) };
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
+
+        IsoTpReceiveFrameResult result { engineIsoTpEndpoint->receiveFrame(*CANFrame::createCANFrame(0x7E0, CtsPayload)) };
+        assert(result == IsoTpReceiveFrameResult::CTS);
+        frame = engineIsoTpEndpoint->getNextFrame();
+        assert(frame.has_value());
+
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(60));
+
+        frame = engineIsoTpEndpoint->getNextFrame();
+        assert(frame.has_value());
+
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
+
+        result = engineIsoTpEndpoint->receiveFrame(*CANFrame::createCANFrame(0x7E0, CtsPayload));
+        assert(result == IsoTpReceiveFrameResult::CTS);
+
+        frame = engineIsoTpEndpoint->getNextFrame();
+        assert(!frame.has_value());
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(60));
+
+        frame = engineIsoTpEndpoint->getNextFrame();
+        assert(frame.has_value());
     }
 }

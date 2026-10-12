@@ -4,7 +4,6 @@
 #include <string>
 #include <string_view>
 #include <cstdint>
-#include <optional>
 
 #include "domain/ECU.h"
 
@@ -23,7 +22,7 @@ class Vehicle {
     std::vector<ECU> m_ecuList;
 
     public:
-        Vehicle(const std::string_view name) : m_name { name } {
+        explicit Vehicle(const std::string_view name) : m_name { name } {
             m_ecuList.reserve(m_ecuLimit);
             m_ecuList.assign({ECU {"Engine", 0x7E0, 0x7E8, 0x09}, ECU {"Brake", 0x7E1, 0x7E9, 0x0D}, ECU {"Battery", 0x7E2, 0x7EA, 0x0F}});
         }

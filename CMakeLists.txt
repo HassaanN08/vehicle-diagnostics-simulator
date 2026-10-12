@@ -48,3 +48,11 @@ target_include_directories(vehicle-diagnostics-tests
         src
         tests
 )
+
+if(MSVC)
+    target_compile_options(vehicle-diagnostics-simulator PRIVATE /W4)
+    target_compile_options(vehicle-diagnostics-tests     PRIVATE /W4)
+else()
+    target_compile_options(vehicle-diagnostics-simulator PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(vehicle-diagnostics-tests     PRIVATE -Wall -Wextra -Wpedantic)
+endif()

@@ -33,7 +33,7 @@ namespace UDSServer {
                 response = UDSRequestProcessor::processReadDataByIdentifier(ecu, payload, ecuResponseData);
                 break;
             case UDSService::ClearDiagnosticInformation:
-                response = UDSRequestProcessor::processClearDiagnosticInformation(ecu, payload, ecuResponseData);
+                response = UDSRequestProcessor::processClearDiagnosticInformation(ecu, payload);
                 break;
             case UDSService::ReadDTCInformation:
                 response = UDSRequestProcessor::processReadDTCInformation(ecu, payload, ecuResponseData);

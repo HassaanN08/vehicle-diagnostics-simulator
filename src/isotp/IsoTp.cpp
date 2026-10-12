@@ -59,8 +59,12 @@ std::optional<CANFrame> IsoTp::getNextFrame() {
     }
     
     if (m_sender.m_currentState == SenderState::ReadyToSendCF) {
-        m_currentFrameSent = CurrentFrame::Sender;
-        return m_sender.getNextCF();
+        auto sentFrame { m_sender.getNextCF() };
+
+        if (sentFrame.has_value()) {
+            m_currentFrameSent = CurrentFrame::Sender;
+            return sentFrame;
+        }
     }
 
     return std::nullopt;

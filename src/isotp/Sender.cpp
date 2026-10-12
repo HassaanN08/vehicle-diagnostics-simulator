@@ -37,6 +37,7 @@ std::optional<CANFrame> Sender::processSingleFrame(std::span<const std::uint8_t>
 
     auto frame { CANFrame::createCANFrame(m_TXCanId, framePayloadSpan) };
 
+    m_currentFrame = FrameAwaitingAcknowledgement::SingleFrame;
     m_currentState = SenderState::Idle;
     return frame;
 }
@@ -60,11 +61,12 @@ std::optional<CANFrame> Sender::processFirstFrame(std::span<const std::uint8_t> 
 
     auto frame { CANFrame::createCANFrame(m_TXCanId, framePayload) };
 
-    if (frame) {
+    if (frame.has_value()) {
         m_payload.assign(payload.begin(), payload.end());
         m_payloadOffset = 6;
         m_nextCFSequenceNumber = 1;
         m_currentState = SenderState::WaitingForFlowControl;
+        m_currentFrame = FrameAwaitingAcknowledgement::FirstFrame;
     }
 
     return frame;
@@ -78,8 +80,8 @@ FlowControlResult Sender::receiveFC(const CANFrame& FCFrame) {
     switch(FCPayload[0]) {
         case 0x30:
             {
-                DecodeSTminResult result { this->decodeSTmin(FCPayload[2]) };
-                if (result == DecodeSTminResult::Successful) {
+                bool result { this->decodeSTmin(FCPayload[2]) };
+                if (result) {
                     m_blockSize = FCPayload[1];
                     m_currentState = SenderState::ReadyToSendCF;
                     m_flowControlWaitStarted = std::nullopt;
@@ -93,6 +95,7 @@ FlowControlResult Sender::receiveFC(const CANFrame& FCFrame) {
             }
         case 0x31:
             ++m_currentWaitCount;
+            m_flowControlWaitStarted = std::chrono::steady_clock::now();
             if (m_currentWaitCount <= m_wftmax) return FlowControlResult::Wait;
             else {
                 this->setDefault();
@@ -130,7 +133,7 @@ std::optional<CANFrame> Sender::getNextCF() {
 
         auto frame { CANFrame::createCANFrame(m_TXCanId, framePayload) };
 
-        if (frame) {
+        if (frame.has_value()) {
             m_payloadOffset += 7;
             m_nextCFSequenceNumber = (m_nextCFSequenceNumber + 1) % 16;
             if (m_blockSize > 0) {
@@ -139,6 +142,8 @@ std::optional<CANFrame> Sender::getNextCF() {
                     m_currentState = SenderState::WaitingForFlowControl;
                 }
             }
+            
+            m_currentFrame = FrameAwaitingAcknowledgement::ConsecutiveFrame;
         }
 
         return frame;
@@ -154,7 +159,7 @@ std::optional<CANFrame> Sender::getNextCF() {
 
         auto frame { CANFrame::createCANFrame(m_TXCanId, framePayloadSpan) };
 
-        if (frame) {
+        if (frame.has_value()) {
             this->setDefault();
         }
 
@@ -175,16 +180,16 @@ CheckSenderTimeoutResult Sender::checkTimeout() {
     return CheckSenderTimeoutResult::NotWaiting;
 }
 
-DecodeSTminResult Sender::decodeSTmin(const std::uint8_t flowControlSTmin) {
-    if (flowControlSTmin >= 0x00 && flowControlSTmin <= 0x7F) {
+bool Sender::decodeSTmin(const std::uint8_t flowControlSTmin) {
+    if (flowControlSTmin <= 0x7F) {
         m_STmin = std::chrono::microseconds{ flowControlSTmin * 1000};
     } else if (flowControlSTmin >= 0xF1 && flowControlSTmin <= 0xF9) {
         m_STmin = std::chrono::microseconds{ (flowControlSTmin & 0x0F) * 100 };
     } else {
-        return DecodeSTminResult::InvalidSTmin;
+        return false;
     }
 
-    return DecodeSTminResult::Successful;
+    return true;
 }
 
 void Sender::setDefault() {
@@ -197,4 +202,5 @@ void Sender::setDefault() {
     m_lastCFSent = std::nullopt;
     m_flowControlWaitStarted = std::nullopt;
     m_currentWaitCount = 0;
+    m_currentFrame = FrameAwaitingAcknowledgement::None;
 }

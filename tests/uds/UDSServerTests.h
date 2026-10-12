@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <cassert>
 #include <vector>
 #include <cstdint>
@@ -8,7 +7,7 @@
 #include "uds/UDSServer.h"
 #include "domain/ECU.h"
 
-void udsServerTests() {
+inline void udsServerTests() {
     ECU engine {"Engine", 0x7E0, 0x7E8, 0x09};
     ECU brake {"Brake", 0x1F1, 0x1F9, 0x0D};
 

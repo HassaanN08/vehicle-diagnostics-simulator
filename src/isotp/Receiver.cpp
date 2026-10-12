@@ -118,7 +118,7 @@ ReceivePayloadResult Receiver::processConsecutiveFrame(std::span<const std::uint
 
         return ReceivePayloadResult::WaitingForMoreFrames;
     } else {
-        if (payload.size() < remainingBytes + 1) return ReceivePayloadResult::TransportError;
+        if (payload.size() < static_cast<std::size_t>(remainingBytes + 1)) return ReceivePayloadResult::TransportError;
 
         for (std::size_t i { 1 }; i <= static_cast<std::size_t>(remainingBytes); ++i) {
             m_partialReassemblyBuffer.push_back(payload[i]);

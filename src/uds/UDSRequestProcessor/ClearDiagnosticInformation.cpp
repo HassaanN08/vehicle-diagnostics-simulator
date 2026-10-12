@@ -5,7 +5,7 @@
 #include "domain/ECU.h"
 #include "uds/UDSTypes.h"
 
-UDSProcessingOutcome UDSRequestProcessor::processClearDiagnosticInformation(ECU& ecu, const std::vector<std::uint8_t>& payload, std::vector<std::uint8_t>& responseData) {
+UDSProcessingOutcome UDSRequestProcessor::processClearDiagnosticInformation(ECU& ecu, const std::vector<std::uint8_t>& payload) {
 
     const size_t payloadLength { payload.size() };
 

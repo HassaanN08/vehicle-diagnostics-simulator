@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <cassert>
 #include <vector>
 #include <cstdint>
@@ -9,11 +8,10 @@
 #include "domain/ECU.h"
 #include "domain/Vehicle.h"
 
-void clearDiagnosticInformationTests() {
+inline void clearDiagnosticInformationTests() {
     Vehicle vehicle {"Mercedez Benz"};
     ECU* engine {vehicle.findEcuByRequestCanId(0x7E0)};
     ECU* brake {vehicle.findEcuByRequestCanId(0x7E1)};
-    ECU* battery {vehicle.findEcuByRequestCanId(0x7E2)};
     
     std::vector<std::uint8_t> responsePayload = UDSServer::server(*engine, {0x10, 0x03});
 

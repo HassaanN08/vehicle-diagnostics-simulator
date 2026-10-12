@@ -32,8 +32,8 @@ enum class CurrentFrame {
 };
 
 class IsoTp {
-    std::uint16_t m_TXCanId {};
     std::uint16_t m_RXCanId {};
+    std::uint16_t m_TXCanId {};
     Receiver m_receiver;
     Sender m_sender;
     CurrentFrame m_currentFrameSent { CurrentFrame::None };

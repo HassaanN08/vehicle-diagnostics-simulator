@@ -8,11 +8,11 @@
 
 class CANFrame {
     std::array<std::uint8_t, 8> m_framePayload {};
-    std::size_t m_payloadLength {};
     std::uint16_t m_frameId {};
+    std::size_t m_payloadLength {};
 
     CANFrame(const int frameId, std::span<const std::uint8_t> payload)
-        : m_frameId { static_cast<uint16_t>(frameId) }
+        : m_frameId { static_cast<std::uint16_t>(frameId) }
         , m_payloadLength { payload.size() } {
             for (std::size_t i { 0 }; i < m_payloadLength; ++i) {
                 m_framePayload[i] = payload[i];

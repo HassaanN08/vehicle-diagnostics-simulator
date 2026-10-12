@@ -31,17 +31,22 @@ enum class CheckReceiverTimeoutResult {
 
 class Receiver {
     friend class IsoTp;
+
+    std::uint16_t m_RXCanId {};
+    std::uint16_t m_TXCanId {};
+
     ReceiverState m_currentState { ReceiverState::Idle };
+
     std::uint16_t m_messageLength {};
     std::uint16_t m_usefulBytesCollected {};
     std::vector<std::uint8_t> m_partialReassemblyBuffer;
     std::vector<std::uint8_t> m_reassembledPayload;
+    
     int m_nextCFSequenceNumber {};
     int m_CFCount {};
     std::uint8_t m_blockSize {};
     std::uint8_t m_STmin {};
-    std::uint16_t m_RXCanId {};
-    std::uint16_t m_TXCanId {};
+
     std::chrono::milliseconds m_timeout { 1000 };
     std::optional<std::chrono::steady_clock::time_point> m_CFWaitStarted { std::nullopt };
 

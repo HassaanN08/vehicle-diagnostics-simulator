@@ -10,6 +10,13 @@
 
 class IsoTp;
 
+enum class FrameAwaitingAcknowledgement {
+    None,
+    SingleFrame,
+    FirstFrame,
+    ConsecutiveFrame,
+};
+
 enum class SenderState {
     Idle,
     WaitingForFlowControl,
@@ -23,11 +30,6 @@ enum class FlowControlResult {
     InvalidFC,
 };
 
-enum class DecodeSTminResult {
-    Successful,
-    InvalidSTmin,
-};
-
 enum class CheckSenderTimeoutResult {
     NotWaiting,
     Waiting,
@@ -36,14 +38,18 @@ enum class CheckSenderTimeoutResult {
 
 class Sender {
     friend class IsoTp;
+    FrameAwaitingAcknowledgement m_currentFrame { FrameAwaitingAcknowledgement::None };
     SenderState m_currentState {};
+
     std::vector<std::uint8_t> m_payload;
     std::size_t m_payloadOffset {};
+
     std::uint16_t m_nextCFSequenceNumber {};
     std::uint8_t m_blockSize {};
     std::chrono::microseconds m_STmin {};
     std::optional<std::chrono::steady_clock::time_point> m_lastCFSent { std::nullopt };
     std::chrono::milliseconds m_timeout { 1000 };
+    
     std::optional<std::chrono::steady_clock::time_point> m_flowControlWaitStarted { std::nullopt };
     std::size_t m_currentWaitCount {};
     std::size_t m_wftmax { 5 };
@@ -53,10 +59,10 @@ class Sender {
     std::optional<CANFrame> processFirstFrame(std::span<const std::uint8_t> payload);
 
     void setDefault();
-    DecodeSTminResult decodeSTmin(const std::uint8_t flowControlSTmin);
+    bool decodeSTmin(const std::uint8_t flowControlSTmin);
 
     public:
-        Sender(const std::uint16_t TXCanId) 
+        explicit Sender(const std::uint16_t TXCanId) 
             : m_TXCanId { TXCanId } {}
         
         std::optional<CANFrame> receivePayload(std::span<const std::uint8_t> payload);
@@ -70,10 +76,15 @@ class Sender {
         std::size_t getCurrentOffset() const{ return m_payloadOffset; }
 
         void  confirmOutgoingFrameSent() {
-            if (m_currentState == SenderState::ReadyToSendCF) {
-                m_lastCFSent = std::chrono::steady_clock::now();
-            } else if (m_currentState == SenderState::WaitingForFlowControl) {
+            if (m_currentFrame == FrameAwaitingAcknowledgement::FirstFrame) {
                 m_flowControlWaitStarted = std::chrono::steady_clock::now();
+            } else if (m_currentFrame == FrameAwaitingAcknowledgement::ConsecutiveFrame) {
+                m_lastCFSent = std::chrono::steady_clock::now();
+                if (m_currentState == SenderState::WaitingForFlowControl) {
+                    m_flowControlWaitStarted = std::chrono::steady_clock::now();
+                }
             }
+
+            m_currentFrame = FrameAwaitingAcknowledgement::None;
         }
 };
