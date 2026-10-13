@@ -77,7 +77,13 @@ class DiagnosticCoordinator {
         }
 
         IsoTpTimeoutResponse checkTimeout() {
-            return m_isoTpEndpoint.checkTimeout();
+            IsoTpTimeoutResponse response { m_isoTpEndpoint.checkTimeout() };
+            if (response == IsoTpTimeoutResponse::TxTimedOut ||
+            response == IsoTpTimeoutResponse::BothTimedOut) {
+                m_currentState = DiagnosticCoordinatorState::NoResponseOutstanding;
+            }
+
+            return response;
         }
 
         void confirmOutgoingFrameSent() { 
@@ -85,7 +91,7 @@ class DiagnosticCoordinator {
             m_isoTpEndpoint.getAwaitingFrame() == FrameAwaitingAcknowledgement::SingleFrame) {
                 m_currentState = DiagnosticCoordinatorState::NoResponseOutstanding;
             }
-            
+
             m_isoTpEndpoint.confirmOutgoingFrameSent();
         }
 };
