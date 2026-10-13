@@ -56,6 +56,9 @@ class IsoTp {
 
         IsoTpReceiveFrameResult receiveFrame(const CANFrame& frame);
         std::optional<CANFrame> sendPayload(const std::vector<std::uint8_t>& payload) {
+            if (m_currentFrameSent != CurrentFrame::None)
+                return std::nullopt;
+            
             auto frame { m_sender.receivePayload(payload) };
             if (frame.has_value()) {
                 m_currentFrameSent = CurrentFrame::Sender;
