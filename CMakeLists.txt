@@ -25,6 +25,7 @@ add_executable(vehicle-diagnostics-simulator
 
 add_executable(vehicle-diagnostics-tests
     tests/tests.cpp
+    tests/implementation/diagnosticCoordinatorTests.cpp
     src/domain/ECU.cpp
     src/domain/Vehicle.cpp
     src/uds/UDSRequestProcessor/ClearDiagnosticInformation.cpp
