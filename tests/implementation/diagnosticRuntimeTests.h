@@ -37,15 +37,15 @@ inline void diagnosticRuntimeTests() {
         assert(runtime.receiveCANFrame(*frame) == DiagnosticRuntimeResult::CoordinatorNotFound);
 
         frame = engineTesterIsoTp->sendPayload({0x19, 0x02, 0x08});
-        engineTesterIsoTp->confirmOutgoingFrameSent();
         assert(frame.has_value());
+        engineTesterIsoTp->confirmOutgoingFrameSent();
         
         DiagnosticRuntimeResult result { runtime.receiveCANFrame(*frame) };
         assert(result == DiagnosticRuntimeResult::FrameRouted);
 
         frame = runtime.getOutgoingFrame();
-        runtime.confirmOutgoingFrameSent();
         assert(frame.has_value());
+        runtime.confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -57,8 +57,8 @@ inline void diagnosticRuntimeTests() {
         assert(isoTpResult == IsoTpReceiveFrameResult::OutgoingCanFrameReady);
 
         frame = engineTesterIsoTp->getNextFrame();
+        assert(frame.has_value());
         engineTesterIsoTp->confirmOutgoingFrameSent();
-        assert(frame);
         assert(frame->getFramePayload().size() == ctsPayload.size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -69,8 +69,8 @@ inline void diagnosticRuntimeTests() {
         assert(result == DiagnosticRuntimeResult::FrameRouted);
 
         frame = runtime.getOutgoingFrame();
-        runtime.confirmOutgoingFrameSent();
         assert(frame.has_value());
+        runtime.confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == correctCF1->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -78,8 +78,8 @@ inline void diagnosticRuntimeTests() {
         }
 
         frame = runtime.getOutgoingFrame();
+        assert(!frame.has_value());
         runtime.confirmOutgoingFrameSent();
-        assert(!frame);
 
         //Test wrong ISO-TP metadata
         frame = CANFrame::createCANFrame(0x7E0, {0x03, 0x10, 0x01});
@@ -88,9 +88,8 @@ inline void diagnosticRuntimeTests() {
         assert(result == DiagnosticRuntimeResult::ProcessingError);
 
         auto returnedFrame { runtime.getOutgoingFrame() };
-        runtime.confirmOutgoingFrameSent();
-
         assert(!returnedFrame.has_value());
+        runtime.confirmOutgoingFrameSent();
 
         assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
     }
