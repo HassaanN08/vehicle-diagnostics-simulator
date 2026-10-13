@@ -57,6 +57,7 @@ inline void diagnosticRuntimeTests() {
         assert(isoTpResult == IsoTpReceiveFrameResult::OutgoingCanFrameReady);
 
         frame = engineTesterIsoTp->getNextFrame();
+        engineTesterIsoTp->confirmOutgoingFrameSent();
         assert(frame);
         assert(frame->getFramePayload().size() == ctsPayload.size());
 
@@ -87,6 +88,7 @@ inline void diagnosticRuntimeTests() {
         assert(result == DiagnosticRuntimeResult::ProcessingError);
 
         auto returnedFrame { runtime.getOutgoingFrame() };
+        runtime.confirmOutgoingFrameSent();
 
         assert(!returnedFrame.has_value());
 

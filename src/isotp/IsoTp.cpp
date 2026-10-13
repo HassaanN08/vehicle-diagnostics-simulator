@@ -50,7 +50,7 @@ IsoTpReceiveFrameResult IsoTp::receiveFrame(const CANFrame& frame) {
 }
 
 std::optional<CANFrame> IsoTp::getNextFrame() {
-    if (m_receiver.m_currentState == ReceiverState::SenderPaused) {
+    if (m_receiver.m_currentState == ReceiverState::SenderPaused && m_currentFrameSent == CurrentFrame::None) {
         auto returnFrame { m_receiver.getFlowControlFrame() };
 
         if (returnFrame.has_value()) {
@@ -59,7 +59,7 @@ std::optional<CANFrame> IsoTp::getNextFrame() {
         }
     }
     
-    if (m_sender.m_currentState == SenderState::ReadyToSendCF) {
+    if (m_sender.m_currentState == SenderState::ReadyToSendCF && m_currentFrameSent == CurrentFrame::None) {
         auto sentFrame { m_sender.getNextCF() };
 
         if (sentFrame.has_value()) {

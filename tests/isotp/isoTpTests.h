@@ -24,6 +24,7 @@ inline void isoTpTests() {
         auto correctSingleFrame { CANFrame::createCANFrame(0x7E0, {0x07, 0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1, 0x93}) };
 
         auto frame { testerIsoTpEndpoint->sendPayload(originalPayload) };
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame);
         assert(frame->getFramePayload().size() == correctSingleFrame->getFramePayload().size());
 
@@ -52,6 +53,7 @@ inline void isoTpTests() {
         auto correctCF3 { CANFrame::createCANFrame(0x7E0, {0x23, 0x07}) };
 
         auto frame { testerIsoTpEndpoint->sendPayload(originalPayload) };
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame);
         assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
 
@@ -62,6 +64,7 @@ inline void isoTpTests() {
         IsoTpReceiveFrameResult result { engineIsoTpEndpoint->receiveFrame(*frame) };
         assert(result == IsoTpReceiveFrameResult::OutgoingCanFrameReady);
         frame = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == CtsPayload.size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -71,6 +74,7 @@ inline void isoTpTests() {
         result = testerIsoTpEndpoint->receiveFrame(*frame);
         assert(result == IsoTpReceiveFrameResult::CTS);
         frame = testerIsoTpEndpoint->getNextFrame();
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == correctCF1->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -81,6 +85,7 @@ inline void isoTpTests() {
         assert(result == IsoTpReceiveFrameResult::WaitingForNextCF);
 
         frame = testerIsoTpEndpoint->getNextFrame();
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == correctCF2->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -91,6 +96,7 @@ inline void isoTpTests() {
         assert(result == IsoTpReceiveFrameResult::WaitingForNextCF);
 
         frame = testerIsoTpEndpoint->getNextFrame();
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == correctCF3->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -120,6 +126,7 @@ inline void isoTpTests() {
         auto correctCF3 { CANFrame::createCANFrame(0x7E0, {0x23, 0x07}) };
 
         auto frame { testerIsoTpEndpoint->sendPayload(originalPayload) };
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame);
         assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
 
@@ -130,6 +137,7 @@ inline void isoTpTests() {
         IsoTpReceiveFrameResult result { engineIsoTpEndpoint->receiveFrame(*frame) };
         assert(result == IsoTpReceiveFrameResult::OutgoingCanFrameReady);
         frame = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == CtsPayload.size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -148,6 +156,7 @@ inline void isoTpTests() {
         assert(testerIsoTpEndpoint->checkTimeout() == IsoTpTimeoutResponse::TxTimedOut);
 
         frame = testerIsoTpEndpoint->sendPayload(originalPayload);
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame);
         assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
 
@@ -158,6 +167,7 @@ inline void isoTpTests() {
         result = engineIsoTpEndpoint->receiveFrame(*frame);
         assert(result == IsoTpReceiveFrameResult::OutgoingCanFrameReady);
         frame = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == CtsPayload.size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -170,6 +180,7 @@ inline void isoTpTests() {
         result = testerIsoTpEndpoint->receiveFrame(*frame);
         assert(result == IsoTpReceiveFrameResult::CTS);
         frame = testerIsoTpEndpoint->getNextFrame();
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == correctCF1->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -180,6 +191,7 @@ inline void isoTpTests() {
         assert(result == IsoTpReceiveFrameResult::WaitingForNextCF);
 
         frame = testerIsoTpEndpoint->getNextFrame();
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == correctCF2->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -190,6 +202,7 @@ inline void isoTpTests() {
         assert(result == IsoTpReceiveFrameResult::OutgoingCanFrameReady);
 
         frame = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == CtsPayload.size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -200,6 +213,7 @@ inline void isoTpTests() {
         assert(result == IsoTpReceiveFrameResult::CTS);
 
         frame = testerIsoTpEndpoint->getNextFrame();
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == correctCF3->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -224,6 +238,7 @@ inline void isoTpTests() {
         auto correctFirstFrame { CANFrame::createCANFrame(0x7E0, {0x10, 0x15, 0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1}) };
     
         auto frame { testerIsoTpEndpoint->sendPayload(originalPayload) };
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame);
         assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
 
@@ -249,6 +264,8 @@ inline void isoTpTests() {
 
         auto frame1 { testerIsoTpEndpoint->sendPayload(originalPayload) };
         auto frame2 { engineIsoTpEndpoint->sendPayload(originalPayload) };
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame1);
         assert(frame1->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
 
@@ -265,6 +282,7 @@ inline void isoTpTests() {
         IsoTpReceiveFrameResult result { engineIsoTpEndpoint->receiveFrame(*frame1) };
         assert(result == IsoTpReceiveFrameResult::OutgoingCanFrameReady);
         frame1 = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame1->getFramePayload().size() == CtsPayload.size());
 
         for (std::size_t i { 0 }; i < frame1->getFramePayload().size(); ++i) {
@@ -274,6 +292,7 @@ inline void isoTpTests() {
         result = testerIsoTpEndpoint->receiveFrame(*frame2);
         assert(result == IsoTpReceiveFrameResult::OutgoingCanFrameReady);
         frame2 = testerIsoTpEndpoint->getNextFrame();
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame2->getFramePayload().size() == CtsPayload.size());
 
         for (std::size_t i { 0 }; i < frame2->getFramePayload().size(); ++i) {
@@ -283,6 +302,7 @@ inline void isoTpTests() {
         result = testerIsoTpEndpoint->receiveFrame(*frame1);
         assert(result == IsoTpReceiveFrameResult::CTS);
         frame1 = testerIsoTpEndpoint->getNextFrame();
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame1->getFramePayload().size() == correctCF1->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame1->getFramePayload().size(); ++i) {
@@ -292,6 +312,7 @@ inline void isoTpTests() {
         result = engineIsoTpEndpoint->receiveFrame(*frame2);
         assert(result == IsoTpReceiveFrameResult::CTS);
         frame2 = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame2->getFramePayload().size() == correctCF1->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame2->getFramePayload().size(); ++i) {
@@ -301,6 +322,7 @@ inline void isoTpTests() {
         result = engineIsoTpEndpoint->receiveFrame(*frame1);
         assert(result == IsoTpReceiveFrameResult::WaitingForNextCF);
         frame1 = testerIsoTpEndpoint->getNextFrame();
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame1->getFramePayload().size() == correctCF2->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame1->getFramePayload().size(); ++i) {
@@ -310,6 +332,7 @@ inline void isoTpTests() {
         result = testerIsoTpEndpoint->receiveFrame(*frame2);
         assert(result == IsoTpReceiveFrameResult::WaitingForNextCF);
         frame2 = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame2->getFramePayload().size() == correctCF2->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame2->getFramePayload().size(); ++i) {
@@ -319,6 +342,7 @@ inline void isoTpTests() {
         result = engineIsoTpEndpoint->receiveFrame(*frame1);
         assert(result == IsoTpReceiveFrameResult::WaitingForNextCF);
         frame1 = testerIsoTpEndpoint->getNextFrame();
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame1->getFramePayload().size() == correctCF3->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame1->getFramePayload().size(); ++i) {
@@ -328,6 +352,7 @@ inline void isoTpTests() {
         result = testerIsoTpEndpoint->receiveFrame(*frame2);
         assert(result == IsoTpReceiveFrameResult::WaitingForNextCF);
         frame2 = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame2->getFramePayload().size() == correctCF3->getFramePayload().size());
 
         for (std::size_t i { 0 }; i < frame2->getFramePayload().size(); ++i) {
@@ -357,6 +382,7 @@ inline void isoTpTests() {
         auto correctFirstFrame { CANFrame::createCANFrame(0x7E0, {0x10, 0x15, 0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1}) };
         
         auto frame { testerIsoTpEndpoint->sendPayload(originalPayload) };
+        testerIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame);
         assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
 
@@ -367,6 +393,7 @@ inline void isoTpTests() {
         IsoTpReceiveFrameResult result { engineIsoTpEndpoint->receiveFrame(*frame) };
         assert(result == IsoTpReceiveFrameResult::OutgoingCanFrameReady);
         frame = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame->getFramePayload().size() == CtsPayload.size());
 
         for (std::size_t i { 0 }; i < frame->getFramePayload().size(); ++i) {
@@ -393,6 +420,7 @@ inline void isoTpTests() {
         IsoTpReceiveFrameResult result { engineIsoTpEndpoint->receiveFrame(*CANFrame::createCANFrame(0x7E0, CtsPayload)) };
         assert(result == IsoTpReceiveFrameResult::CTS);
         frame = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame.has_value());
 
         engineIsoTpEndpoint->confirmOutgoingFrameSent();
@@ -400,6 +428,7 @@ inline void isoTpTests() {
         std::this_thread::sleep_for(std::chrono::milliseconds(60));
 
         frame = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame.has_value());
 
         engineIsoTpEndpoint->confirmOutgoingFrameSent();
@@ -408,11 +437,13 @@ inline void isoTpTests() {
         assert(result == IsoTpReceiveFrameResult::CTS);
 
         frame = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(!frame.has_value());
 
         std::this_thread::sleep_for(std::chrono::milliseconds(60));
 
         frame = engineIsoTpEndpoint->getNextFrame();
+        engineIsoTpEndpoint->confirmOutgoingFrameSent();
         assert(frame.has_value());
     }
 }
