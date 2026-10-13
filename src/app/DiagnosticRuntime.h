@@ -51,6 +51,9 @@ class DiagnosticRuntime {
         }
 
         std::optional<CANFrame> getOutgoingFrame() {
+            if (m_currentCoordinator != nullptr)
+                return std::nullopt;
+            
             for (auto& [CANId, coordinator] : m_diagnosticCoordinators) {
                 auto frame { coordinator.getOutgoingFrame() };
                 if (frame.has_value()) {
