@@ -35,13 +35,9 @@ add_executable(vehicle-diagnostics-tests
 target_link_libraries(vehicle-diagnostics-simulator PRIVATE vds-core)
 target_link_libraries(vehicle-diagnostics-tests PRIVATE vds-core)
 
-target_include_directories(vehicle-diagnostics-simulator PRIVATE src)
-target_include_directories(vds-core PRIVATE src)
-target_include_directories(vehicle-diagnostics-tests
-    PRIVATE 
-        src
-        tests
-)
+#PUBLIC keyword automatically adds src as a directory to any targets vds-core is linked with
+target_include_directories(vds-core PUBLIC src)
+target_include_directories(vehicle-diagnostics-tests PRIVATE tests)
 
 if(MSVC)
     target_compile_options(vds-core PRIVATE /W4)
