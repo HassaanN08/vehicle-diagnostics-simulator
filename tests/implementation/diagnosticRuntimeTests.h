@@ -37,12 +37,14 @@ inline void diagnosticRuntimeTests() {
         assert(runtime.receiveCANFrame(*frame) == DiagnosticRuntimeResult::CoordinatorNotFound);
 
         frame = engineTesterIsoTp->sendPayload({0x19, 0x02, 0x08});
+        engineTesterIsoTp->confirmOutgoingFrameSent();
         assert(frame.has_value());
         
         DiagnosticRuntimeResult result { runtime.receiveCANFrame(*frame) };
         assert(result == DiagnosticRuntimeResult::FrameRouted);
 
         frame = runtime.getOutgoingFrame();
+        runtime.confirmOutgoingFrameSent();
         assert(frame.has_value());
         assert(frame->getFramePayload().size() == correctFirstFrame->getFramePayload().size());
 
@@ -66,6 +68,7 @@ inline void diagnosticRuntimeTests() {
         assert(result == DiagnosticRuntimeResult::FrameRouted);
 
         frame = runtime.getOutgoingFrame();
+        runtime.confirmOutgoingFrameSent();
         assert(frame.has_value());
         assert(frame->getFramePayload().size() == correctCF1->getFramePayload().size());
 
@@ -74,6 +77,7 @@ inline void diagnosticRuntimeTests() {
         }
 
         frame = runtime.getOutgoingFrame();
+        runtime.confirmOutgoingFrameSent();
         assert(!frame);
 
         //Test wrong ISO-TP metadata

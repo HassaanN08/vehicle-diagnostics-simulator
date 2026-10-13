@@ -39,6 +39,7 @@ enum class CheckSenderTimeoutResult {
 
 class Sender {
     friend class IsoTp;
+    
     FrameAwaitingAcknowledgement m_currentFrame { FrameAwaitingAcknowledgement::None };
     SenderState m_currentState {};
 
@@ -76,19 +77,5 @@ class Sender {
         std::chrono::microseconds getCurrentSTmin() const { return m_STmin; }
         std::size_t getCurrentOffset() const{ return m_payloadOffset; }
 
-        void  confirmOutgoingFrameSent() {
-            if (m_currentFrame == FrameAwaitingAcknowledgement::FirstFrame) {
-                m_flowControlWaitStarted = std::chrono::steady_clock::now();
-            } else if (m_currentFrame == FrameAwaitingAcknowledgement::ConsecutiveFrame) {
-                m_lastCFSent = std::chrono::steady_clock::now();
-                if (m_currentState == SenderState::WaitingForFlowControl) {
-                    m_flowControlWaitStarted = std::chrono::steady_clock::now();
-                }
-            } else if (m_currentFrame == FrameAwaitingAcknowledgement::FinalFrame ||
-            m_currentFrame == FrameAwaitingAcknowledgement::SingleFrame) {
-                this->setDefault();
-            }
-
-            m_currentFrame = FrameAwaitingAcknowledgement::None;
-        }
+        void confirmOutgoingFrameSent();
 };

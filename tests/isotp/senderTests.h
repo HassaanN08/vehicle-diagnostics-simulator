@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <cassert>
 #include <vector>
 #include <cstdint>
@@ -45,6 +44,7 @@ inline void senderTests() {
         assert(engineSender.getCurrentOffset() == 6);
 
         frame = engineSender.getNextCF();
+        engineSender.confirmOutgoingFrameSent();
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
         assert(frame);
         assert(frame->getFramePayload().size() == correctCF1->getFramePayload().size());
@@ -55,6 +55,7 @@ inline void senderTests() {
         assert(engineSender.getCurrentOffset() == 13);
 
         frame = engineSender.getNextCF();
+        engineSender.confirmOutgoingFrameSent();
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
         assert(frame);
         assert(frame->getFramePayload().size() == correctCF2->getFramePayload().size());
@@ -68,6 +69,7 @@ inline void senderTests() {
         assert(!frame);
 
         frame = engineSender.getNextCF();
+        engineSender.confirmOutgoingFrameSent();
         assert(engineSender.getCurrentState() == SenderState::Idle);
         assert(frame);
         assert(frame->getFramePayload().size() == correctCF3->getFramePayload().size());
@@ -104,6 +106,7 @@ inline void senderTests() {
         engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x02, 0x00}));
 
         frame = engineSender.getNextCF();
+        engineSender.confirmOutgoingFrameSent();
         assert(engineSender.getCurrentState() == SenderState::ReadyToSendCF);
         assert(frame);
         assert(frame->getFramePayload().size() == correctCF1->getFramePayload().size());
@@ -113,6 +116,7 @@ inline void senderTests() {
         }
 
         frame = engineSender.getNextCF();
+        engineSender.confirmOutgoingFrameSent();
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
         assert(frame);
         assert(frame->getFramePayload().size() == correctCF2->getFramePayload().size());
@@ -122,6 +126,7 @@ inline void senderTests() {
         }
 
         frame = engineSender.getNextCF();
+        engineSender.confirmOutgoingFrameSent();
         assert(engineSender.getCurrentState() == SenderState::WaitingForFlowControl);
         assert(!frame);
 
@@ -130,6 +135,7 @@ inline void senderTests() {
 
         engineSender.receiveFC(*CANFrame::createCANFrame(0x7E0, {0x30, 0x00, 0x00}));
         frame = engineSender.getNextCF();
+        engineSender.confirmOutgoingFrameSent();
         assert(engineSender.getCurrentState() == SenderState::Idle);
         assert(frame);
         assert(frame->getFramePayload().size() == correctCF3->getFramePayload().size());
@@ -150,7 +156,6 @@ inline void senderTests() {
         auto correctFirstFrame { CANFrame::createCANFrame(0x7E0, {0x10, 0x15, 0x22, 0xF1, 0x90, 0xF1, 0x89, 0xF1}) };
         auto correctCF1 { CANFrame::createCANFrame(0x7E0, {0x21, 0x93, 0xF1, 0x87, 0x01, 0x02, 0x01, 0x03}) };
         auto correctCF2 { CANFrame::createCANFrame(0x7E0, {0x22, 0x01, 0x04, 0x01, 0x05, 0x01, 0x06, 0x01}) };
-        auto correctCF3 { CANFrame::createCANFrame(0x7E0, {0x23, 0x07}) };
 
         auto frame { engineSender.receivePayload({}) };
         assert(!frame);

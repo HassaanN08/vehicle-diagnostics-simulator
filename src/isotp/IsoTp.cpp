@@ -8,7 +8,8 @@
 #include <optional>
 
 IsoTpReceiveFrameResult IsoTp::receiveFrame(const CANFrame& frame) {
-    if (frame.getFrameId() != m_RXCanId) return IsoTpReceiveFrameResult::InvalidFrameId;
+    if (frame.getFrameId() != m_RXCanId)
+        return IsoTpReceiveFrameResult::InvalidFrameId;
 
     std::span<const std::uint8_t> payload { frame.getFramePayload() };
 

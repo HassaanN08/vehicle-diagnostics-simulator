@@ -204,3 +204,19 @@ void Sender::setDefault() {
     m_currentWaitCount = 0;
     m_currentFrame = FrameAwaitingAcknowledgement::None;
 }
+
+void Sender::confirmOutgoingFrameSent() {
+    if (m_currentFrame == FrameAwaitingAcknowledgement::FirstFrame) {
+        m_flowControlWaitStarted = std::chrono::steady_clock::now();
+    } else if (m_currentFrame == FrameAwaitingAcknowledgement::ConsecutiveFrame) {
+        m_lastCFSent = std::chrono::steady_clock::now();
+        if (m_currentState == SenderState::WaitingForFlowControl) {
+            m_flowControlWaitStarted = std::chrono::steady_clock::now();
+        }
+    } else if (m_currentFrame == FrameAwaitingAcknowledgement::FinalFrame ||
+    m_currentFrame == FrameAwaitingAcknowledgement::SingleFrame) {
+        this->setDefault();
+    }
+
+    m_currentFrame = FrameAwaitingAcknowledgement::None;
+}

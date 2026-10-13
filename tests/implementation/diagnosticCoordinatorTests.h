@@ -74,6 +74,11 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x01});
 
     result = batteryCoordinator->coordinate(*frame);
+    assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+    batteryCoordinator->confirmOutgoingFrameSent();
+
+    result = batteryCoordinator->coordinate(*frame);
     assert(result == DiagnosticCoordinatorResult::Processed);
 
     returnedFrame = batteryCoordinator->getOutgoingFrame();
@@ -107,6 +112,11 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x11, 0x03});
 
     result = batteryCoordinator->coordinate(*frame);
+    assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+    batteryCoordinator->confirmOutgoingFrameSent();
+
+    result = batteryCoordinator->coordinate(*frame);
     assert(result == DiagnosticCoordinatorResult::Processed);
 
     returnedFrame = batteryCoordinator->getOutgoingFrame();
@@ -124,6 +134,11 @@ inline void diagnosticCoordinatorTests() {
 
     //Test unsupported UDS function
     frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x04});
+
+    result = batteryCoordinator->coordinate(*frame);
+    assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+    batteryCoordinator->confirmOutgoingFrameSent();
 
     result = batteryCoordinator->coordinate(*frame);
     assert(result == DiagnosticCoordinatorResult::Processed);
@@ -145,6 +160,11 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x01, 0x10});
 
     result = batteryCoordinator->coordinate(*frame);
+    assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+    batteryCoordinator->confirmOutgoingFrameSent();
+
+    result = batteryCoordinator->coordinate(*frame);
     assert(result == DiagnosticCoordinatorResult::Processed);
 
     returnedFrame = batteryCoordinator->getOutgoingFrame();
@@ -162,6 +182,11 @@ inline void diagnosticCoordinatorTests() {
 
     //Test ReadDataByIdentifier with incomplete DID
     frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x22, 0xF1});
+
+    result = batteryCoordinator->coordinate(*frame);
+    assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+    batteryCoordinator->confirmOutgoingFrameSent();
 
     result = batteryCoordinator->coordinate(*frame);
     assert(result == DiagnosticCoordinatorResult::Processed);
@@ -183,6 +208,11 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x03, 0x22, 0xF1, 0x86});
 
     result = batteryCoordinator->coordinate(*frame);
+    assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+    batteryCoordinator->confirmOutgoingFrameSent();
+
+    result = batteryCoordinator->coordinate(*frame);
     assert(result == DiagnosticCoordinatorResult::Processed);
 
     returnedFrame = batteryCoordinator->getOutgoingFrame();
@@ -200,6 +230,11 @@ inline void diagnosticCoordinatorTests() {
 
     //Test ReadDataByIdentifier with unsupported DID
     frame = CANFrame::createCANFrame(0x7E2, {0x03, 0x22, 0xF1, 0x11});
+
+    result = batteryCoordinator->coordinate(*frame);
+    assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+    batteryCoordinator->confirmOutgoingFrameSent();
 
     result = batteryCoordinator->coordinate(*frame);
     assert(result == DiagnosticCoordinatorResult::Processed);
@@ -225,6 +260,11 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x04, 0x14, 0xFF, 0xFF, 0xFF});
 
     result = batteryCoordinator->coordinate(*frame);
+    assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+    batteryCoordinator->confirmOutgoingFrameSent();
+
+    result = batteryCoordinator->coordinate(*frame);
     assert(result == DiagnosticCoordinatorResult::Processed);
 
     returnedFrame = batteryCoordinator->getOutgoingFrame();
@@ -244,6 +284,11 @@ inline void diagnosticCoordinatorTests() {
     frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x03});
 
     result = batteryCoordinator->coordinate(*frame);
+    assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+    batteryCoordinator->confirmOutgoingFrameSent();
+
+    result = batteryCoordinator->coordinate(*frame);
     assert(result == DiagnosticCoordinatorResult::Processed);
 
     returnedFrame = batteryCoordinator->getOutgoingFrame();
@@ -252,6 +297,11 @@ inline void diagnosticCoordinatorTests() {
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
 
     frame = CANFrame::createCANFrame(0x7E2, {0x04, 0x14, 0xFF, 0xFF, 0xFF});
+
+    result = batteryCoordinator->coordinate(*frame);
+    assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+    batteryCoordinator->confirmOutgoingFrameSent();
 
     result = batteryCoordinator->coordinate(*frame);
     assert(result == DiagnosticCoordinatorResult::Processed);
@@ -270,6 +320,11 @@ inline void diagnosticCoordinatorTests() {
     assert(returnedFrame->getFrameId() == 0x7EA);
 
     frame = CANFrame::createCANFrame(0x7E2, {0x04, 0x14, 0xFF, 0xFF, 0xFF});
+
+    result = batteryCoordinator->coordinate(*frame);
+    assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+    batteryCoordinator->confirmOutgoingFrameSent();
 
     result = batteryCoordinator->coordinate(*frame);
     assert(result == DiagnosticCoordinatorResult::Processed);
@@ -315,6 +370,8 @@ inline void diagnosticCoordinatorTests() {
             assert(frame->getFramePayload()[i] == CtsPayload[i]);
         }
 
+        engineCoordinator->confirmOutgoingFrameSent();
+
         IsoTpReceiveFrameResult isoTpResult { engineTesterIsoTpEndpoint->receiveFrame(*frame) };
         assert(isoTpResult == IsoTpReceiveFrameResult::CTS);
 
@@ -350,6 +407,7 @@ inline void diagnosticCoordinatorTests() {
 
         coordinatorResult = engineCoordinator->coordinate(*frame);
         assert(coordinatorResult == DiagnosticCoordinatorResult::Processed);
+        engineCoordinator->confirmOutgoingFrameSent();
 
         frame = engineCoordinator->getOutgoingFrame();
         std::vector<std::uint8_t> response = { 0x03, 0x7F, 0xFF, 0x11 };
@@ -377,6 +435,11 @@ inline void diagnosticCoordinatorTests() {
 
         frame = CANFrame::createCANFrame(0x7E2, {0x02, 0x10, 0x03});
         result = batteryCoordinator->coordinate(*frame);
+        assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+        batteryCoordinator->confirmOutgoingFrameSent();
+
+        result = batteryCoordinator->coordinate(*frame);
         assert(result == DiagnosticCoordinatorResult::Processed);
 
         returnedFrame = batteryCoordinator->getOutgoingFrame();
@@ -384,6 +447,11 @@ inline void diagnosticCoordinatorTests() {
         assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Extended);
 
         frame = CANFrame::createCANFrame(0x7E2, {0x03, 0x19, 0x02, 0x09});
+        result = batteryCoordinator->coordinate(*frame);
+        assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+        batteryCoordinator->confirmOutgoingFrameSent();
+
         result = batteryCoordinator->coordinate(*frame);
         assert(result == DiagnosticCoordinatorResult::Processed);
 
@@ -437,6 +505,11 @@ inline void diagnosticCoordinatorTests() {
 
         frame = CANFrame::createCANFrame(0x7E2, {0x03, 0x19, 0x03, 0x09});
         result = batteryCoordinator->coordinate(*frame);
+        assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+        batteryCoordinator->confirmOutgoingFrameSent();
+
+        result = batteryCoordinator->coordinate(*frame);
         assert(result == DiagnosticCoordinatorResult::Processed);
 
         returnedFrame = batteryCoordinator->getOutgoingFrame();
@@ -459,6 +532,11 @@ inline void diagnosticCoordinatorTests() {
         std::vector<std::uint8_t> responsePayload { 0x03, 0x7F, 0x19, 0x13 };
 
         frame = CANFrame::createCANFrame(0x7E2, {0x04, 0x19, 0x03, 0x09, 0x10});
+        result = batteryCoordinator->coordinate(*frame);
+        assert(result == DiagnosticCoordinatorResult::ResponseOutstanding);
+
+        batteryCoordinator->confirmOutgoingFrameSent();
+
         result = batteryCoordinator->coordinate(*frame);
         assert(result == DiagnosticCoordinatorResult::Processed);
 
