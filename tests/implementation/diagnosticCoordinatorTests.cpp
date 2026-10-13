@@ -112,7 +112,6 @@ void testWrongFrameLength() {
 
     auto returnedFrame { batteryCoordinator->getOutgoingFrame() };
     assert(!returnedFrame.has_value());
-    batteryCoordinator->confirmOutgoingFrameSent();
 
     assert(battery->getCurrentDiagnosticSession() == DiagnosticSession::Default);
 }
@@ -398,8 +397,8 @@ void testMultiFrameTransport() {
     assert(coordinatorResult == DiagnosticCoordinatorResult::Processed);
 
     frame = engineCoordinator->getOutgoingFrame();
-    engineCoordinator->confirmOutgoingFrameSent();
     assert(frame.has_value());
+    engineCoordinator->confirmOutgoingFrameSent();
     assert(frame->getFramePayload().size() == CtsPayload.size());
 
     for (std::size_t i { 0 }; i < CtsPayload.size(); ++i) {
