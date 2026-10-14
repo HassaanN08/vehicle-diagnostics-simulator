@@ -295,7 +295,7 @@ Consecutive Frame sequence numbers begin at `1` and wrap after `15`.
 
 #### Reassembly
 
-The receiver supports:
+The ISO-TP receive path supports:
 
 - Single Frame payload extraction
 - First Frame length decoding
@@ -353,7 +353,7 @@ Frame construction and successful transmission are treated as separate events.
 
 When ISO-TP produces an outgoing CAN frame, the endpoint records that a frame is awaiting acknowledgement and will not produce another outgoing frame until the current one has been confirmed.
 
-The runtime propagates successful SocketCAN transmission back through:
+The event loop propagates successful SocketCAN transmission back through:
 
 ```text
 CanSocket
@@ -595,12 +595,6 @@ For GCC- and Clang-style compilers, the production library and executables are b
 
 ```text
 -Wall -Wextra -Wpedantic
-```
-
-MSVC builds use:
-
-```text
-/W4
 ```
 
 Warnings are applied to the reusable `vds-core` target as well as the simulator and test executables, so production source files remain warning-checked after being moved into the shared library target.
