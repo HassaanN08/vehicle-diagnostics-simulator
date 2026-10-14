@@ -921,3 +921,23 @@ vehicle-diagnostics-simulator/
 - **`notes/`**
   
   Development scope, earlier milestone plans, and the V1 architectural contract used while evolving the project.
+
+## Why This Project Exists
+
+I built this project to move beyond isolated C++ exercises and work on the kinds of problems that appear in systems and automotive software: ownership, stateful protocols, byte-level data, Linux I/O, timing, error handling, and communication between clearly separated layers.
+
+The project began as a small vehicle and ECU simulator focused on basic diagnostic state and DTC handling. As the architecture evolved, the goal shifted toward building an end-to-end diagnostic path that I could understand at every layer:
+
+```text
+Linux SocketCAN
+→ CAN frames
+→ ISO-TP transport
+→ UDS-style diagnostics
+→ ECU state
+```
+
+Rather than relying on existing ISO-TP or diagnostic libraries, the transport and diagnostic behavior are implemented directly so that the state transitions, timing rules, ownership decisions, and failure cases remain visible in the code.
+
+The project is intentionally not a complete automotive stack. Its purpose is to provide a focused environment for developing and demonstrating Modern C++ and Linux systems-engineering skills in an automotive context, while keeping the architecture small enough to reason about, test, and extend deliberately.
+
+Future development may explore concurrency where it provides a meaningful architectural benefit. The current single-threaded event loop remains intentional, and additional concurrency would be introduced to solve a concrete scheduling or workload problem rather than simply adding threads for complexity.
