@@ -788,3 +788,44 @@ Frame construction rejects:
 The SocketCAN adapter also rejects incoming Extended Frame Format, Remote Transmission Request, and CAN error frames.
 
 Keeping these restrictions at the CAN boundary prevents higher protocol layers from accidentally treating unsupported frame types as ordinary diagnostic traffic.
+
+## Current Limitations
+
+The project intentionally implements a focused subset of an automotive diagnostic stack rather than complete ISO 15765 or ISO 14229 behavior.
+
+Current scope limitations include:
+
+- **Linux runtime only**
+  - The SocketCAN adapter depends on Linux CAN APIs.
+  - The current executable binds directly to `vcan0`; the interface is not yet configurable from the command line.
+
+- **Classical CAN only**
+  - CAN payloads are limited to 8 bytes.
+  - Only 11-bit Standard Frame Format identifiers are accepted.
+  - CAN FD is not supported.
+  - Extended Frame Format, Remote Transmission Request, and CAN error frames are rejected by the SocketCAN adapter.
+
+- **Focused ISO-TP subset**
+  - Payload length is limited to 4095 bytes.
+  - Only the addressing model represented by the configured request and response CAN IDs is implemented.
+  - Extended ISO-TP addressing is not implemented.
+  - CAN-frame padding is not added.
+  - The receiver currently generates Clear To Send (`0x30`) Flow Control frames; it does not generate Wait or Abort Flow Control responses.
+  - Transport timeout values are currently fixed rather than externally configurable.
+
+- **Focused UDS subset**
+  - Only services `0x10`, `0x14`, `0x19`, and `0x22` are currently dispatched.
+  - Only the documented subfunctions, DID, and DTC group are implemented.
+  - The project does not attempt to implement the complete service behavior defined by ISO 14229.
+
+- **Static runtime configuration**
+  - The executable currently starts with three predefined ECUs.
+  - ECU definitions, CAN identifiers, ISO-TP settings, and runtime configuration are not loaded from an external configuration file.
+  - Diagnostic state is kept in memory and is not persisted between executions.
+
+- **Restricted transaction model**
+  - Each ECU diagnostic coordinator permits one outstanding diagnostic response at a time.
+  - The runtime permits only one outgoing CAN frame to remain unacknowledged by the I/O layer at a time.
+  - The current application uses a single-threaded event loop rather than concurrent diagnostic workers.
+
+These constraints are deliberate for the current version. The project focuses on clear ownership, transport state machines, protocol boundaries, nonblocking Linux I/O, and testable behavior rather than maximizing protocol or platform coverage.
