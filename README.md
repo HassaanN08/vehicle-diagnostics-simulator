@@ -660,3 +660,131 @@ checkout
 ```
 
 Keeping the normal and sanitized builds separate makes it clear whether a failure is caused by the ordinary build/test pipeline or is detected specifically by runtime instrumentation.
+
+## Design Decisions and Invariants
+
+Several parts of the implementation are built around explicit invariants rather than relying on accidental behavior between classes.
+
+### Stable ECU Lifetime
+
+`Vehicle` owns the ECU objects.
+
+`DiagnosticCoordinator` keeps a non-owning pointer to the ECU it serves rather than owning or copying that ECU.
+
+To keep those pointers valid:
+
+- `Vehicle` reserves storage for its maximum supported ECU count
+- the ECU limit is 100
+- additions beyond that limit are rejected
+- `Vehicle` copy and move operations are deleted
+
+This prevents the supported ECU additions from causing vector reallocation that would invalidate coordinator pointers.
+
+In the runtime executable, `Vehicle` is also created before `DiagnosticRuntime`, so the runtime and its coordinators are destroyed before the vehicle they reference.
+
+### Persistent Transport State
+
+A diagnostic coordinator owns a persistent `IsoTp` endpoint.
+
+The endpoint is not reconstructed for every CAN frame because ISO-TP exchanges span multiple frames and may need to preserve:
+
+- partially reassembled payload data
+- sender payload progress
+- Consecutive Frame sequence numbers
+- Flow Control state
+- Block Size state
+- STmin timing
+- timeout state
+
+Incoming frames belonging to the same ECU therefore continue through the same transport state machine.
+
+### One Outstanding Diagnostic Response Per ECU
+
+Each `DiagnosticCoordinator` allows only one diagnostic response transaction to remain outstanding at a time.
+
+Once a complete UDS request has produced a response payload, the coordinator enters a response-outstanding state.
+
+That state is cleared when:
+
+- a Single Frame response has been confirmed as sent
+- the final Consecutive Frame of a multi-frame response has been confirmed as sent
+- the ISO-TP sender times out
+
+This prevents a later diagnostic request from silently replacing a response that is still being transmitted.
+
+### One Unacknowledged Outgoing Frame
+
+An `IsoTp` endpoint will not produce another outgoing CAN frame while one of its previously produced frames is still awaiting acknowledgement.
+
+This applies to frames produced by either transport direction, including:
+
+- diagnostic response frames produced by the sender
+- Flow Control frames produced by the receiver
+
+`DiagnosticRuntime` applies a similar rule across coordinators by remembering which coordinator produced the currently unacknowledged outgoing frame.
+
+As a result, the runtime does not hand another transport frame to the external I/O layer until the previous frame has been acknowledged.
+
+### External Side Effects Are Confirmed Explicitly
+
+Constructing a `CANFrame` does not mean that the frame has been successfully handed to Linux.
+
+The SocketCAN adapter therefore reports the result of each write explicitly:
+
+```text
+FrameSent
+WouldBlock
+UnexpectedWrittenSize
+Error
+```
+
+If a nonblocking write would block, the event loop retains the frame and retries it later.
+
+Only `FrameSent` causes the runtime to propagate an outgoing-frame confirmation back into the diagnostic stack.
+
+This keeps transport behavior that depends on an actual write separate from behavior that merely created a frame in memory.
+
+### Move-Only File Descriptor Ownership
+
+The SocketCAN file descriptor is owned by `FdOwner`, a small RAII type.
+
+`FdOwner`:
+
+- closes its descriptor when destroyed
+- cannot be copied
+- can be moved
+- transfers ownership during a move
+- leaves the moved-from object with an invalid descriptor
+
+This gives the raw POSIX file descriptor a single explicit owner and prevents two objects from independently believing they should close the same descriptor.
+
+### Single-Threaded Event Loop
+
+The current runtime intentionally uses one `poll()`-driven event loop rather than worker threads.
+
+Incoming CAN handling, timeout checks, outgoing-frame production, and SocketCAN writes are therefore serialized through one execution path.
+
+This keeps the transport state machines deterministic without requiring mutexes or cross-thread synchronization.
+
+Concurrency is not required for the current scope of the simulator and is not added merely to make the architecture appear more complex.
+
+### Classical CAN Boundary
+
+`CANFrame` models Classical CAN rather than CAN FD.
+
+Its payload storage is:
+
+```text
+std::array<std::uint8_t, 8>
+```
+
+with a separate logical payload length.
+
+Frame construction rejects:
+
+- payloads larger than 8 bytes
+- CAN identifiers outside the 11-bit Standard Frame Format range
+
+The SocketCAN adapter also rejects incoming Extended Frame Format, Remote Transmission Request, and CAN error frames.
+
+Keeping these restrictions at the CAN boundary prevents higher protocol layers from accidentally treating unsupported frame types as ordinary diagnostic traffic.
