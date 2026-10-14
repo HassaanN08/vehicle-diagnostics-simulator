@@ -370,3 +370,187 @@ This confirmation is used for behavior that depends on the frame actually having
 - starting the next Flow Control wait after a completed block
 - completing/resetting the sender after a Single Frame or final Consecutive Frame
 - starting the receiver's Consecutive Frame timeout after its Flow Control frame has been sent
+
+## Build, Test, and Run
+
+### Requirements
+
+The runtime currently targets Linux because the SocketCAN adapter uses Linux CAN APIs.
+
+Required development tools:
+
+- C++23-capable compiler
+- CMake 3.15 or newer
+- Ninja
+- Linux SocketCAN support
+
+For the virtual CAN demo, the following are also useful:
+
+- `iproute2`
+- `can-utils`
+
+The executable currently binds to the `vcan0` interface.
+
+### Build
+
+Configure a Debug build with CMake and Ninja:
+
+```bash
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+```
+
+Build the project:
+
+```bash
+cmake --build build
+```
+
+This produces:
+
+```text
+build/vehicle-diagnostics-simulator
+build/vehicle-diagnostics-tests
+```
+
+### Run the Automated Tests
+
+The test executable is registered with CTest:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+A successful run should report:
+
+```text
+100% tests passed
+```
+
+### Create a Virtual CAN Interface
+
+Load the Linux `vcan` module:
+
+```bash
+sudo modprobe vcan
+```
+
+Create `vcan0`:
+
+```bash
+sudo ip link add dev vcan0 type vcan
+```
+
+Bring the interface up:
+
+```bash
+sudo ip link set up vcan0
+```
+
+You can verify it with:
+
+```bash
+ip link show vcan0
+```
+
+If `vcan0` already exists, it does not need to be created again.
+
+### Run the Simulator
+
+With `vcan0` active:
+
+```bash
+./build/vehicle-diagnostics-simulator
+```
+
+The process then waits for diagnostic CAN traffic on the virtual CAN interface.
+
+The default simulated vehicle contains:
+
+| ECU | Request CAN ID | Response CAN ID |
+|---|---:|---:|
+| Engine | `0x7E0` | `0x7E8` |
+| Brake | `0x7E1` | `0x7E9` |
+| Battery | `0x7E2` | `0x7EA` |
+
+### Observe CAN Traffic
+
+In another terminal, start `candump`:
+
+```bash
+candump vcan0
+```
+
+This lets you observe both requests sent to the simulator and responses transmitted by it.
+
+### Example: Change Diagnostic Session
+
+The Engine ECU begins in Default Session.
+
+Send an ISO-TP Single Frame containing a Diagnostic Session Control request for Extended Session:
+
+```bash
+cansend vcan0 7E0#021003
+```
+
+The bytes are:
+
+```text
+02       ISO-TP Single Frame payload length
+10       Diagnostic Session Control
+03       Extended Session
+```
+
+The simulator responds on the Engine ECU's response CAN ID:
+
+```text
+7E8#025003
+```
+
+which contains:
+
+```text
+02       ISO-TP Single Frame payload length
+50       positive response SID for service 0x10
+03       Extended Session
+```
+
+### Example: Read the Current Diagnostic Session
+
+After switching the Engine ECU to Extended Session, request DID `0xF186`:
+
+```bash
+cansend vcan0 7E0#0322F186
+```
+
+The request contains:
+
+```text
+03       ISO-TP Single Frame payload length
+22       Read Data By Identifier
+F1 86    DID 0xF186
+```
+
+The expected response is:
+
+```text
+7E8#0462F18603
+```
+
+which contains:
+
+```text
+04       ISO-TP Single Frame payload length
+62       positive response SID for service 0x22
+F1 86    DID 0xF186
+03       Extended Session
+```
+
+If the ECU is still in Default Session, the final byte is `01` instead.
+
+### Remove the Virtual Interface
+
+When finished, `vcan0` can be removed with:
+
+```bash
+sudo ip link delete vcan0
+```
