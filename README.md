@@ -734,7 +734,7 @@ Error
 
 If a nonblocking write would block, the event loop retains the frame and retries it later.
 
-Only `FrameSent` causes the runtime to propagate an outgoing-frame confirmation back into the diagnostic stack.
+Only `FrameSent` causes the event loop to propagate an outgoing-frame confirmation back into the diagnostic stack.
 
 This keeps transport behavior that depends on an actual write separate from behavior that merely created a frame in memory.
 
