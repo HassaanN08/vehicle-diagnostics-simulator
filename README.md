@@ -554,3 +554,109 @@ When finished, `vcan0` can be removed with:
 ```bash
 sudo ip link delete vcan0
 ```
+
+## Testing and Continuous Integration
+
+The project uses a dedicated assert-based test executable registered with CTest.
+
+The test suite is divided across the main architectural layers rather than testing only the final executable.
+
+Current coverage includes:
+
+- `CANFrame` construction and validation
+- `Vehicle` and `ECU` domain behavior
+- diagnostic session state
+- DTC storage, status handling, filtering, and clearing
+- UDS request dispatch and response generation
+- Read Data By Identifier behavior
+- ISO-TP sender behavior
+- ISO-TP receiver behavior
+- Single Frame handling
+- multi-frame segmentation and reassembly
+- Flow Control handling
+- Block Size behavior
+- STmin timing
+- sender and receiver timeout recovery
+- incorrect CAN ID handling
+- diagnostic coordinator behavior
+- diagnostic runtime routing
+- outgoing-frame acknowledgement behavior
+- recovery after transport timeout
+
+The tests can be run through CTest:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+### Warning-Enabled Builds
+
+For GCC- and Clang-style compilers, the production library and executables are built with:
+
+```text
+-Wall -Wextra -Wpedantic
+```
+
+MSVC builds use:
+
+```text
+/W4
+```
+
+Warnings are applied to the reusable `vds-core` target as well as the simulator and test executables, so production source files remain warning-checked after being moved into the shared library target.
+
+### Sanitizers
+
+The project is also tested with:
+
+- AddressSanitizer (ASan)
+- UndefinedBehaviorSanitizer (UBSan)
+
+A local sanitized build can be configured with:
+
+```bash
+cmake -S . -B build-sanitize -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+```
+
+Then build and run the tests with:
+
+```bash
+cmake --build build-sanitize
+ctest --test-dir build-sanitize --output-on-failure
+```
+
+### GitHub Actions
+
+Continuous Integration runs automatically on pushes and pull requests.
+
+The current workflow contains two independent Linux jobs:
+
+```text
+Ubuntu Build and Test
+Ubuntu Sanitize Build and Test
+```
+
+The normal job:
+
+```text
+checkout
+→ install Ninja
+→ configure CMake
+→ build
+→ run CTest
+```
+
+The sanitized job independently:
+
+```text
+checkout
+→ install Ninja
+→ configure with ASan + UBSan
+→ build
+→ run CTest
+```
+
+Keeping the normal and sanitized builds separate makes it clear whether a failure is caused by the ordinary build/test pipeline or is detected specifically by runtime instrumentation.
