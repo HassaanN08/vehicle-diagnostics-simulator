@@ -829,3 +829,95 @@ Current scope limitations include:
   - The current application uses a single-threaded event loop rather than concurrent diagnostic workers.
 
 These constraints are deliberate for the current version. The project focuses on clear ownership, transport state machines, protocol boundaries, nonblocking Linux I/O, and testable behavior rather than maximizing protocol or platform coverage.
+
+## Project Structure
+
+```text
+vehicle-diagnostics-simulator/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── notes/
+│   ├── project-scope.md
+│   ├── v0.2-plan.md
+│   ├── v0.4-plan.md
+│   └── v1-architectural-contract.md
+├── src/
+│   ├── app/
+│   │   ├── DiagnosticCoordinator.h
+│   │   └── DiagnosticRuntime.h
+│   ├── can/
+│   │   ├── CANFrame.cpp
+│   │   ├── CANFrame.h
+│   │   ├── CanSocket.cpp
+│   │   ├── CanSocket.h
+│   │   └── FdOwner.h
+│   ├── domain/
+│   │   ├── DTC.h
+│   │   ├── ECU.cpp
+│   │   ├── ECU.h
+│   │   ├── Vehicle.cpp
+│   │   └── Vehicle.h
+│   ├── isotp/
+│   │   ├── IsoTp.cpp
+│   │   ├── IsoTp.h
+│   │   ├── Receiver.cpp
+│   │   ├── Receiver.h
+│   │   ├── Sender.cpp
+│   │   └── Sender.h
+│   ├── uds/
+│   │   ├── UDSRequestProcessor/
+│   │   │   ├── ClearDiagnosticInformation.cpp
+│   │   │   ├── DiagnosticSessionControl.cpp
+│   │   │   ├── ReadDTCInformation.cpp
+│   │   │   ├── ReadDataByIdentifier.cpp
+│   │   │   └── UDSRequestProcessor.h
+│   │   ├── UDSRequestParser.h
+│   │   ├── UDSResponseBuilder.h
+│   │   ├── UDSServer.h
+│   │   └── UDSTypes.h
+│   └── main.cpp
+├── tests/
+│   ├── can/
+│   ├── domain/
+│   ├── implementation/
+│   ├── isotp/
+│   ├── uds/
+│   └── tests.cpp
+├── CMakeLists.txt
+└── README.md
+```
+
+### Module Responsibilities
+
+- **`src/app/`**
+  
+  Application-level diagnostic orchestration. `DiagnosticRuntime` routes CAN traffic between ECU-specific coordinators, while `DiagnosticCoordinator` connects persistent ISO-TP state with UDS processing and ECU state.
+
+- **`src/can/`**
+  
+  CAN and Linux I/O boundary. Contains the fixed-capacity `CANFrame` representation, the nonblocking SocketCAN adapter, and RAII ownership for the underlying POSIX file descriptor.
+
+- **`src/domain/`**
+  
+  Simulated vehicle state. Contains `Vehicle`, `ECU`, and `DTC` behavior independently of SocketCAN, ISO-TP framing, and UDS transport concerns.
+
+- **`src/isotp/`**
+  
+  Stateful ISO-TP transport. `IsoTp` coordinates independent `Sender` and `Receiver` state machines responsible for segmentation, reassembly, Flow Control, timing, and timeout behavior.
+
+- **`src/uds/`**
+  
+  Diagnostic application protocol layer. Handles service identification, service-specific request processing, ECU interaction, and positive or negative UDS-style response construction.
+
+- **`tests/`**
+  
+  Assert-based tests organized around the same major system boundaries, including CAN, domain state, UDS, ISO-TP, coordinators, and runtime behavior.
+
+- **`.github/workflows/`**
+  
+  GitHub Actions configuration for normal and ASan/UBSan build-and-test jobs.
+
+- **`notes/`**
+  
+  Development scope, earlier milestone plans, and the V1 architectural contract used while evolving the project.
