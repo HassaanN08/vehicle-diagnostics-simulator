@@ -63,67 +63,83 @@ The implementation is intentionally focused in scope and is not presented as com
 The runtime is divided into layers so that Linux I/O, CAN transport, diagnostic coordination, protocol handling, and ECU state remain separate.
 
 ```text
-                        Linux CAN interface
-                              vcan0
-                                │
-                                ▼
-                           CanSocket
-                  nonblocking SocketCAN I/O
-                                │
-                                ▼
-                         poll() event loop
-                                │
-                                ▼
-                      DiagnosticRuntime
-                routes frames by diagnostic CAN ID
-                                │
-                                ▼
-                   DiagnosticCoordinator
-                 one diagnostic channel per ECU
-                                │
-                  ┌─────────────┴─────────────┐
-                  │                           │
-                  ▼                           ▼
-                IsoTp                     UDSServer
-          transport state machine       diagnostic logic
-           ┌────────┴────────┐                 │
-           │                 │                 ▼
-           ▼                 ▼                ECU
-        Sender            Receiver       diagnostic state,
-                                             DTCs,
-                                          CAN metadata
+Linux SocketCAN
+      │
+      ▼
+   CanSocket
+      │
+      ▼
+ poll() event loop
+      │
+      ▼
+DiagnosticRuntime
+      │
+      ▼
+DiagnosticCoordinator
+      │
+      ▼
+    IsoTp
+receive / reassemble
+      │
+      ▼
+DiagnosticCoordinator
+      │
+      ▼
+  UDSServer
+      │
+      ▼
+ ECU state
+      │
+      ▼
+UDS response payload
+      │
+      ▼
+DiagnosticCoordinator
+      │
+      ▼
+    IsoTp
+segment / transmit
+      │
+      ▼
+DiagnosticRuntime
+      │
+      ▼
+  CanSocket
+      │
+      ▼
+Linux SocketCAN
 ```
 
 ### Responsibility Boundaries
 
-- **CanSocket**
+- **`CanSocket`**
 
-  Owns the Linux CAN socket and translates between Linux can_frame objects and the simulator's CANFrame representation. It does not interpret ISO-TP or UDS data.
+  Owns the Linux CAN socket and translates between Linux `can_frame` objects and the simulator's `CANFrame` representation. It does not interpret ISO-TP or UDS data.
 
-- **Event loop**
+- **`Event loop`**
 
-  Uses poll() to wait for incoming CAN traffic while continuing to service ISO-TP timing and outgoing frames. It also preserves a frame when a nonblocking socket write returns EAGAIN or EWOULDBLOCK.
+  Uses `poll()` to wait for incoming CAN traffic while continuing to service ISO-TP timing and outgoing frames. It also preserves a frame when a nonblocking socket write returns `EAGAIN` or `EWOULDBLOCK`.
 
-- **DiagnosticRuntime**
+- **`DiagnosticRuntime`**
 
   Owns the persistent set of diagnostic coordinators and routes incoming CAN frames to the coordinator associated with the matching request CAN ID.
 
-- **DiagnosticCoordinator**
+- **`DiagnosticCoordinator`**
 
   Connects one ECU's ISO-TP transport state to UDS request processing. It prevents a new UDS response from replacing one that is still outstanding.
 
-- **IsoTp**
+- **`IsoTp`**
 
   Coordinates sender and receiver transport state. It handles segmentation, reassembly, Flow Control, sequencing, timing, and transport timeouts without knowing the meaning of the diagnostic payload.
 
-- **Sender / Receiver**
+- **`Sender / Receiver`**
 
   Implement the two directions of the ISO-TP state machine. Transport timing only advances after the relevant outgoing CAN frame has been confirmed as accepted by the SocketCAN layer.
 
-- **UDSServer**
+- **`UDSServer`**
 
   Parses the diagnostic service ID, dispatches the request to the appropriate service processor, and builds the logical UDS response. It does not create CAN or ISO-TP frames.
 
-- **Vehicle / ECU**
+- **`Vehicle / ECU`**
 
   Own the simulated vehicle and diagnostic domain state, including ECU diagnostic sessions, DTCs, supported status masks, and diagnostic CAN identifiers.
