@@ -98,11 +98,11 @@ The runtime is divided into layers so that Linux I/O, CAN transport, diagnostic 
 
 - **CanSocket**
 
-Owns the Linux CAN socket and translates between Linux can_frame objects and the simulator's CANFrame representation. It does not interpret ISO-TP or UDS data.
+  Owns the Linux CAN socket and translates between Linux can_frame objects and the simulator's CANFrame representation. It does not interpret ISO-TP or UDS data.
 
 - **Event loop**
 
-Uses poll() to wait for incoming CAN traffic while continuing to service ISO-TP timing and outgoing frames. It also preserves a frame when a nonblocking socket write returns EAGAIN or EWOULDBLOCK.
+  Uses poll() to wait for incoming CAN traffic while continuing to service ISO-TP timing and outgoing frames. It also preserves a frame when a nonblocking socket write returns EAGAIN or EWOULDBLOCK.
 
 - **DiagnosticRuntime**
 
