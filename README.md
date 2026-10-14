@@ -94,7 +94,7 @@ The runtime is divided into layers so that Linux I/O, CAN transport, diagnostic 
                                           CAN metadata
 ```
 
-## Responsibility Boundaries
+### Responsibility Boundaries
 
 - **CanSocket**
 
